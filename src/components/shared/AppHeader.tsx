@@ -1,6 +1,6 @@
 import { Bell, LogOut, Settings, User } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -24,18 +24,7 @@ function initials(name?: string | null, email?: string | null) {
     .toUpperCase();
 }
 
-// Sidebar trigger renders only when wrapped in <SidebarProvider> (admin shells).
-function SafeSidebarTrigger() {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ = useSidebar();
-    return <SidebarTrigger className="rounded-xl h-10 w-10" />;
-  } catch {
-    return null;
-  }
-}
-
-export function AppHeader() {
+export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: boolean } = {}) {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -47,7 +36,7 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-30 h-16 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <div className="h-full flex items-center gap-2 px-3 md:px-6">
-        <SafeSidebarTrigger />
+        {withSidebarTrigger && <SidebarTrigger className="rounded-xl h-10 w-10" />}
 
         <Link to="/" className="md:hidden flex items-center gap-2 ml-1">
           <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground grid place-items-center text-sm font-bold">

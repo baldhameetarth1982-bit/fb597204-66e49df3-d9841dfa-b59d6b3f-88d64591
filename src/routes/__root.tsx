@@ -134,7 +134,7 @@ function ShellSwitcher() {
   if (pathname.startsWith("/app")) {
     return (
       <div className="min-h-screen flex flex-col w-full bg-background">
-        <AppHeader />
+        <AppHeader withSidebarTrigger={false} />
         <main className="flex-1 pb-20 md:pb-0">
           <Outlet />
         </main>
