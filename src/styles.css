@@ -62,39 +62,52 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  /* SocioHub design tokens — pristine minimalist SaaS.
+     Palette: #FFFFFF bg, #0047AB cobalt primary, #F4F6F8 off-white surface.
+     Generous radius for soft modern shapes (Material 3 inspired). */
+  --radius: 0.875rem; /* 14px base → cards/buttons/inputs feel pillowy */
+
+  --background: oklch(1 0 0);              /* #FFFFFF */
+  --foreground: oklch(0.205 0.02 256);     /* near-black slate, easy on eyes */
+
+  /* Cards stay white by default; use --surface for tinted off-white panels */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.205 0.02 256);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
+  --popover-foreground: oklch(0.205 0.02 256);
+
+  --primary: oklch(0.42 0.17 262);         /* #0047AB cobalt */
+  --primary-foreground: oklch(1 0 0);
+
+  /* Secondary / muted / accent all anchor to off-white #F4F6F8 for calm surfaces */
+  --secondary: oklch(0.972 0.004 250);     /* #F4F6F8 */
+  --secondary-foreground: oklch(0.255 0.025 256);
+  --muted: oklch(0.972 0.004 250);
+  --muted-foreground: oklch(0.5 0.02 256);
+  --accent: oklch(0.972 0.004 250);
+  --accent-foreground: oklch(0.42 0.17 262);
+
+  --destructive: oklch(0.6 0.22 27);
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.93 0.005 256);         /* hairline, low contrast */
+  --input: oklch(0.93 0.005 256);
+  --ring: oklch(0.42 0.17 262 / 0.5);
+
+  --chart-1: oklch(0.42 0.17 262);
   --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --chart-3: oklch(0.55 0.15 230);
+  --chart-4: oklch(0.78 0.14 85);
+  --chart-5: oklch(0.65 0.2 30);
+
+  --sidebar: oklch(0.984 0.003 250);
+  --sidebar-foreground: oklch(0.205 0.02 256);
+  --sidebar-primary: oklch(0.42 0.17 262);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.972 0.004 250);
+  --sidebar-accent-foreground: oklch(0.42 0.17 262);
+  --sidebar-border: oklch(0.93 0.005 256);
+  --sidebar-ring: oklch(0.42 0.17 262 / 0.5);
 }
 
 .dark {
@@ -137,8 +150,24 @@
     border-color: var(--color-border);
   }
 
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-feature-settings: "cv11", "ss01";
+    /* Generous default line-height for elderly-friendly readability */
+    line-height: 1.6;
+  }
+
+  /* Larger default tap targets — important for accessibility */
+  button,
+  [role="button"] {
+    min-height: 2.5rem;
   }
 }
+
