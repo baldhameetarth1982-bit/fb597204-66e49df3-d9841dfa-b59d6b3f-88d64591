@@ -9,38 +9,150 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SocietyRouteImport } from './routes/_society'
+import { Route as ResidentRouteImport } from './routes/_resident'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as SocietySocietyDashboardRouteImport } from './routes/_society/society.dashboard'
+import { Route as ResidentAppDashboardRouteImport } from './routes/_resident/app.dashboard'
+import { Route as AdminAdminDashboardRouteImport } from './routes/_admin/admin.dashboard'
 
+const SocietyRoute = SocietyRouteImport.update({
+  id: '/_society',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResidentRoute = ResidentRouteImport.update({
+  id: '/_resident',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/_admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
+} as any)
+const SocietySocietyDashboardRoute = SocietySocietyDashboardRouteImport.update({
+  id: '/society/dashboard',
+  path: '/society/dashboard',
+  getParentRoute: () => SocietyRoute,
+} as any)
+const ResidentAppDashboardRoute = ResidentAppDashboardRouteImport.update({
+  id: '/app/dashboard',
+  path: '/app/dashboard',
+  getParentRoute: () => ResidentRoute,
+} as any)
+const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
+  id: '/admin/dashboard',
+  path: '/admin/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof AuthLoginRoute
+  '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/app/dashboard': typeof ResidentAppDashboardRoute
+  '/society/dashboard': typeof SocietySocietyDashboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof AuthLoginRoute
+  '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/app/dashboard': typeof ResidentAppDashboardRoute
+  '/society/dashboard': typeof SocietySocietyDashboardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_admin': typeof AdminRouteWithChildren
+  '/_auth': typeof AuthRouteWithChildren
+  '/_resident': typeof ResidentRouteWithChildren
+  '/_society': typeof SocietyRouteWithChildren
+  '/_auth/login': typeof AuthLoginRoute
+  '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/_resident/app/dashboard': typeof ResidentAppDashboardRoute
+  '/_society/society/dashboard': typeof SocietySocietyDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/admin/dashboard'
+    | '/app/dashboard'
+    | '/society/dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/admin/dashboard'
+    | '/app/dashboard'
+    | '/society/dashboard'
+  id:
+    | '__root__'
+    | '/'
+    | '/_admin'
+    | '/_auth'
+    | '/_resident'
+    | '/_society'
+    | '/_auth/login'
+    | '/_admin/admin/dashboard'
+    | '/_resident/app/dashboard'
+    | '/_society/society/dashboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
+  ResidentRoute: typeof ResidentRouteWithChildren
+  SocietyRoute: typeof SocietyRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_society': {
+      id: '/_society'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof SocietyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_resident': {
+      id: '/_resident'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ResidentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_admin': {
+      id: '/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +160,97 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_auth/login': {
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_society/society/dashboard': {
+      id: '/_society/society/dashboard'
+      path: '/society/dashboard'
+      fullPath: '/society/dashboard'
+      preLoaderRoute: typeof SocietySocietyDashboardRouteImport
+      parentRoute: typeof SocietyRoute
+    }
+    '/_resident/app/dashboard': {
+      id: '/_resident/app/dashboard'
+      path: '/app/dashboard'
+      fullPath: '/app/dashboard'
+      preLoaderRoute: typeof ResidentAppDashboardRouteImport
+      parentRoute: typeof ResidentRoute
+    }
+    '/_admin/admin/dashboard': {
+      id: '/_admin/admin/dashboard'
+      path: '/admin/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminAdminDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAdminDashboardRoute: AdminAdminDashboardRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface AuthRouteChildren {
+  AuthLoginRoute: typeof AuthLoginRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthLoginRoute: AuthLoginRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
+interface ResidentRouteChildren {
+  ResidentAppDashboardRoute: typeof ResidentAppDashboardRoute
+}
+
+const ResidentRouteChildren: ResidentRouteChildren = {
+  ResidentAppDashboardRoute: ResidentAppDashboardRoute,
+}
+
+const ResidentRouteWithChildren = ResidentRoute._addFileChildren(
+  ResidentRouteChildren,
+)
+
+interface SocietyRouteChildren {
+  SocietySocietyDashboardRoute: typeof SocietySocietyDashboardRoute
+}
+
+const SocietyRouteChildren: SocietyRouteChildren = {
+  SocietySocietyDashboardRoute: SocietySocietyDashboardRoute,
+}
+
+const SocietyRouteWithChildren =
+  SocietyRoute._addFileChildren(SocietyRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  AuthRoute: AuthRouteWithChildren,
+  ResidentRoute: ResidentRouteWithChildren,
+  SocietyRoute: SocietyRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
