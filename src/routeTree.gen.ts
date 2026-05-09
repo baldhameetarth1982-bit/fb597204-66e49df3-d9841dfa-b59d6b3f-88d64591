@@ -18,6 +18,10 @@ import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-pass
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as SocietySocietyDashboardRouteImport } from './routes/_society/society.dashboard'
+import { Route as ResidentAppProfileRouteImport } from './routes/_resident/app.profile'
+import { Route as ResidentAppNoticesRouteImport } from './routes/_resident/app.notices'
+import { Route as ResidentAppHelpdeskRouteImport } from './routes/_resident/app.helpdesk'
+import { Route as ResidentAppDuesRouteImport } from './routes/_resident/app.dues'
 import { Route as ResidentAppDashboardRouteImport } from './routes/_resident/app.dashboard'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin/admin.dashboard'
 
@@ -62,6 +66,26 @@ const SocietySocietyDashboardRoute = SocietySocietyDashboardRouteImport.update({
   path: '/society/dashboard',
   getParentRoute: () => SocietyRoute,
 } as any)
+const ResidentAppProfileRoute = ResidentAppProfileRouteImport.update({
+  id: '/app/profile',
+  path: '/app/profile',
+  getParentRoute: () => ResidentRoute,
+} as any)
+const ResidentAppNoticesRoute = ResidentAppNoticesRouteImport.update({
+  id: '/app/notices',
+  path: '/app/notices',
+  getParentRoute: () => ResidentRoute,
+} as any)
+const ResidentAppHelpdeskRoute = ResidentAppHelpdeskRouteImport.update({
+  id: '/app/helpdesk',
+  path: '/app/helpdesk',
+  getParentRoute: () => ResidentRoute,
+} as any)
+const ResidentAppDuesRoute = ResidentAppDuesRouteImport.update({
+  id: '/app/dues',
+  path: '/app/dues',
+  getParentRoute: () => ResidentRoute,
+} as any)
 const ResidentAppDashboardRoute = ResidentAppDashboardRouteImport.update({
   id: '/app/dashboard',
   path: '/app/dashboard',
@@ -80,6 +104,10 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/app/dashboard': typeof ResidentAppDashboardRoute
+  '/app/dues': typeof ResidentAppDuesRoute
+  '/app/helpdesk': typeof ResidentAppHelpdeskRoute
+  '/app/notices': typeof ResidentAppNoticesRoute
+  '/app/profile': typeof ResidentAppProfileRoute
   '/society/dashboard': typeof SocietySocietyDashboardRoute
 }
 export interface FileRoutesByTo {
@@ -89,6 +117,10 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/app/dashboard': typeof ResidentAppDashboardRoute
+  '/app/dues': typeof ResidentAppDuesRoute
+  '/app/helpdesk': typeof ResidentAppHelpdeskRoute
+  '/app/notices': typeof ResidentAppNoticesRoute
+  '/app/profile': typeof ResidentAppProfileRoute
   '/society/dashboard': typeof SocietySocietyDashboardRoute
 }
 export interface FileRoutesById {
@@ -103,6 +135,10 @@ export interface FileRoutesById {
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
   '/_resident/app/dashboard': typeof ResidentAppDashboardRoute
+  '/_resident/app/dues': typeof ResidentAppDuesRoute
+  '/_resident/app/helpdesk': typeof ResidentAppHelpdeskRoute
+  '/_resident/app/notices': typeof ResidentAppNoticesRoute
+  '/_resident/app/profile': typeof ResidentAppProfileRoute
   '/_society/society/dashboard': typeof SocietySocietyDashboardRoute
 }
 export interface FileRouteTypes {
@@ -114,6 +150,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin/dashboard'
     | '/app/dashboard'
+    | '/app/dues'
+    | '/app/helpdesk'
+    | '/app/notices'
+    | '/app/profile'
     | '/society/dashboard'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -123,6 +163,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin/dashboard'
     | '/app/dashboard'
+    | '/app/dues'
+    | '/app/helpdesk'
+    | '/app/notices'
+    | '/app/profile'
     | '/society/dashboard'
   id:
     | '__root__'
@@ -136,6 +180,10 @@ export interface FileRouteTypes {
     | '/_auth/reset-password'
     | '/_admin/admin/dashboard'
     | '/_resident/app/dashboard'
+    | '/_resident/app/dues'
+    | '/_resident/app/helpdesk'
+    | '/_resident/app/notices'
+    | '/_resident/app/profile'
     | '/_society/society/dashboard'
   fileRoutesById: FileRoutesById
 }
@@ -212,6 +260,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SocietySocietyDashboardRouteImport
       parentRoute: typeof SocietyRoute
     }
+    '/_resident/app/profile': {
+      id: '/_resident/app/profile'
+      path: '/app/profile'
+      fullPath: '/app/profile'
+      preLoaderRoute: typeof ResidentAppProfileRouteImport
+      parentRoute: typeof ResidentRoute
+    }
+    '/_resident/app/notices': {
+      id: '/_resident/app/notices'
+      path: '/app/notices'
+      fullPath: '/app/notices'
+      preLoaderRoute: typeof ResidentAppNoticesRouteImport
+      parentRoute: typeof ResidentRoute
+    }
+    '/_resident/app/helpdesk': {
+      id: '/_resident/app/helpdesk'
+      path: '/app/helpdesk'
+      fullPath: '/app/helpdesk'
+      preLoaderRoute: typeof ResidentAppHelpdeskRouteImport
+      parentRoute: typeof ResidentRoute
+    }
+    '/_resident/app/dues': {
+      id: '/_resident/app/dues'
+      path: '/app/dues'
+      fullPath: '/app/dues'
+      preLoaderRoute: typeof ResidentAppDuesRouteImport
+      parentRoute: typeof ResidentRoute
+    }
     '/_resident/app/dashboard': {
       id: '/_resident/app/dashboard'
       path: '/app/dashboard'
@@ -255,10 +331,18 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface ResidentRouteChildren {
   ResidentAppDashboardRoute: typeof ResidentAppDashboardRoute
+  ResidentAppDuesRoute: typeof ResidentAppDuesRoute
+  ResidentAppHelpdeskRoute: typeof ResidentAppHelpdeskRoute
+  ResidentAppNoticesRoute: typeof ResidentAppNoticesRoute
+  ResidentAppProfileRoute: typeof ResidentAppProfileRoute
 }
 
 const ResidentRouteChildren: ResidentRouteChildren = {
   ResidentAppDashboardRoute: ResidentAppDashboardRoute,
+  ResidentAppDuesRoute: ResidentAppDuesRoute,
+  ResidentAppHelpdeskRoute: ResidentAppHelpdeskRoute,
+  ResidentAppNoticesRoute: ResidentAppNoticesRoute,
+  ResidentAppProfileRoute: ResidentAppProfileRoute,
 }
 
 const ResidentRouteWithChildren = ResidentRoute._addFileChildren(
@@ -286,3 +370,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
