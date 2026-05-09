@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -13,6 +14,8 @@ import { AuthProvider } from "@/context/AuthContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shared/AppSidebar";
 import { AppHeader } from "@/components/shared/AppHeader";
+import { ResidentBottomNav } from "@/components/shared/ResidentBottomNav";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -76,21 +79,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "SocioHub" },
+      { name: "description", content: "Society management, simplified." },
+      { property: "og:title", content: "SocioHub" },
+      { property: "og:description", content: "Society management, simplified." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
+    links: [{ rel: "stylesheet", href: appCss }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -112,24 +108,53 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+const AUTH_PATHS = ["/login", "/forgot-password", "/reset-password"];
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SidebarProvider>
-          <div className="min-h-screen flex w-full bg-background">
-            <AppSidebar />
-            <div className="flex-1 flex flex-col min-w-0">
-              <AppHeader />
-              <main className="flex-1">
-                <Outlet />
-              </main>
-            </div>
-          </div>
-        </SidebarProvider>
+        <ShellSwitcher />
+        <Toaster richColors closeButton position="top-right" />
       </AuthProvider>
     </QueryClientProvider>
+  );
+}
+
+function ShellSwitcher() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Bare shell: auth pages
+  if (AUTH_PATHS.some((p) => pathname.startsWith(p))) {
+    return <Outlet />;
+  }
+
+  // Resident shell: bottom-tab nav on mobile, simple top header on desktop
+  if (pathname.startsWith("/app")) {
+    return (
+      <div className="min-h-screen flex flex-col w-full bg-background">
+        <AppHeader withSidebarTrigger={false} />
+        <main className="flex-1 pb-20 md:pb-0">
+          <Outlet />
+        </main>
+        <ResidentBottomNav />
+      </div>
+    );
+  }
+
+  // Default admin shell: sidebar + header
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <AppHeader />
+          <main className="flex-1">
+            <Outlet />
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 }

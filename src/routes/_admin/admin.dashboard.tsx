@@ -1,6 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { LayoutDashboard } from "lucide-react";
+import { Placeholder } from "@/components/shared/Placeholder";
 
-/** Placeholder — Super Admin dashboard. UI to be built in next phase. */
 export const Route = createFileRoute("/_admin/admin/dashboard")({
-  component: () => <div className="p-6">Super Admin Dashboard (scaffold)</div>,
+  head: () => ({ meta: [{ title: "Super Admin — SocioHub" }] }),
+  component: () => (
+    <Placeholder
+      icon={LayoutDashboard}
+      title="Super Admin Dashboard"
+      description="Global analytics, society approvals, and platform revenue. Coming in Phase 6."
+    />
+  ),
 });

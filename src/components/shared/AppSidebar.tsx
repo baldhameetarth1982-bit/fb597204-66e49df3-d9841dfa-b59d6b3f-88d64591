@@ -1,3 +1,4 @@
+import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Building2,
@@ -19,11 +20,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-/**
- * Primary admin navigation. Modules mirror the architecture plan
- * (Society Admin scope). Links are plain anchors until each route
- * scaffold exists; swap to <Link to="..."> once routes are added.
- */
 const items = [
   { title: "Dashboard", url: "/society/dashboard", icon: LayoutDashboard },
   { title: "Blocks", url: "/society/blocks", icon: Building2 },
@@ -36,11 +32,12 @@ const items = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarHeader className="px-4 py-5">
-        <a href="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="h-9 w-9 rounded-xl bg-primary text-primary-foreground grid place-items-center font-bold">
             S
           </div>
@@ -49,7 +46,7 @@ export function AppSidebar() {
               SocioHub
             </span>
           )}
-        </a>
+        </Link>
       </SidebarHeader>
 
       <SidebarContent className="px-2">
@@ -61,20 +58,27 @@ export function AppSidebar() {
           )}
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip={item.title}
-                    className="rounded-xl h-11 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground hover:bg-secondary"
-                  >
-                    <a href={item.url} className="flex items-center gap-3">
-                      <item.icon className="h-5 w-5 shrink-0" />
-                      {!collapsed && <span className="text-sm font-medium">{item.title}</span>}
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                const active =
+                  pathname === item.url || pathname.startsWith(item.url + "/");
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={active}
+                      tooltip={item.title}
+                      className="rounded-xl h-11 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground hover:bg-secondary"
+                    >
+                      <a href={item.url} className="flex items-center gap-3">
+                        <item.icon className="h-5 w-5 shrink-0" />
+                        {!collapsed && (
+                          <span className="text-sm font-medium">{item.title}</span>
+                        )}
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

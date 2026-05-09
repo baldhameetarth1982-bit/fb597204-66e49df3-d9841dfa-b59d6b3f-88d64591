@@ -1,13 +1,22 @@
-import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
-import { ROLES } from "@/config/roles";
+import { Outlet, createFileRoute, Navigate } from "@tanstack/react-router";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
-/** Resident layout. All `/app/*` routes require RESIDENT role. Mobile-first. */
+/** Resident layout. All `/app/*` routes require an authenticated user. */
 export const Route = createFileRoute("/_resident")({
-  beforeLoad: () => {
-    const role = null as string | null;
-    if (role && role !== ROLES.RESIDENT) {
-      throw redirect({ to: "/login" });
-    }
-  },
-  component: () => <Outlet />,
+  component: ResidentGuard,
 });
+
+function ResidentGuard() {
+  const { isLoading, isAuthenticated } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] grid place-items-center text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+  if (!isAuthenticated) return <Navigate to="/login" />;
+  return <Outlet />;
+}
