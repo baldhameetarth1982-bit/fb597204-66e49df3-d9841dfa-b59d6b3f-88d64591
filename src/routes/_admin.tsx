@@ -1,18 +1,26 @@
-import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
-import { ROLES } from "@/config/roles";
+import { Outlet, createFileRoute, Navigate } from "@tanstack/react-router";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { ROLES, ROLE_HOME } from "@/config/roles";
 
-/**
- * Super Admin layout. All `/admin/*` routes require SUPER_ADMIN role.
- * Auth wiring is stubbed — replace `getCurrentUser()` with real session lookup
- * once Lovable Cloud auth is enabled.
- */
+/** Super Admin layout. All `/admin/*` routes require SUPER_ADMIN role. */
 export const Route = createFileRoute("/_admin")({
-  beforeLoad: () => {
-    // TODO: read from real session. Currently a no-op stub so build passes.
-    const role = null as string | null;
-    if (role && role !== ROLES.SUPER_ADMIN) {
-      throw redirect({ to: "/login" });
-    }
-  },
-  component: () => <Outlet />,
+  component: AdminGuard,
 });
+
+function AdminGuard() {
+  const { isLoading, isAuthenticated, primaryRole, hasRole } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] grid place-items-center text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!hasRole(ROLES.SUPER_ADMIN)) {
+    return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/login"} />;
+  }
+  return <Outlet />;
+}
