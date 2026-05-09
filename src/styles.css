@@ -150,8 +150,24 @@
     border-color: var(--color-border);
   }
 
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-feature-settings: "cv11", "ss01";
+    /* Generous default line-height for elderly-friendly readability */
+    line-height: 1.6;
+  }
+
+  /* Larger default tap targets — important for accessibility */
+  button,
+  [role="button"] {
+    min-height: 2.5rem;
   }
 }
+
