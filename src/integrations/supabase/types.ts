@@ -14,6 +14,133 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocks: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          society_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          society_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          society_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocks_society_id_fkey"
+            columns: ["society_id"]
+            isOneToOne: false
+            referencedRelation: "societies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flat_residents: {
+        Row: {
+          created_at: string
+          flat_id: string
+          id: string
+          is_primary: boolean
+          moved_in_at: string | null
+          relationship: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          flat_id: string
+          id?: string
+          is_primary?: boolean
+          moved_in_at?: string | null
+          relationship?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          flat_id?: string
+          id?: string
+          is_primary?: boolean
+          moved_in_at?: string | null
+          relationship?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flat_residents_flat_id_fkey"
+            columns: ["flat_id"]
+            isOneToOne: false
+            referencedRelation: "flats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flats: {
+        Row: {
+          area_sqft: number | null
+          block_id: string
+          created_at: string
+          flat_number: string
+          floor: number | null
+          id: string
+          society_id: string
+          status: string
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          area_sqft?: number | null
+          block_id: string
+          created_at?: string
+          flat_number: string
+          floor?: number | null
+          id?: string
+          society_id: string
+          status?: string
+          type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          area_sqft?: number | null
+          block_id?: string
+          created_at?: string
+          flat_number?: string
+          floor?: number | null
+          id?: string
+          society_id?: string
+          status?: string
+          type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flats_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
+            referencedRelation: "blocks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flats_society_id_fkey"
+            columns: ["society_id"]
+            isOneToOne: false
+            referencedRelation: "societies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
