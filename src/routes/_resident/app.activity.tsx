@@ -1,0 +1,102 @@
+import { createFileRoute } from "@tanstack/react-router";
+import {
+  Calculator,
+  Vote,
+  Bell,
+  FileText,
+  ChevronRight,
+  Megaphone,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+export const Route = createFileRoute("/_resident/app/activity")({
+  head: () => ({ meta: [{ title: "Activity — SocioHub" }] }),
+  component: ActivityScreen,
+});
+
+const tools = [
+  {
+    title: "Accounting",
+    desc: "Society ledgers, expenses, audits",
+    icon: Calculator,
+    accent: "bg-primary/10 text-primary",
+  },
+  {
+    title: "Elections / Polls",
+    desc: "Vote on community decisions",
+    icon: Vote,
+    accent: "bg-success/10 text-success",
+    badge: "Live",
+  },
+];
+
+const recent = [
+  { title: "AGM minutes published", time: "2h ago", icon: FileText },
+  { title: "Lift maintenance completed", time: "Yesterday", icon: Bell },
+  { title: "New notice from committee", time: "2 days ago", icon: Megaphone },
+];
+
+function ActivityScreen() {
+  return (
+    <div className="px-5 py-6 space-y-6">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">Activity</h1>
+        <p className="text-sm text-muted-foreground">Governance, finance & updates</p>
+      </header>
+
+      <section className="space-y-3">
+        {tools.map(({ title, desc, icon: Icon, accent, badge }) => (
+          <button
+            key={title}
+            type="button"
+            className="w-full text-left active:scale-[0.99] transition-transform"
+          >
+            <Card className="rounded-2xl">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className={`h-12 w-12 rounded-2xl grid place-items-center ${accent}`}>
+                  <Icon className="h-6 w-6" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold">{title}</p>
+                    {badge && (
+                      <Badge className="rounded-full text-[10px] bg-success text-success-foreground">
+                        {badge}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{desc}</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </button>
+        ))}
+      </section>
+
+      <section>
+        <h2 className="px-1 mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          Recent
+        </h2>
+        <Card className="rounded-2xl">
+          <CardContent className="p-2">
+            <ul className="divide-y divide-border">
+              {recent.map(({ title, time, icon: Icon }) => (
+                <li key={title} className="flex items-center gap-3 p-3">
+                  <span className="h-9 w-9 rounded-xl bg-secondary grid place-items-center text-primary">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{title}</p>
+                    <p className="text-xs text-muted-foreground">{time}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </section>
+    </div>
+  );
+}

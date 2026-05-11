@@ -1,0 +1,79 @@
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { Building2, Users, ArrowRight } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
+
+export const Route = createFileRoute("/onboarding/")({
+  head: () => ({ meta: [{ title: "Get started — SocioHub" }] }),
+  component: OnboardingChoice,
+});
+
+function OnboardingChoice() {
+  const { profile } = useAuth();
+  const firstName = profile?.full_name?.split(" ")[0] ?? "there";
+
+  return (
+    <div className="px-5 py-8 space-y-6">
+      <header className="space-y-1">
+        <p className="text-sm text-muted-foreground">Welcome, {firstName} 👋</p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          How would you like to get started?
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Choose one to continue. You can always switch later.
+        </p>
+      </header>
+
+      <div className="space-y-4">
+        <Link to="/onboarding/create" className="block group">
+          <Card className="rounded-3xl border-0 shadow-md bg-gradient-to-br from-primary to-primary/85 text-primary-foreground transition-transform group-active:scale-[0.98]">
+            <CardContent className="p-6 flex items-start gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-primary-foreground/15 grid place-items-center text-3xl">
+                🏢
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  Create Society
+                </h2>
+                <p className="mt-1 text-sm opacity-90">
+                  Set up your building, add blocks & flats, and invite residents.
+                </p>
+                <span className="mt-3 inline-flex items-center text-sm font-medium opacity-95">
+                  Get started <ArrowRight className="h-4 w-4 ml-1" />
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link to="/onboarding/join" className="block group">
+          <Card className="rounded-3xl border border-border shadow-sm bg-background transition-transform group-active:scale-[0.98]">
+            <CardContent className="p-6 flex items-start gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 grid place-items-center text-3xl">
+                🏘️
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-semibold text-foreground">
+                  Join Society
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Enter an invite code from your society admin to join your flat.
+                </p>
+                <span className="mt-3 inline-flex items-center text-sm font-medium text-primary">
+                  Enter code <ArrowRight className="h-4 w-4 ml-1" />
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      <div className="flex items-center gap-3 pt-2">
+        <Building2 className="h-4 w-4 text-muted-foreground" />
+        <p className="text-xs text-muted-foreground">
+          Trusted by modern societies — premium experience, mobile-first.
+        </p>
+      </div>
+    </div>
+  );
+}

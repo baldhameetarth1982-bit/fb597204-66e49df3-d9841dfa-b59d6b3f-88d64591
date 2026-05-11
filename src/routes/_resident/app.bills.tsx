@@ -1,0 +1,100 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Receipt, Download, Clock, CheckCircle2, ArrowRight } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+export const Route = createFileRoute("/_resident/app/bills")({
+  head: () => ({ meta: [{ title: "Bills — SocioHub" }] }),
+  component: BillsScreen,
+});
+
+const bills = [
+  { id: "1", title: "May 2026 Maintenance", amount: 4500, due: "10 May 2026", status: "due" },
+  { id: "2", title: "April 2026 Maintenance", amount: 4500, due: "10 Apr 2026", status: "paid" },
+  { id: "3", title: "March 2026 Maintenance", amount: 4500, due: "10 Mar 2026", status: "paid" },
+  { id: "4", title: "Annual Sinking Fund", amount: 6000, due: "01 Apr 2026", status: "paid" },
+];
+
+function BillsScreen() {
+  return (
+    <div className="px-5 py-6 space-y-6">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">Bills</h1>
+        <p className="text-sm text-muted-foreground">Your maintenance & society dues</p>
+      </header>
+
+      {/* Outstanding hero */}
+      <Card className="rounded-3xl border-0 shadow-md bg-gradient-to-br from-primary to-primary/85 text-primary-foreground">
+        <CardContent className="p-6">
+          <p className="text-sm opacity-80">Outstanding</p>
+          <p className="mt-1 text-4xl font-semibold tabular-nums">₹4,500</p>
+          <p className="mt-1 text-xs opacity-80">Due 10 May 2026</p>
+          <Button
+            asChild
+            className="mt-5 w-full h-12 rounded-xl bg-background text-primary hover:bg-background/90 font-semibold"
+          >
+            <Link to="/app/dues">
+              Pay now <ArrowRight className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <section>
+        <h2 className="px-1 mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          History
+        </h2>
+        <div className="space-y-3">
+          {bills.map((b) => {
+            const paid = b.status === "paid";
+            return (
+              <Card key={b.id} className="rounded-2xl">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div
+                    className={`h-11 w-11 rounded-xl grid place-items-center ${
+                      paid ? "bg-success/10 text-success" : "bg-primary/10 text-primary"
+                    }`}
+                  >
+                    {paid ? (
+                      <CheckCircle2 className="h-5 w-5" />
+                    ) : (
+                      <Clock className="h-5 w-5" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{b.title}</p>
+                    <p className="text-xs text-muted-foreground">{b.due}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold tabular-nums">
+                      ₹{b.amount.toLocaleString("en-IN")}
+                    </p>
+                    {paid ? (
+                      <Badge variant="secondary" className="mt-1 rounded-full text-[10px]">
+                        Paid
+                      </Badge>
+                    ) : (
+                      <Badge className="mt-1 rounded-full text-[10px] bg-primary text-primary-foreground">
+                        Due
+                      </Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </section>
+
+      <Button variant="outline" className="w-full h-12 rounded-xl">
+        <Download className="h-4 w-4 mr-2" /> Download statement
+      </Button>
+
+      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        <Receipt className="h-3.5 w-3.5" />
+        Powered by SocioHub
+      </div>
+    </div>
+  );
+}

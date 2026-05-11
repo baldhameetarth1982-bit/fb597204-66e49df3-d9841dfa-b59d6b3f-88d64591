@@ -15,6 +15,8 @@ import { Route as ResidentRouteImport } from './routes/_resident'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OnboardingIndexRouteImport } from './routes/onboarding.index'
+import { Route as OnboardingJoinRouteImport } from './routes/onboarding.join'
 import { Route as OnboardingCreateRouteImport } from './routes/onboarding.create'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
@@ -23,11 +25,14 @@ import { Route as SocietySocietyResidentsRouteImport } from './routes/_society/s
 import { Route as SocietySocietyFlatsRouteImport } from './routes/_society/society.flats'
 import { Route as SocietySocietyDashboardRouteImport } from './routes/_society/society.dashboard'
 import { Route as SocietySocietyBlocksRouteImport } from './routes/_society/society.blocks'
+import { Route as ResidentAppServicesRouteImport } from './routes/_resident/app.services'
 import { Route as ResidentAppProfileRouteImport } from './routes/_resident/app.profile'
 import { Route as ResidentAppNoticesRouteImport } from './routes/_resident/app.notices'
 import { Route as ResidentAppHelpdeskRouteImport } from './routes/_resident/app.helpdesk'
 import { Route as ResidentAppDuesRouteImport } from './routes/_resident/app.dues'
 import { Route as ResidentAppDashboardRouteImport } from './routes/_resident/app.dashboard'
+import { Route as ResidentAppBillsRouteImport } from './routes/_resident/app.bills'
+import { Route as ResidentAppActivityRouteImport } from './routes/_resident/app.activity'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin/admin.dashboard'
 
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -55,6 +60,16 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OnboardingRoute,
+} as any)
+const OnboardingJoinRoute = OnboardingJoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => OnboardingRoute,
 } as any)
 const OnboardingCreateRoute = OnboardingCreateRouteImport.update({
   id: '/create',
@@ -96,6 +111,11 @@ const SocietySocietyBlocksRoute = SocietySocietyBlocksRouteImport.update({
   path: '/society/blocks',
   getParentRoute: () => SocietyRoute,
 } as any)
+const ResidentAppServicesRoute = ResidentAppServicesRouteImport.update({
+  id: '/app/services',
+  path: '/app/services',
+  getParentRoute: () => ResidentRoute,
+} as any)
 const ResidentAppProfileRoute = ResidentAppProfileRouteImport.update({
   id: '/app/profile',
   path: '/app/profile',
@@ -121,6 +141,16 @@ const ResidentAppDashboardRoute = ResidentAppDashboardRouteImport.update({
   path: '/app/dashboard',
   getParentRoute: () => ResidentRoute,
 } as any)
+const ResidentAppBillsRoute = ResidentAppBillsRouteImport.update({
+  id: '/app/bills',
+  path: '/app/bills',
+  getParentRoute: () => ResidentRoute,
+} as any)
+const ResidentAppActivityRoute = ResidentAppActivityRouteImport.update({
+  id: '/app/activity',
+  path: '/app/activity',
+  getParentRoute: () => ResidentRoute,
+} as any)
 const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
   id: '/admin/dashboard',
   path: '/admin/dashboard',
@@ -134,12 +164,17 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/onboarding/create': typeof OnboardingCreateRoute
+  '/onboarding/join': typeof OnboardingJoinRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/app/activity': typeof ResidentAppActivityRoute
+  '/app/bills': typeof ResidentAppBillsRoute
   '/app/dashboard': typeof ResidentAppDashboardRoute
   '/app/dues': typeof ResidentAppDuesRoute
   '/app/helpdesk': typeof ResidentAppHelpdeskRoute
   '/app/notices': typeof ResidentAppNoticesRoute
   '/app/profile': typeof ResidentAppProfileRoute
+  '/app/services': typeof ResidentAppServicesRoute
   '/society/blocks': typeof SocietySocietyBlocksRoute
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/flats': typeof SocietySocietyFlatsRoute
@@ -147,17 +182,21 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/onboarding': typeof OnboardingRouteWithChildren
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/onboarding/create': typeof OnboardingCreateRoute
+  '/onboarding/join': typeof OnboardingJoinRoute
+  '/onboarding': typeof OnboardingIndexRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/app/activity': typeof ResidentAppActivityRoute
+  '/app/bills': typeof ResidentAppBillsRoute
   '/app/dashboard': typeof ResidentAppDashboardRoute
   '/app/dues': typeof ResidentAppDuesRoute
   '/app/helpdesk': typeof ResidentAppHelpdeskRoute
   '/app/notices': typeof ResidentAppNoticesRoute
   '/app/profile': typeof ResidentAppProfileRoute
+  '/app/services': typeof ResidentAppServicesRoute
   '/society/blocks': typeof SocietySocietyBlocksRoute
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/flats': typeof SocietySocietyFlatsRoute
@@ -175,12 +214,17 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/onboarding/create': typeof OnboardingCreateRoute
+  '/onboarding/join': typeof OnboardingJoinRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/_resident/app/activity': typeof ResidentAppActivityRoute
+  '/_resident/app/bills': typeof ResidentAppBillsRoute
   '/_resident/app/dashboard': typeof ResidentAppDashboardRoute
   '/_resident/app/dues': typeof ResidentAppDuesRoute
   '/_resident/app/helpdesk': typeof ResidentAppHelpdeskRoute
   '/_resident/app/notices': typeof ResidentAppNoticesRoute
   '/_resident/app/profile': typeof ResidentAppProfileRoute
+  '/_resident/app/services': typeof ResidentAppServicesRoute
   '/_society/society/blocks': typeof SocietySocietyBlocksRoute
   '/_society/society/dashboard': typeof SocietySocietyDashboardRoute
   '/_society/society/flats': typeof SocietySocietyFlatsRoute
@@ -195,12 +239,17 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/onboarding/create'
+    | '/onboarding/join'
+    | '/onboarding/'
     | '/admin/dashboard'
+    | '/app/activity'
+    | '/app/bills'
     | '/app/dashboard'
     | '/app/dues'
     | '/app/helpdesk'
     | '/app/notices'
     | '/app/profile'
+    | '/app/services'
     | '/society/blocks'
     | '/society/dashboard'
     | '/society/flats'
@@ -208,17 +257,21 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/onboarding'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
     | '/onboarding/create'
+    | '/onboarding/join'
+    | '/onboarding'
     | '/admin/dashboard'
+    | '/app/activity'
+    | '/app/bills'
     | '/app/dashboard'
     | '/app/dues'
     | '/app/helpdesk'
     | '/app/notices'
     | '/app/profile'
+    | '/app/services'
     | '/society/blocks'
     | '/society/dashboard'
     | '/society/flats'
@@ -235,12 +288,17 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_auth/reset-password'
     | '/onboarding/create'
+    | '/onboarding/join'
+    | '/onboarding/'
     | '/_admin/admin/dashboard'
+    | '/_resident/app/activity'
+    | '/_resident/app/bills'
     | '/_resident/app/dashboard'
     | '/_resident/app/dues'
     | '/_resident/app/helpdesk'
     | '/_resident/app/notices'
     | '/_resident/app/profile'
+    | '/_resident/app/services'
     | '/_society/society/blocks'
     | '/_society/society/dashboard'
     | '/_society/society/flats'
@@ -300,6 +358,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding/': {
+      id: '/onboarding/'
+      path: '/'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof OnboardingIndexRouteImport
+      parentRoute: typeof OnboardingRoute
+    }
+    '/onboarding/join': {
+      id: '/onboarding/join'
+      path: '/join'
+      fullPath: '/onboarding/join'
+      preLoaderRoute: typeof OnboardingJoinRouteImport
+      parentRoute: typeof OnboardingRoute
+    }
     '/onboarding/create': {
       id: '/onboarding/create'
       path: '/create'
@@ -356,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SocietySocietyBlocksRouteImport
       parentRoute: typeof SocietyRoute
     }
+    '/_resident/app/services': {
+      id: '/_resident/app/services'
+      path: '/app/services'
+      fullPath: '/app/services'
+      preLoaderRoute: typeof ResidentAppServicesRouteImport
+      parentRoute: typeof ResidentRoute
+    }
     '/_resident/app/profile': {
       id: '/_resident/app/profile'
       path: '/app/profile'
@@ -389,6 +468,20 @@ declare module '@tanstack/react-router' {
       path: '/app/dashboard'
       fullPath: '/app/dashboard'
       preLoaderRoute: typeof ResidentAppDashboardRouteImport
+      parentRoute: typeof ResidentRoute
+    }
+    '/_resident/app/bills': {
+      id: '/_resident/app/bills'
+      path: '/app/bills'
+      fullPath: '/app/bills'
+      preLoaderRoute: typeof ResidentAppBillsRouteImport
+      parentRoute: typeof ResidentRoute
+    }
+    '/_resident/app/activity': {
+      id: '/_resident/app/activity'
+      path: '/app/activity'
+      fullPath: '/app/activity'
+      preLoaderRoute: typeof ResidentAppActivityRouteImport
       parentRoute: typeof ResidentRoute
     }
     '/_admin/admin/dashboard': {
@@ -426,19 +519,25 @@ const AuthRouteChildren: AuthRouteChildren = {
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface ResidentRouteChildren {
+  ResidentAppActivityRoute: typeof ResidentAppActivityRoute
+  ResidentAppBillsRoute: typeof ResidentAppBillsRoute
   ResidentAppDashboardRoute: typeof ResidentAppDashboardRoute
   ResidentAppDuesRoute: typeof ResidentAppDuesRoute
   ResidentAppHelpdeskRoute: typeof ResidentAppHelpdeskRoute
   ResidentAppNoticesRoute: typeof ResidentAppNoticesRoute
   ResidentAppProfileRoute: typeof ResidentAppProfileRoute
+  ResidentAppServicesRoute: typeof ResidentAppServicesRoute
 }
 
 const ResidentRouteChildren: ResidentRouteChildren = {
+  ResidentAppActivityRoute: ResidentAppActivityRoute,
+  ResidentAppBillsRoute: ResidentAppBillsRoute,
   ResidentAppDashboardRoute: ResidentAppDashboardRoute,
   ResidentAppDuesRoute: ResidentAppDuesRoute,
   ResidentAppHelpdeskRoute: ResidentAppHelpdeskRoute,
   ResidentAppNoticesRoute: ResidentAppNoticesRoute,
   ResidentAppProfileRoute: ResidentAppProfileRoute,
+  ResidentAppServicesRoute: ResidentAppServicesRoute,
 }
 
 const ResidentRouteWithChildren = ResidentRoute._addFileChildren(
@@ -464,10 +563,14 @@ const SocietyRouteWithChildren =
 
 interface OnboardingRouteChildren {
   OnboardingCreateRoute: typeof OnboardingCreateRoute
+  OnboardingJoinRoute: typeof OnboardingJoinRoute
+  OnboardingIndexRoute: typeof OnboardingIndexRoute
 }
 
 const OnboardingRouteChildren: OnboardingRouteChildren = {
   OnboardingCreateRoute: OnboardingCreateRoute,
+  OnboardingJoinRoute: OnboardingJoinRoute,
+  OnboardingIndexRoute: OnboardingIndexRoute,
 }
 
 const OnboardingRouteWithChildren = OnboardingRoute._addFileChildren(
