@@ -21,6 +21,7 @@ import { Route as OnboardingCreateRouteImport } from './routes/onboarding.create
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
+import { Route as SocietySocietyTeamRouteImport } from './routes/_society/society.team'
 import { Route as SocietySocietyResidentsRouteImport } from './routes/_society/society.residents'
 import { Route as SocietySocietyFlatsRouteImport } from './routes/_society/society.flats'
 import { Route as SocietySocietyDashboardRouteImport } from './routes/_society/society.dashboard'
@@ -90,6 +91,11 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
   getParentRoute: () => AuthRoute,
+} as any)
+const SocietySocietyTeamRoute = SocietySocietyTeamRouteImport.update({
+  id: '/society/team',
+  path: '/society/team',
+  getParentRoute: () => SocietyRoute,
 } as any)
 const SocietySocietyResidentsRoute = SocietySocietyResidentsRouteImport.update({
   id: '/society/residents',
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/flats': typeof SocietySocietyFlatsRoute
   '/society/residents': typeof SocietySocietyResidentsRoute
+  '/society/team': typeof SocietySocietyTeamRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -201,6 +208,7 @@ export interface FileRoutesByTo {
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/flats': typeof SocietySocietyFlatsRoute
   '/society/residents': typeof SocietySocietyResidentsRoute
+  '/society/team': typeof SocietySocietyTeamRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/_society/society/dashboard': typeof SocietySocietyDashboardRoute
   '/_society/society/flats': typeof SocietySocietyFlatsRoute
   '/_society/society/residents': typeof SocietySocietyResidentsRoute
+  '/_society/society/team': typeof SocietySocietyTeamRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -254,6 +263,7 @@ export interface FileRouteTypes {
     | '/society/dashboard'
     | '/society/flats'
     | '/society/residents'
+    | '/society/team'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/society/dashboard'
     | '/society/flats'
     | '/society/residents'
+    | '/society/team'
   id:
     | '__root__'
     | '/'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/_society/society/dashboard'
     | '/_society/society/flats'
     | '/_society/society/residents'
+    | '/_society/society/team'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -399,6 +411,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/forgot-password'
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/_society/society/team': {
+      id: '/_society/society/team'
+      path: '/society/team'
+      fullPath: '/society/team'
+      preLoaderRoute: typeof SocietySocietyTeamRouteImport
+      parentRoute: typeof SocietyRoute
     }
     '/_society/society/residents': {
       id: '/_society/society/residents'
@@ -549,6 +568,7 @@ interface SocietyRouteChildren {
   SocietySocietyDashboardRoute: typeof SocietySocietyDashboardRoute
   SocietySocietyFlatsRoute: typeof SocietySocietyFlatsRoute
   SocietySocietyResidentsRoute: typeof SocietySocietyResidentsRoute
+  SocietySocietyTeamRoute: typeof SocietySocietyTeamRoute
 }
 
 const SocietyRouteChildren: SocietyRouteChildren = {
@@ -556,6 +576,7 @@ const SocietyRouteChildren: SocietyRouteChildren = {
   SocietySocietyDashboardRoute: SocietySocietyDashboardRoute,
   SocietySocietyFlatsRoute: SocietySocietyFlatsRoute,
   SocietySocietyResidentsRoute: SocietySocietyResidentsRoute,
+  SocietySocietyTeamRoute: SocietySocietyTeamRoute,
 }
 
 const SocietyRouteWithChildren =
@@ -588,3 +609,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
