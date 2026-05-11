@@ -289,6 +289,7 @@ export type Database = {
           city: string | null
           created_at: string
           id: string
+          invite_code: string | null
           logo_url: string | null
           name: string
           pincode: string | null
@@ -303,6 +304,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           id?: string
+          invite_code?: string | null
           logo_url?: string | null
           name: string
           pincode?: string | null
@@ -317,6 +319,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           id?: string
+          invite_code?: string | null
           logo_url?: string | null
           name?: string
           pincode?: string | null
@@ -330,6 +333,7 @@ export type Database = {
       }
       user_roles: {
         Row: {
+          block_id: string | null
           created_at: string
           id: string
           role: Database["public"]["Enums"]["app_role"]
@@ -337,6 +341,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          block_id?: string | null
           created_at?: string
           id?: string
           role: Database["public"]["Enums"]["app_role"]
@@ -344,6 +349,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          block_id?: string | null
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
@@ -351,6 +357,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_roles_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
+            referencedRelation: "blocks"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_roles_society_id_fkey"
             columns: ["society_id"]
@@ -365,6 +378,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_society_by_code: {
+        Args: { _code: string }
+        Returns: {
+          city: string
+          id: string
+          name: string
+          state: string
+        }[]
+      }
+      generate_society_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -372,6 +395,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_block_admin: {
+        Args: { _block_id: string; _user_id: string }
+        Returns: boolean
+      }
+      join_society_with_code: { Args: { _code: string }; Returns: string }
     }
     Enums: {
       app_role:
