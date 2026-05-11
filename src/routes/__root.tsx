@@ -134,15 +134,17 @@ function ShellSwitcher() {
     return <Outlet />;
   }
 
-  // Resident shell: bottom-tab nav on mobile, simple top header on desktop
-  if (pathname.startsWith("/app")) {
+  // Resident shell: native mobile app frame, fixed bottom nav
+  if (pathname.startsWith("/app") || pathname.startsWith("/onboarding")) {
     return (
-      <div className="min-h-screen flex flex-col w-full bg-background">
-        <AppHeader withSidebarTrigger={false} />
-        <main className="flex-1 pb-20 md:pb-0">
-          <Outlet />
-        </main>
-        <ResidentBottomNav />
+      <div className="min-h-screen w-full bg-secondary/40">
+        <div className="relative mx-auto w-full max-w-[420px] min-h-screen bg-background shadow-xl flex flex-col">
+          <AppHeader withSidebarTrigger={false} />
+          <main className="flex-1 pb-24">
+            <Outlet />
+          </main>
+          {pathname.startsWith("/app") && <ResidentBottomNav />}
+        </div>
       </div>
     );
   }

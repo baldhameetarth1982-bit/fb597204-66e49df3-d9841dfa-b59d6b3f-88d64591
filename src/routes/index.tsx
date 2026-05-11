@@ -18,7 +18,7 @@ export const Route = createFileRoute("/")({
 });
 
 function IndexRedirect() {
-  const { isLoading, isAuthenticated, primaryRole } = useAuth();
+  const { isLoading, isAuthenticated, primaryRole, profile } = useAuth();
 
   if (isLoading) {
     return (
@@ -30,10 +30,14 @@ function IndexRedirect() {
 
   if (!isAuthenticated) return <Navigate to="/login" />;
 
+  // Residents (or users without a society yet) land on the onboarding chooser.
+  if (!profile?.society_id && primaryRole !== "super_admin") {
+    return <Navigate to="/onboarding" />;
+  }
+
   if (primaryRole) {
     return <Navigate to={ROLE_HOME[primaryRole]} />;
   }
 
-  // Authenticated but no role assigned yet — fall back to resident dashboard.
-  return <Navigate to="/app/dashboard" />;
+  return <Navigate to="/onboarding" />;
 }
