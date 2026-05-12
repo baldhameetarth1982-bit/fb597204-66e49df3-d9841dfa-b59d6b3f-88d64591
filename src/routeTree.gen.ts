@@ -26,6 +26,7 @@ import { Route as SocietySocietyResidentsRouteImport } from './routes/_society/s
 import { Route as SocietySocietyFlatsRouteImport } from './routes/_society/society.flats'
 import { Route as SocietySocietyDashboardRouteImport } from './routes/_society/society.dashboard'
 import { Route as SocietySocietyBlocksRouteImport } from './routes/_society/society.blocks'
+import { Route as ResidentAppVisitorsRouteImport } from './routes/_resident/app.visitors'
 import { Route as ResidentAppServicesRouteImport } from './routes/_resident/app.services'
 import { Route as ResidentAppProfileRouteImport } from './routes/_resident/app.profile'
 import { Route as ResidentAppNoticesRouteImport } from './routes/_resident/app.notices'
@@ -118,6 +119,11 @@ const SocietySocietyBlocksRoute = SocietySocietyBlocksRouteImport.update({
   path: '/society/blocks',
   getParentRoute: () => SocietyRoute,
 } as any)
+const ResidentAppVisitorsRoute = ResidentAppVisitorsRouteImport.update({
+  id: '/app/visitors',
+  path: '/app/visitors',
+  getParentRoute: () => ResidentRoute,
+} as any)
 const ResidentAppServicesRoute = ResidentAppServicesRouteImport.update({
   id: '/app/services',
   path: '/app/services',
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/app/notices': typeof ResidentAppNoticesRoute
   '/app/profile': typeof ResidentAppProfileRoute
   '/app/services': typeof ResidentAppServicesRoute
+  '/app/visitors': typeof ResidentAppVisitorsRoute
   '/society/blocks': typeof SocietySocietyBlocksRoute
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/flats': typeof SocietySocietyFlatsRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/app/notices': typeof ResidentAppNoticesRoute
   '/app/profile': typeof ResidentAppProfileRoute
   '/app/services': typeof ResidentAppServicesRoute
+  '/app/visitors': typeof ResidentAppVisitorsRoute
   '/society/blocks': typeof SocietySocietyBlocksRoute
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/flats': typeof SocietySocietyFlatsRoute
@@ -242,6 +250,7 @@ export interface FileRoutesById {
   '/_resident/app/notices': typeof ResidentAppNoticesRoute
   '/_resident/app/profile': typeof ResidentAppProfileRoute
   '/_resident/app/services': typeof ResidentAppServicesRoute
+  '/_resident/app/visitors': typeof ResidentAppVisitorsRoute
   '/_society/society/blocks': typeof SocietySocietyBlocksRoute
   '/_society/society/dashboard': typeof SocietySocietyDashboardRoute
   '/_society/society/flats': typeof SocietySocietyFlatsRoute
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/app/notices'
     | '/app/profile'
     | '/app/services'
+    | '/app/visitors'
     | '/society/blocks'
     | '/society/dashboard'
     | '/society/flats'
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/app/notices'
     | '/app/profile'
     | '/app/services'
+    | '/app/visitors'
     | '/society/blocks'
     | '/society/dashboard'
     | '/society/flats'
@@ -322,6 +333,7 @@ export interface FileRouteTypes {
     | '/_resident/app/notices'
     | '/_resident/app/profile'
     | '/_resident/app/services'
+    | '/_resident/app/visitors'
     | '/_society/society/blocks'
     | '/_society/society/dashboard'
     | '/_society/society/flats'
@@ -459,6 +471,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SocietySocietyBlocksRouteImport
       parentRoute: typeof SocietyRoute
     }
+    '/_resident/app/visitors': {
+      id: '/_resident/app/visitors'
+      path: '/app/visitors'
+      fullPath: '/app/visitors'
+      preLoaderRoute: typeof ResidentAppVisitorsRouteImport
+      parentRoute: typeof ResidentRoute
+    }
     '/_resident/app/services': {
       id: '/_resident/app/services'
       path: '/app/services'
@@ -566,6 +585,7 @@ interface ResidentRouteChildren {
   ResidentAppNoticesRoute: typeof ResidentAppNoticesRoute
   ResidentAppProfileRoute: typeof ResidentAppProfileRoute
   ResidentAppServicesRoute: typeof ResidentAppServicesRoute
+  ResidentAppVisitorsRoute: typeof ResidentAppVisitorsRoute
 }
 
 const ResidentRouteChildren: ResidentRouteChildren = {
@@ -578,6 +598,7 @@ const ResidentRouteChildren: ResidentRouteChildren = {
   ResidentAppNoticesRoute: ResidentAppNoticesRoute,
   ResidentAppProfileRoute: ResidentAppProfileRoute,
   ResidentAppServicesRoute: ResidentAppServicesRoute,
+  ResidentAppVisitorsRoute: ResidentAppVisitorsRoute,
 }
 
 const ResidentRouteWithChildren = ResidentRoute._addFileChildren(
