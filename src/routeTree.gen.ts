@@ -24,6 +24,7 @@ import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-pa
 import { Route as SocietySocietyTeamRouteImport } from './routes/_society/society.team'
 import { Route as SocietySocietyResidentsRouteImport } from './routes/_society/society.residents'
 import { Route as SocietySocietyPollsRouteImport } from './routes/_society/society.polls'
+import { Route as SocietySocietyLedgerRouteImport } from './routes/_society/society.ledger'
 import { Route as SocietySocietyFlatsRouteImport } from './routes/_society/society.flats'
 import { Route as SocietySocietyDashboardRouteImport } from './routes/_society/society.dashboard'
 import { Route as SocietySocietyBlocksRouteImport } from './routes/_society/society.blocks'
@@ -111,6 +112,11 @@ const SocietySocietyResidentsRoute = SocietySocietyResidentsRouteImport.update({
 const SocietySocietyPollsRoute = SocietySocietyPollsRouteImport.update({
   id: '/society/polls',
   path: '/society/polls',
+  getParentRoute: () => SocietyRoute,
+} as any)
+const SocietySocietyLedgerRoute = SocietySocietyLedgerRouteImport.update({
+  id: '/society/ledger',
+  path: '/society/ledger',
   getParentRoute: () => SocietyRoute,
 } as any)
 const SocietySocietyFlatsRoute = SocietySocietyFlatsRouteImport.update({
@@ -225,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/society/blocks': typeof SocietySocietyBlocksRoute
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/flats': typeof SocietySocietyFlatsRoute
+  '/society/ledger': typeof SocietySocietyLedgerRoute
   '/society/polls': typeof SocietySocietyPollsRoute
   '/society/residents': typeof SocietySocietyResidentsRoute
   '/society/team': typeof SocietySocietyTeamRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/society/blocks': typeof SocietySocietyBlocksRoute
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/flats': typeof SocietySocietyFlatsRoute
+  '/society/ledger': typeof SocietySocietyLedgerRoute
   '/society/polls': typeof SocietySocietyPollsRoute
   '/society/residents': typeof SocietySocietyResidentsRoute
   '/society/team': typeof SocietySocietyTeamRoute
@@ -289,6 +297,7 @@ export interface FileRoutesById {
   '/_society/society/blocks': typeof SocietySocietyBlocksRoute
   '/_society/society/dashboard': typeof SocietySocietyDashboardRoute
   '/_society/society/flats': typeof SocietySocietyFlatsRoute
+  '/_society/society/ledger': typeof SocietySocietyLedgerRoute
   '/_society/society/polls': typeof SocietySocietyPollsRoute
   '/_society/society/residents': typeof SocietySocietyResidentsRoute
   '/_society/society/team': typeof SocietySocietyTeamRoute
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/society/blocks'
     | '/society/dashboard'
     | '/society/flats'
+    | '/society/ledger'
     | '/society/polls'
     | '/society/residents'
     | '/society/team'
@@ -350,6 +360,7 @@ export interface FileRouteTypes {
     | '/society/blocks'
     | '/society/dashboard'
     | '/society/flats'
+    | '/society/ledger'
     | '/society/polls'
     | '/society/residents'
     | '/society/team'
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/_society/society/blocks'
     | '/_society/society/dashboard'
     | '/_society/society/flats'
+    | '/_society/society/ledger'
     | '/_society/society/polls'
     | '/_society/society/residents'
     | '/_society/society/team'
@@ -503,6 +515,13 @@ declare module '@tanstack/react-router' {
       path: '/society/polls'
       fullPath: '/society/polls'
       preLoaderRoute: typeof SocietySocietyPollsRouteImport
+      parentRoute: typeof SocietyRoute
+    }
+    '/_society/society/ledger': {
+      id: '/_society/society/ledger'
+      path: '/society/ledger'
+      fullPath: '/society/ledger'
+      preLoaderRoute: typeof SocietySocietyLedgerRouteImport
       parentRoute: typeof SocietyRoute
     }
     '/_society/society/flats': {
@@ -691,6 +710,7 @@ interface SocietyRouteChildren {
   SocietySocietyBlocksRoute: typeof SocietySocietyBlocksRoute
   SocietySocietyDashboardRoute: typeof SocietySocietyDashboardRoute
   SocietySocietyFlatsRoute: typeof SocietySocietyFlatsRoute
+  SocietySocietyLedgerRoute: typeof SocietySocietyLedgerRoute
   SocietySocietyPollsRoute: typeof SocietySocietyPollsRoute
   SocietySocietyResidentsRoute: typeof SocietySocietyResidentsRoute
   SocietySocietyTeamRoute: typeof SocietySocietyTeamRoute
@@ -700,6 +720,7 @@ const SocietyRouteChildren: SocietyRouteChildren = {
   SocietySocietyBlocksRoute: SocietySocietyBlocksRoute,
   SocietySocietyDashboardRoute: SocietySocietyDashboardRoute,
   SocietySocietyFlatsRoute: SocietySocietyFlatsRoute,
+  SocietySocietyLedgerRoute: SocietySocietyLedgerRoute,
   SocietySocietyPollsRoute: SocietySocietyPollsRoute,
   SocietySocietyResidentsRoute: SocietySocietyResidentsRoute,
   SocietySocietyTeamRoute: SocietySocietyTeamRoute,
