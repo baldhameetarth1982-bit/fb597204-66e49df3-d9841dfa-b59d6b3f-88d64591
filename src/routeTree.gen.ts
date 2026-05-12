@@ -30,7 +30,9 @@ import { Route as ResidentAppVisitorsRouteImport } from './routes/_resident/app.
 import { Route as ResidentAppVehiclesRouteImport } from './routes/_resident/app.vehicles'
 import { Route as ResidentAppServicesRouteImport } from './routes/_resident/app.services'
 import { Route as ResidentAppProfileRouteImport } from './routes/_resident/app.profile'
+import { Route as ResidentAppPollsRouteImport } from './routes/_resident/app.polls'
 import { Route as ResidentAppNoticesRouteImport } from './routes/_resident/app.notices'
+import { Route as ResidentAppLedgerRouteImport } from './routes/_resident/app.ledger'
 import { Route as ResidentAppHelpdeskRouteImport } from './routes/_resident/app.helpdesk'
 import { Route as ResidentAppGuardRouteImport } from './routes/_resident/app.guard'
 import { Route as ResidentAppDuesRouteImport } from './routes/_resident/app.dues'
@@ -140,9 +142,19 @@ const ResidentAppProfileRoute = ResidentAppProfileRouteImport.update({
   path: '/app/profile',
   getParentRoute: () => ResidentRoute,
 } as any)
+const ResidentAppPollsRoute = ResidentAppPollsRouteImport.update({
+  id: '/app/polls',
+  path: '/app/polls',
+  getParentRoute: () => ResidentRoute,
+} as any)
 const ResidentAppNoticesRoute = ResidentAppNoticesRouteImport.update({
   id: '/app/notices',
   path: '/app/notices',
+  getParentRoute: () => ResidentRoute,
+} as any)
+const ResidentAppLedgerRoute = ResidentAppLedgerRouteImport.update({
+  id: '/app/ledger',
+  path: '/app/ledger',
   getParentRoute: () => ResidentRoute,
 } as any)
 const ResidentAppHelpdeskRoute = ResidentAppHelpdeskRouteImport.update({
@@ -197,7 +209,9 @@ export interface FileRoutesByFullPath {
   '/app/dues': typeof ResidentAppDuesRoute
   '/app/guard': typeof ResidentAppGuardRoute
   '/app/helpdesk': typeof ResidentAppHelpdeskRoute
+  '/app/ledger': typeof ResidentAppLedgerRoute
   '/app/notices': typeof ResidentAppNoticesRoute
+  '/app/polls': typeof ResidentAppPollsRoute
   '/app/profile': typeof ResidentAppProfileRoute
   '/app/services': typeof ResidentAppServicesRoute
   '/app/vehicles': typeof ResidentAppVehiclesRoute
@@ -223,7 +237,9 @@ export interface FileRoutesByTo {
   '/app/dues': typeof ResidentAppDuesRoute
   '/app/guard': typeof ResidentAppGuardRoute
   '/app/helpdesk': typeof ResidentAppHelpdeskRoute
+  '/app/ledger': typeof ResidentAppLedgerRoute
   '/app/notices': typeof ResidentAppNoticesRoute
+  '/app/polls': typeof ResidentAppPollsRoute
   '/app/profile': typeof ResidentAppProfileRoute
   '/app/services': typeof ResidentAppServicesRoute
   '/app/vehicles': typeof ResidentAppVehiclesRoute
@@ -255,7 +271,9 @@ export interface FileRoutesById {
   '/_resident/app/dues': typeof ResidentAppDuesRoute
   '/_resident/app/guard': typeof ResidentAppGuardRoute
   '/_resident/app/helpdesk': typeof ResidentAppHelpdeskRoute
+  '/_resident/app/ledger': typeof ResidentAppLedgerRoute
   '/_resident/app/notices': typeof ResidentAppNoticesRoute
+  '/_resident/app/polls': typeof ResidentAppPollsRoute
   '/_resident/app/profile': typeof ResidentAppProfileRoute
   '/_resident/app/services': typeof ResidentAppServicesRoute
   '/_resident/app/vehicles': typeof ResidentAppVehiclesRoute
@@ -284,7 +302,9 @@ export interface FileRouteTypes {
     | '/app/dues'
     | '/app/guard'
     | '/app/helpdesk'
+    | '/app/ledger'
     | '/app/notices'
+    | '/app/polls'
     | '/app/profile'
     | '/app/services'
     | '/app/vehicles'
@@ -310,7 +330,9 @@ export interface FileRouteTypes {
     | '/app/dues'
     | '/app/guard'
     | '/app/helpdesk'
+    | '/app/ledger'
     | '/app/notices'
+    | '/app/polls'
     | '/app/profile'
     | '/app/services'
     | '/app/vehicles'
@@ -341,7 +363,9 @@ export interface FileRouteTypes {
     | '/_resident/app/dues'
     | '/_resident/app/guard'
     | '/_resident/app/helpdesk'
+    | '/_resident/app/ledger'
     | '/_resident/app/notices'
+    | '/_resident/app/polls'
     | '/_resident/app/profile'
     | '/_resident/app/services'
     | '/_resident/app/vehicles'
@@ -511,11 +535,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResidentAppProfileRouteImport
       parentRoute: typeof ResidentRoute
     }
+    '/_resident/app/polls': {
+      id: '/_resident/app/polls'
+      path: '/app/polls'
+      fullPath: '/app/polls'
+      preLoaderRoute: typeof ResidentAppPollsRouteImport
+      parentRoute: typeof ResidentRoute
+    }
     '/_resident/app/notices': {
       id: '/_resident/app/notices'
       path: '/app/notices'
       fullPath: '/app/notices'
       preLoaderRoute: typeof ResidentAppNoticesRouteImport
+      parentRoute: typeof ResidentRoute
+    }
+    '/_resident/app/ledger': {
+      id: '/_resident/app/ledger'
+      path: '/app/ledger'
+      fullPath: '/app/ledger'
+      preLoaderRoute: typeof ResidentAppLedgerRouteImport
       parentRoute: typeof ResidentRoute
     }
     '/_resident/app/helpdesk': {
@@ -601,7 +639,9 @@ interface ResidentRouteChildren {
   ResidentAppDuesRoute: typeof ResidentAppDuesRoute
   ResidentAppGuardRoute: typeof ResidentAppGuardRoute
   ResidentAppHelpdeskRoute: typeof ResidentAppHelpdeskRoute
+  ResidentAppLedgerRoute: typeof ResidentAppLedgerRoute
   ResidentAppNoticesRoute: typeof ResidentAppNoticesRoute
+  ResidentAppPollsRoute: typeof ResidentAppPollsRoute
   ResidentAppProfileRoute: typeof ResidentAppProfileRoute
   ResidentAppServicesRoute: typeof ResidentAppServicesRoute
   ResidentAppVehiclesRoute: typeof ResidentAppVehiclesRoute
@@ -615,7 +655,9 @@ const ResidentRouteChildren: ResidentRouteChildren = {
   ResidentAppDuesRoute: ResidentAppDuesRoute,
   ResidentAppGuardRoute: ResidentAppGuardRoute,
   ResidentAppHelpdeskRoute: ResidentAppHelpdeskRoute,
+  ResidentAppLedgerRoute: ResidentAppLedgerRoute,
   ResidentAppNoticesRoute: ResidentAppNoticesRoute,
+  ResidentAppPollsRoute: ResidentAppPollsRoute,
   ResidentAppProfileRoute: ResidentAppProfileRoute,
   ResidentAppServicesRoute: ResidentAppServicesRoute,
   ResidentAppVehiclesRoute: ResidentAppVehiclesRoute,
@@ -672,3 +714,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
