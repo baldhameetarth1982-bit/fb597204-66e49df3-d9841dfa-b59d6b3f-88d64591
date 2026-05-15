@@ -90,6 +90,8 @@ function ResidentDashboard() {
           </Button>
         </CardContent>
       </Card>
+
+      <AdBanner />
     </div>
   );
 }
