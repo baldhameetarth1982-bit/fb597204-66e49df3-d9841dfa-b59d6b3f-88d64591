@@ -20,6 +20,10 @@ const bills = [
   { id: "4", title: "Annual Sinking Fund", amount: 6000, due: "01 Apr 2026", status: "paid" },
 ];
 
+function BillsInner() {
+  return null;
+}
+
 function BillsScreen() {
   return (
     <div className="px-5 py-6 space-y-6">
