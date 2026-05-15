@@ -91,6 +91,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f376b04d-5f89-44d0-8d56-1d48462c1cfe/id-preview-ad349b40--68752e3a-4def-45ab-8ff0-b74d48f33a17.lovable.app-1778372635197.png" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
+    scripts: [
+      // Google Analytics (replace G-XXXXXX with real measurement ID before launch)
+      { src: "https://www.googletagmanager.com/gtag/js?id=G-XXXXXX", async: true },
+      { children: "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXX');" },
+      // Meta Pixel (replace 0000000000 with real pixel ID before launch)
+      { children: "!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','0000000000');fbq('track','PageView');" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -112,7 +119,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-const AUTH_PATHS = ["/login", "/forgot-password", "/reset-password"];
+const AUTH_PATHS = ["/login", "/forgot-password", "/reset-password", "/support", "/terms"];
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();

@@ -1,15 +1,19 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useSearch } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Building2, Users, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 
 export const Route = createFileRoute("/onboarding/")({
   head: () => ({ meta: [{ title: "Get started — SocioHub" }] }),
+  validateSearch: (s: Record<string, unknown>) => ({ ref: typeof s.ref === "string" ? s.ref : undefined }),
   component: OnboardingChoice,
 });
 
 function OnboardingChoice() {
   const { profile } = useAuth();
+  const { ref } = useSearch({ from: "/onboarding/" });
+  useEffect(() => { if (ref) localStorage.setItem("sociohub:ref", ref); }, [ref]);
   const firstName = profile?.full_name?.split(" ")[0] ?? "there";
 
   return (

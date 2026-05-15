@@ -1,9 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Receipt, Download, Clock, CheckCircle2, ArrowRight } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Receipt, Download, Clock, CheckCircle2, ArrowRight, Fingerprint } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FeeBreakdown } from "@/components/shared/FeeBreakdown";
+import { requireBiometric } from "@/lib/biometric";
+import { cacheSet, cacheGet } from "@/lib/offline-cache";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/_resident/app/bills")({
   head: () => ({ meta: [{ title: "Bills — SocioHub" }] }),
@@ -18,6 +21,8 @@ const bills = [
 ];
 
 function BillsScreen() {
+  const navigate = useNavigate();
+  useEffect(() => { cacheSet("bills", bills); }, []);
   return (
     <div className="px-5 py-6 space-y-6">
       <header>
@@ -35,12 +40,14 @@ function BillsScreen() {
           <p className="mt-1 text-4xl font-semibold tabular-nums">₹4,500</p>
           <p className="mt-1 text-xs opacity-80">Due 10 May 2026</p>
           <Button
-            asChild
+            onClick={async () => {
+              const ok = await requireBiometric("authorize this payment");
+              if (ok) navigate({ to: "/app/dues" });
+            }}
             className="mt-5 w-full h-12 rounded-xl bg-background text-primary hover:bg-background/90 font-semibold"
           >
-            <Link to="/app/dues">
-              Pay now <ArrowRight className="h-4 w-4 ml-1" />
-            </Link>
+            <Fingerprint className="h-4 w-4 mr-2" />
+            Pay now <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
         </CardContent>
       </Card>
