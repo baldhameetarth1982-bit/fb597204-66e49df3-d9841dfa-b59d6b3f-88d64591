@@ -21,6 +21,8 @@ const bills = [
 ];
 
 function BillsScreen() {
+  const navigate = useNavigate();
+  useEffect(() => { cacheSet("bills", bills); }, []);
   return (
     <div className="px-5 py-6 space-y-6">
       <header>
