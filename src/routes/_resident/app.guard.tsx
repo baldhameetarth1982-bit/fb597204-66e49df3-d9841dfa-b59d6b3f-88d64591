@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useSocietyId } from "@/hooks/useSocietyId";
+import { requireBiometric } from "@/lib/biometric";
 
 export const Route = createFileRoute("/_resident/app/guard")({
   head: () => ({ meta: [{ title: "Guard Dashboard — SocioHub" }] }),
