@@ -5,17 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * Executive Dark theme.
+ * Optimized for high readability and low-end hardware.
+ * - Solid colors only (no gradient meshes, no blur, no drop-shadow).
+ * - 1px solid borders separate surfaces instead of deep shadows.
+ * - Minimum 16px body text; bold headings; system-ui / Inter only.
  */
 
 @theme inline {
@@ -26,6 +20,10 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Inter", system-ui, sans-serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -66,91 +64,83 @@
 }
 
 :root {
-  /* SocioHub design tokens — pristine minimalist SaaS.
-     Palette: #FFFFFF bg, #0047AB cobalt primary, #F4F6F8 off-white surface.
-     Generous radius for soft modern shapes (Material 3 inspired). */
-  --radius: 0.875rem; /* 14px base → cards/buttons/inputs feel pillowy */
+  /* Executive Dark — applied as the single global theme. */
+  --radius: 0.5rem;
 
-  --background: oklch(1 0 0);              /* #FFFFFF */
-  --foreground: oklch(0.205 0.02 256);     /* near-black slate, easy on eyes */
+  --background: oklch(0.1776 0 0);          /* #121212 deep charcoal */
+  --foreground: oklch(0.9761 0.0029 247);   /* #F9FAFB off-white */
 
-  /* Cards stay white by default; use --surface for tinted off-white panels */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.205 0.02 256);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.205 0.02 256);
+  --card: oklch(0.2393 0 0);                /* #1E1E1E dark gray */
+  --card-foreground: oklch(0.9761 0.0029 247);
+  --popover: oklch(0.2393 0 0);
+  --popover-foreground: oklch(0.9761 0.0029 247);
 
-  --primary: oklch(0.42 0.17 262);         /* #0047AB cobalt */
-  --primary-foreground: oklch(1 0 0);
+  --primary: oklch(0.5099 0.2003 27.33);    /* #B91C1C rich crimson */
+  --primary-foreground: oklch(0.9761 0.0029 247);
 
-  /* Secondary / muted / accent all anchor to off-white #F4F6F8 for calm surfaces */
-  --secondary: oklch(0.972 0.004 250);     /* #F4F6F8 */
-  --secondary-foreground: oklch(0.255 0.025 256);
-  --muted: oklch(0.972 0.004 250);
-  --muted-foreground: oklch(0.5 0.02 256);
-  --accent: oklch(0.972 0.004 250);
-  --accent-foreground: oklch(0.42 0.17 262);
+  --secondary: oklch(0.2393 0 0);
+  --secondary-foreground: oklch(0.9761 0.0029 247);
+  --muted: oklch(0.2393 0 0);
+  --muted-foreground: oklch(0.7058 0.0117 261); /* #9CA3AF soft silver */
+  --accent: oklch(0.5099 0.2003 27.33);
+  --accent-foreground: oklch(0.9761 0.0029 247);
 
-  --destructive: oklch(0.6 0.22 27);
-  --destructive-foreground: oklch(1 0 0);
-  --success: oklch(0.62 0.16 150);          /* clean money green */
-  --success-foreground: oklch(1 0 0);
-  --warning: oklch(0.75 0.15 75);           /* warm amber */
-  --warning-foreground: oklch(0.2 0.02 256);
+  --destructive: oklch(0.5099 0.2003 27.33);
+  --destructive-foreground: oklch(0.9761 0.0029 247);
+  --success: oklch(0.62 0.16 150);
+  --success-foreground: oklch(0.9761 0.0029 247);
+  --warning: oklch(0.78 0.15 75);
+  --warning-foreground: oklch(0.1776 0 0);
 
-  --border: oklch(0.93 0.005 256);         /* hairline, low contrast */
-  --input: oklch(0.93 0.005 256);
-  --ring: oklch(0.42 0.17 262 / 0.5);
+  --border: oklch(0.2746 0 0);              /* #2D2D2D 1px separator */
+  --input: oklch(0.2746 0 0);
+  --ring: oklch(0.5099 0.2003 27.33);
 
-  --chart-1: oklch(0.42 0.17 262);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.55 0.15 230);
-  --chart-4: oklch(0.78 0.14 85);
-  --chart-5: oklch(0.65 0.2 30);
+  --chart-1: oklch(0.5099 0.2003 27.33);
+  --chart-2: oklch(0.7058 0.0117 261);
+  --chart-3: oklch(0.62 0.16 150);
+  --chart-4: oklch(0.78 0.15 75);
+  --chart-5: oklch(0.55 0.15 230);
 
-  --sidebar: oklch(0.984 0.003 250);
-  --sidebar-foreground: oklch(0.205 0.02 256);
-  --sidebar-primary: oklch(0.42 0.17 262);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.972 0.004 250);
-  --sidebar-accent-foreground: oklch(0.42 0.17 262);
-  --sidebar-border: oklch(0.93 0.005 256);
-  --sidebar-ring: oklch(0.42 0.17 262 / 0.5);
+  --sidebar: oklch(0.2393 0 0);
+  --sidebar-foreground: oklch(0.9761 0.0029 247);
+  --sidebar-primary: oklch(0.5099 0.2003 27.33);
+  --sidebar-primary-foreground: oklch(0.9761 0.0029 247);
+  --sidebar-accent: oklch(0.2746 0 0);
+  --sidebar-accent-foreground: oklch(0.9761 0.0029 247);
+  --sidebar-border: oklch(0.2746 0 0);
+  --sidebar-ring: oklch(0.5099 0.2003 27.33);
 }
 
+/* Force dark to the same Executive Dark palette — no light/dark switch. */
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --background: oklch(0.1776 0 0);
+  --foreground: oklch(0.9761 0.0029 247);
+  --card: oklch(0.2393 0 0);
+  --card-foreground: oklch(0.9761 0.0029 247);
+  --popover: oklch(0.2393 0 0);
+  --popover-foreground: oklch(0.9761 0.0029 247);
+  --primary: oklch(0.5099 0.2003 27.33);
+  --primary-foreground: oklch(0.9761 0.0029 247);
+  --secondary: oklch(0.2393 0 0);
+  --secondary-foreground: oklch(0.9761 0.0029 247);
+  --muted: oklch(0.2393 0 0);
+  --muted-foreground: oklch(0.7058 0.0117 261);
+  --accent: oklch(0.5099 0.2003 27.33);
+  --accent-foreground: oklch(0.9761 0.0029 247);
+  --destructive: oklch(0.5099 0.2003 27.33);
+  --destructive-foreground: oklch(0.9761 0.0029 247);
+  --border: oklch(0.2746 0 0);
+  --input: oklch(0.2746 0 0);
+  --ring: oklch(0.5099 0.2003 27.33);
+  --sidebar: oklch(0.2393 0 0);
+  --sidebar-foreground: oklch(0.9761 0.0029 247);
+  --sidebar-primary: oklch(0.5099 0.2003 27.33);
+  --sidebar-primary-foreground: oklch(0.9761 0.0029 247);
+  --sidebar-accent: oklch(0.2746 0 0);
+  --sidebar-accent-foreground: oklch(0.9761 0.0029 247);
+  --sidebar-border: oklch(0.2746 0 0);
+  --sidebar-ring: oklch(0.5099 0.2003 27.33);
 }
 
 @layer base {
@@ -162,20 +152,90 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    color-scheme: dark;
   }
 
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-feature-settings: "cv11", "ss01";
-    /* Generous default line-height for elderly-friendly readability */
+    font-family: var(--font-sans);
+    font-size: 16px;             /* enforce 16px minimum body */
+    font-weight: 400;
     line-height: 1.6;
+    font-style: normal;
   }
 
-  /* Larger default tap targets — important for accessibility */
+  /* Block thin/italic/serif at the root so stray classes can't soften the theme. */
+  body, p, span, div, a, li, label, input, textarea, select, button {
+    font-family: var(--font-sans);
+    font-style: normal;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: -0.01em;
+  }
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+
+  /* Strict rule: clamp anything thinner than 400 up to 400. */
+  [class*="font-thin"],
+  [class*="font-extralight"],
+  [class*="font-light"] {
+    font-weight: 400 !important;
+  }
+
+  /* Performance: kill expensive filters globally for low-end devices. */
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  [class*="drop-shadow"],
+  [style*="drop-shadow"] {
+    filter: none !important;
+  }
+  [class*="backdrop-blur"],
+  [class*="backdrop-filter"] {
+    backdrop-filter: none !important;
+  }
+
+  /* Use crisp 1px borders on cards instead of deep box-shadows. */
+  [class*="shadow-2xl"],
+  [class*="shadow-xl"],
+  [class*="shadow-lg"],
+  [class*="shadow-md"],
+  [class*="shadow-sm"],
+  [class*="shadow-"] {
+    box-shadow: none !important;
+  }
+
+  /* Interaction layout — large tap targets, generous spacing. */
   button,
-  [role="button"] {
-    min-height: 2.5rem;
+  [role="button"],
+  a[role="button"],
+  input[type="button"],
+  input[type="submit"],
+  .btn {
+    min-height: 56px;
+    padding-left: 16px;
+    padding-right: 16px;
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  /* Smaller icon-only / size="sm" buttons still need a comfortable target. */
+  button[class*="size-icon"],
+  button[class*="h-9"],
+  button[class*="h-8"] {
+    min-height: 44px;
+  }
+
+  input, textarea, select {
+    min-height: 48px;
+    font-size: 16px;
   }
 }
+
 
