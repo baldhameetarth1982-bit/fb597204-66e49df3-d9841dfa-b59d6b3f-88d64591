@@ -68,6 +68,16 @@ function ResidentDashboard() {
         </Card>
       </section>
 
+      <Button
+        asChild
+        variant="outline"
+        className="w-full h-12 rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+      >
+        <Link to="/app/emergency">
+          <ShieldAlert className="h-4 w-4 mr-2" /> Emergency contacts (works offline)
+        </Link>
+      </Button>
+
       {/* Notices */}
       <Card className="rounded-2xl">
         <CardContent className="p-5">
