@@ -42,11 +42,13 @@ import { Route as ResidentAppLedgerRouteImport } from './routes/_resident/app.le
 import { Route as ResidentAppHelpdeskRouteImport } from './routes/_resident/app.helpdesk'
 import { Route as ResidentAppGuardRouteImport } from './routes/_resident/app.guard'
 import { Route as ResidentAppFeedRouteImport } from './routes/_resident/app.feed'
+import { Route as ResidentAppEmergencyRouteImport } from './routes/_resident/app.emergency'
 import { Route as ResidentAppDuesRouteImport } from './routes/_resident/app.dues'
 import { Route as ResidentAppDashboardRouteImport } from './routes/_resident/app.dashboard'
 import { Route as ResidentAppBillsRouteImport } from './routes/_resident/app.bills'
 import { Route as ResidentAppActivityRouteImport } from './routes/_resident/app.activity'
 import { Route as ResidentAppAchievementsRouteImport } from './routes/_resident/app.achievements'
+import { Route as AdminAdminWithdrawalsRouteImport } from './routes/_admin/admin.withdrawals'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin/admin.dashboard'
 import { Route as ResidentAppFeedPostIdRouteImport } from './routes/_resident/app.feed.$postId'
 
@@ -211,6 +213,11 @@ const ResidentAppFeedRoute = ResidentAppFeedRouteImport.update({
   path: '/app/feed',
   getParentRoute: () => ResidentRoute,
 } as any)
+const ResidentAppEmergencyRoute = ResidentAppEmergencyRouteImport.update({
+  id: '/app/emergency',
+  path: '/app/emergency',
+  getParentRoute: () => ResidentRoute,
+} as any)
 const ResidentAppDuesRoute = ResidentAppDuesRouteImport.update({
   id: '/app/dues',
   path: '/app/dues',
@@ -236,6 +243,11 @@ const ResidentAppAchievementsRoute = ResidentAppAchievementsRouteImport.update({
   path: '/app/achievements',
   getParentRoute: () => ResidentRoute,
 } as any)
+const AdminAdminWithdrawalsRoute = AdminAdminWithdrawalsRouteImport.update({
+  id: '/admin/withdrawals',
+  path: '/admin/withdrawals',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
   id: '/admin/dashboard',
   path: '/admin/dashboard',
@@ -259,11 +271,13 @@ export interface FileRoutesByFullPath {
   '/onboarding/join': typeof OnboardingJoinRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/admin/withdrawals': typeof AdminAdminWithdrawalsRoute
   '/app/achievements': typeof ResidentAppAchievementsRoute
   '/app/activity': typeof ResidentAppActivityRoute
   '/app/bills': typeof ResidentAppBillsRoute
   '/app/dashboard': typeof ResidentAppDashboardRoute
   '/app/dues': typeof ResidentAppDuesRoute
+  '/app/emergency': typeof ResidentAppEmergencyRoute
   '/app/feed': typeof ResidentAppFeedRouteWithChildren
   '/app/guard': typeof ResidentAppGuardRoute
   '/app/helpdesk': typeof ResidentAppHelpdeskRoute
@@ -296,11 +310,13 @@ export interface FileRoutesByTo {
   '/onboarding/join': typeof OnboardingJoinRoute
   '/onboarding': typeof OnboardingIndexRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/admin/withdrawals': typeof AdminAdminWithdrawalsRoute
   '/app/achievements': typeof ResidentAppAchievementsRoute
   '/app/activity': typeof ResidentAppActivityRoute
   '/app/bills': typeof ResidentAppBillsRoute
   '/app/dashboard': typeof ResidentAppDashboardRoute
   '/app/dues': typeof ResidentAppDuesRoute
+  '/app/emergency': typeof ResidentAppEmergencyRoute
   '/app/feed': typeof ResidentAppFeedRouteWithChildren
   '/app/guard': typeof ResidentAppGuardRoute
   '/app/helpdesk': typeof ResidentAppHelpdeskRoute
@@ -339,11 +355,13 @@ export interface FileRoutesById {
   '/onboarding/join': typeof OnboardingJoinRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/_admin/admin/withdrawals': typeof AdminAdminWithdrawalsRoute
   '/_resident/app/achievements': typeof ResidentAppAchievementsRoute
   '/_resident/app/activity': typeof ResidentAppActivityRoute
   '/_resident/app/bills': typeof ResidentAppBillsRoute
   '/_resident/app/dashboard': typeof ResidentAppDashboardRoute
   '/_resident/app/dues': typeof ResidentAppDuesRoute
+  '/_resident/app/emergency': typeof ResidentAppEmergencyRoute
   '/_resident/app/feed': typeof ResidentAppFeedRouteWithChildren
   '/_resident/app/guard': typeof ResidentAppGuardRoute
   '/_resident/app/helpdesk': typeof ResidentAppHelpdeskRoute
@@ -379,11 +397,13 @@ export interface FileRouteTypes {
     | '/onboarding/join'
     | '/onboarding/'
     | '/admin/dashboard'
+    | '/admin/withdrawals'
     | '/app/achievements'
     | '/app/activity'
     | '/app/bills'
     | '/app/dashboard'
     | '/app/dues'
+    | '/app/emergency'
     | '/app/feed'
     | '/app/guard'
     | '/app/helpdesk'
@@ -416,11 +436,13 @@ export interface FileRouteTypes {
     | '/onboarding/join'
     | '/onboarding'
     | '/admin/dashboard'
+    | '/admin/withdrawals'
     | '/app/achievements'
     | '/app/activity'
     | '/app/bills'
     | '/app/dashboard'
     | '/app/dues'
+    | '/app/emergency'
     | '/app/feed'
     | '/app/guard'
     | '/app/helpdesk'
@@ -458,11 +480,13 @@ export interface FileRouteTypes {
     | '/onboarding/join'
     | '/onboarding/'
     | '/_admin/admin/dashboard'
+    | '/_admin/admin/withdrawals'
     | '/_resident/app/achievements'
     | '/_resident/app/activity'
     | '/_resident/app/bills'
     | '/_resident/app/dashboard'
     | '/_resident/app/dues'
+    | '/_resident/app/emergency'
     | '/_resident/app/feed'
     | '/_resident/app/guard'
     | '/_resident/app/helpdesk'
@@ -729,6 +753,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResidentAppFeedRouteImport
       parentRoute: typeof ResidentRoute
     }
+    '/_resident/app/emergency': {
+      id: '/_resident/app/emergency'
+      path: '/app/emergency'
+      fullPath: '/app/emergency'
+      preLoaderRoute: typeof ResidentAppEmergencyRouteImport
+      parentRoute: typeof ResidentRoute
+    }
     '/_resident/app/dues': {
       id: '/_resident/app/dues'
       path: '/app/dues'
@@ -764,6 +795,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResidentAppAchievementsRouteImport
       parentRoute: typeof ResidentRoute
     }
+    '/_admin/admin/withdrawals': {
+      id: '/_admin/admin/withdrawals'
+      path: '/admin/withdrawals'
+      fullPath: '/admin/withdrawals'
+      preLoaderRoute: typeof AdminAdminWithdrawalsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/admin/dashboard': {
       id: '/_admin/admin/dashboard'
       path: '/admin/dashboard'
@@ -783,10 +821,12 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
+  AdminAdminWithdrawalsRoute: typeof AdminAdminWithdrawalsRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
+  AdminAdminWithdrawalsRoute: AdminAdminWithdrawalsRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -823,6 +863,7 @@ interface ResidentRouteChildren {
   ResidentAppBillsRoute: typeof ResidentAppBillsRoute
   ResidentAppDashboardRoute: typeof ResidentAppDashboardRoute
   ResidentAppDuesRoute: typeof ResidentAppDuesRoute
+  ResidentAppEmergencyRoute: typeof ResidentAppEmergencyRoute
   ResidentAppFeedRoute: typeof ResidentAppFeedRouteWithChildren
   ResidentAppGuardRoute: typeof ResidentAppGuardRoute
   ResidentAppHelpdeskRoute: typeof ResidentAppHelpdeskRoute
@@ -842,6 +883,7 @@ const ResidentRouteChildren: ResidentRouteChildren = {
   ResidentAppBillsRoute: ResidentAppBillsRoute,
   ResidentAppDashboardRoute: ResidentAppDashboardRoute,
   ResidentAppDuesRoute: ResidentAppDuesRoute,
+  ResidentAppEmergencyRoute: ResidentAppEmergencyRoute,
   ResidentAppFeedRoute: ResidentAppFeedRouteWithChildren,
   ResidentAppGuardRoute: ResidentAppGuardRoute,
   ResidentAppHelpdeskRoute: ResidentAppHelpdeskRoute,
@@ -913,3 +955,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
