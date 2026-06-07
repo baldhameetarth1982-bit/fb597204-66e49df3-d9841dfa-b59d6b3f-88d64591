@@ -25,10 +25,13 @@ import { Route as ApiSupportChatRouteImport } from './routes/api/support-chat'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
+import { Route as SocietySocietyVisitorsRouteImport } from './routes/_society/society.visitors'
+import { Route as SocietySocietyVehiclesRouteImport } from './routes/_society/society.vehicles'
 import { Route as SocietySocietyTeamRouteImport } from './routes/_society/society.team'
 import { Route as SocietySocietyResidentsRouteImport } from './routes/_society/society.residents'
 import { Route as SocietySocietyPollsRouteImport } from './routes/_society/society.polls'
 import { Route as SocietySocietyLedgerRouteImport } from './routes/_society/society.ledger'
+import { Route as SocietySocietyLeaderboardRouteImport } from './routes/_society/society.leaderboard'
 import { Route as SocietySocietyFlatsRouteImport } from './routes/_society/society.flats'
 import { Route as SocietySocietyDigestRouteImport } from './routes/_society/society.digest'
 import { Route as SocietySocietyDashboardRouteImport } from './routes/_society/society.dashboard'
@@ -132,6 +135,16 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => AuthRoute,
 } as any)
+const SocietySocietyVisitorsRoute = SocietySocietyVisitorsRouteImport.update({
+  id: '/society/visitors',
+  path: '/society/visitors',
+  getParentRoute: () => SocietyRoute,
+} as any)
+const SocietySocietyVehiclesRoute = SocietySocietyVehiclesRouteImport.update({
+  id: '/society/vehicles',
+  path: '/society/vehicles',
+  getParentRoute: () => SocietyRoute,
+} as any)
 const SocietySocietyTeamRoute = SocietySocietyTeamRouteImport.update({
   id: '/society/team',
   path: '/society/team',
@@ -152,6 +165,12 @@ const SocietySocietyLedgerRoute = SocietySocietyLedgerRouteImport.update({
   path: '/society/ledger',
   getParentRoute: () => SocietyRoute,
 } as any)
+const SocietySocietyLeaderboardRoute =
+  SocietySocietyLeaderboardRouteImport.update({
+    id: '/society/leaderboard',
+    path: '/society/leaderboard',
+    getParentRoute: () => SocietyRoute,
+  } as any)
 const SocietySocietyFlatsRoute = SocietySocietyFlatsRouteImport.update({
   id: '/society/flats',
   path: '/society/flats',
@@ -322,10 +341,13 @@ export interface FileRoutesByFullPath {
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/digest': typeof SocietySocietyDigestRoute
   '/society/flats': typeof SocietySocietyFlatsRoute
+  '/society/leaderboard': typeof SocietySocietyLeaderboardRoute
   '/society/ledger': typeof SocietySocietyLedgerRoute
   '/society/polls': typeof SocietySocietyPollsRoute
   '/society/residents': typeof SocietySocietyResidentsRoute
   '/society/team': typeof SocietySocietyTeamRoute
+  '/society/vehicles': typeof SocietySocietyVehiclesRoute
+  '/society/visitors': typeof SocietySocietyVisitorsRoute
   '/app/feed/$postId': typeof ResidentAppFeedPostIdRoute
 }
 export interface FileRoutesByTo {
@@ -365,10 +387,13 @@ export interface FileRoutesByTo {
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/digest': typeof SocietySocietyDigestRoute
   '/society/flats': typeof SocietySocietyFlatsRoute
+  '/society/leaderboard': typeof SocietySocietyLeaderboardRoute
   '/society/ledger': typeof SocietySocietyLedgerRoute
   '/society/polls': typeof SocietySocietyPollsRoute
   '/society/residents': typeof SocietySocietyResidentsRoute
   '/society/team': typeof SocietySocietyTeamRoute
+  '/society/vehicles': typeof SocietySocietyVehiclesRoute
+  '/society/visitors': typeof SocietySocietyVisitorsRoute
   '/app/feed/$postId': typeof ResidentAppFeedPostIdRoute
 }
 export interface FileRoutesById {
@@ -414,10 +439,13 @@ export interface FileRoutesById {
   '/_society/society/dashboard': typeof SocietySocietyDashboardRoute
   '/_society/society/digest': typeof SocietySocietyDigestRoute
   '/_society/society/flats': typeof SocietySocietyFlatsRoute
+  '/_society/society/leaderboard': typeof SocietySocietyLeaderboardRoute
   '/_society/society/ledger': typeof SocietySocietyLedgerRoute
   '/_society/society/polls': typeof SocietySocietyPollsRoute
   '/_society/society/residents': typeof SocietySocietyResidentsRoute
   '/_society/society/team': typeof SocietySocietyTeamRoute
+  '/_society/society/vehicles': typeof SocietySocietyVehiclesRoute
+  '/_society/society/visitors': typeof SocietySocietyVisitorsRoute
   '/_resident/app/feed/$postId': typeof ResidentAppFeedPostIdRoute
 }
 export interface FileRouteTypes {
@@ -460,10 +488,13 @@ export interface FileRouteTypes {
     | '/society/dashboard'
     | '/society/digest'
     | '/society/flats'
+    | '/society/leaderboard'
     | '/society/ledger'
     | '/society/polls'
     | '/society/residents'
     | '/society/team'
+    | '/society/vehicles'
+    | '/society/visitors'
     | '/app/feed/$postId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -503,10 +534,13 @@ export interface FileRouteTypes {
     | '/society/dashboard'
     | '/society/digest'
     | '/society/flats'
+    | '/society/leaderboard'
     | '/society/ledger'
     | '/society/polls'
     | '/society/residents'
     | '/society/team'
+    | '/society/vehicles'
+    | '/society/visitors'
     | '/app/feed/$postId'
   id:
     | '__root__'
@@ -551,10 +585,13 @@ export interface FileRouteTypes {
     | '/_society/society/dashboard'
     | '/_society/society/digest'
     | '/_society/society/flats'
+    | '/_society/society/leaderboard'
     | '/_society/society/ledger'
     | '/_society/society/polls'
     | '/_society/society/residents'
     | '/_society/society/team'
+    | '/_society/society/vehicles'
+    | '/_society/society/visitors'
     | '/_resident/app/feed/$postId'
   fileRoutesById: FileRoutesById
 }
@@ -685,6 +722,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_society/society/visitors': {
+      id: '/_society/society/visitors'
+      path: '/society/visitors'
+      fullPath: '/society/visitors'
+      preLoaderRoute: typeof SocietySocietyVisitorsRouteImport
+      parentRoute: typeof SocietyRoute
+    }
+    '/_society/society/vehicles': {
+      id: '/_society/society/vehicles'
+      path: '/society/vehicles'
+      fullPath: '/society/vehicles'
+      preLoaderRoute: typeof SocietySocietyVehiclesRouteImport
+      parentRoute: typeof SocietyRoute
+    }
     '/_society/society/team': {
       id: '/_society/society/team'
       path: '/society/team'
@@ -711,6 +762,13 @@ declare module '@tanstack/react-router' {
       path: '/society/ledger'
       fullPath: '/society/ledger'
       preLoaderRoute: typeof SocietySocietyLedgerRouteImport
+      parentRoute: typeof SocietyRoute
+    }
+    '/_society/society/leaderboard': {
+      id: '/_society/society/leaderboard'
+      path: '/society/leaderboard'
+      fullPath: '/society/leaderboard'
+      preLoaderRoute: typeof SocietySocietyLeaderboardRouteImport
       parentRoute: typeof SocietyRoute
     }
     '/_society/society/flats': {
@@ -987,10 +1045,13 @@ interface SocietyRouteChildren {
   SocietySocietyDashboardRoute: typeof SocietySocietyDashboardRoute
   SocietySocietyDigestRoute: typeof SocietySocietyDigestRoute
   SocietySocietyFlatsRoute: typeof SocietySocietyFlatsRoute
+  SocietySocietyLeaderboardRoute: typeof SocietySocietyLeaderboardRoute
   SocietySocietyLedgerRoute: typeof SocietySocietyLedgerRoute
   SocietySocietyPollsRoute: typeof SocietySocietyPollsRoute
   SocietySocietyResidentsRoute: typeof SocietySocietyResidentsRoute
   SocietySocietyTeamRoute: typeof SocietySocietyTeamRoute
+  SocietySocietyVehiclesRoute: typeof SocietySocietyVehiclesRoute
+  SocietySocietyVisitorsRoute: typeof SocietySocietyVisitorsRoute
 }
 
 const SocietyRouteChildren: SocietyRouteChildren = {
@@ -1000,10 +1061,13 @@ const SocietyRouteChildren: SocietyRouteChildren = {
   SocietySocietyDashboardRoute: SocietySocietyDashboardRoute,
   SocietySocietyDigestRoute: SocietySocietyDigestRoute,
   SocietySocietyFlatsRoute: SocietySocietyFlatsRoute,
+  SocietySocietyLeaderboardRoute: SocietySocietyLeaderboardRoute,
   SocietySocietyLedgerRoute: SocietySocietyLedgerRoute,
   SocietySocietyPollsRoute: SocietySocietyPollsRoute,
   SocietySocietyResidentsRoute: SocietySocietyResidentsRoute,
   SocietySocietyTeamRoute: SocietySocietyTeamRoute,
+  SocietySocietyVehiclesRoute: SocietySocietyVehiclesRoute,
+  SocietySocietyVisitorsRoute: SocietySocietyVisitorsRoute,
 }
 
 const SocietyRouteWithChildren =
