@@ -62,12 +62,12 @@ export function AppSidebar() {
                       tooltip={item.title}
                       className="rounded-xl h-11 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground hover:bg-secondary"
                     >
-                      <a href={item.url} className="flex items-center gap-3">
+                      <Link to={item.url} className="flex items-center gap-3">
                         <item.icon className="h-5 w-5 shrink-0" />
                         {!collapsed && (
                           <span className="text-sm font-medium">{item.title}</span>
                         )}
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
