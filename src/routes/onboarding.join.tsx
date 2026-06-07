@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, KeyRound, Loader2, CheckCircle2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { ArrowLeft, KeyRound, Loader2, CheckCircle2, Upload, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +29,10 @@ function JoinSociety() {
   const [verifying, setVerifying] = useState(false);
   const [joining, setJoining] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [aadhaarLast4, setAadhaarLast4] = useState("");
+  const [aadhaarFile, setAadhaarFile] = useState<File | null>(null);
+  const [uploadingKyc, setUploadingKyc] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
@@ -57,7 +61,23 @@ function JoinSociety() {
   async function handleConfirm() {
     if (!match) return;
     if (!agreed) { toast.error("Please accept the Terms of Service"); return; }
+    if (!aadhaarFile) { toast.error("Please upload your Aadhaar card"); return; }
+    if (aadhaarLast4.length !== 4) { toast.error("Enter the last 4 digits of your Aadhaar"); return; }
+
     setJoining(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setJoining(false); toast.error("Please sign in again"); return; }
+
+    setUploadingKyc(true);
+    const ext = (aadhaarFile.name.split(".").pop() || "jpg").toLowerCase();
+    const path = `${user.id}/aadhaar-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("kyc").upload(path, aadhaarFile, {
+      upsert: true,
+      contentType: aadhaarFile.type || "image/jpeg",
+    });
+    setUploadingKyc(false);
+    if (upErr) { setJoining(false); toast.error(upErr.message); return; }
+
     const { error } = await supabase.rpc("join_society_with_code", {
       _code: code.toUpperCase(),
     });
@@ -66,13 +86,17 @@ function JoinSociety() {
       toast.error(error.message);
       return;
     }
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from("profiles").update({ accepted_terms_at: new Date().toISOString() }).eq("id", user.id);
-    }
+    await (supabase.from("profiles") as any).update({
+      accepted_terms_at: new Date().toISOString(),
+      aadhaar_url: path,
+      aadhaar_last4: aadhaarLast4,
+      aadhaar_uploaded_at: new Date().toISOString(),
+      aadhaar_verified: false,
+    }).eq("id", user.id);
+
     setJoining(false);
     await refresh();
-    toast.success(`Joined ${match.name}`);
+    toast.success(`Joined ${match.name} — pending admin verification`);
     navigate({ to: "/app/dashboard" });
   }
 
@@ -131,6 +155,46 @@ function JoinSociety() {
                   </p>
                 </div>
               </div>
+
+              <div className="rounded-2xl border border-border bg-secondary/30 p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                  <p className="text-sm font-semibold">Verify your identity</p>
+                </div>
+                <p className="text-xs text-muted-foreground -mt-2">
+                  Upload your Aadhaar card so the society admin can confirm you live here. Stored privately, encrypted.
+                </p>
+
+                <div className="space-y-2">
+                  <Label htmlFor="aadhaar4" className="text-xs">Last 4 digits of Aadhaar</Label>
+                  <Input
+                    id="aadhaar4"
+                    inputMode="numeric"
+                    placeholder="••••"
+                    value={aadhaarLast4}
+                    onChange={(e) => setAadhaarLast4(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    className="h-11 rounded-xl tracking-[0.4em] text-center font-semibold"
+                  />
+                </div>
+
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="hidden"
+                  onChange={(e) => setAadhaarFile(e.target.files?.[0] ?? null)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileRef.current?.click()}
+                  className="w-full h-11 rounded-xl gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  {aadhaarFile ? aadhaarFile.name : "Upload Aadhaar (image or PDF)"}
+                </Button>
+              </div>
+
               <label className="flex items-start gap-2 text-xs text-muted-foreground px-1">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)}
                   className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary" />
@@ -143,11 +207,11 @@ function JoinSociety() {
               </label>
               <Button
                 onClick={handleConfirm}
-                disabled={joining || !agreed}
+                disabled={joining || uploadingKyc || !agreed || !aadhaarFile || aadhaarLast4.length !== 4}
                 className="w-full h-12 rounded-xl"
               >
-                {joining && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Confirm &amp; Join
+                {(joining || uploadingKyc) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {uploadingKyc ? "Uploading…" : "Submit & Join"}
               </Button>
               <Button
                 type="button"
