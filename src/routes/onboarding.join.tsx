@@ -62,18 +62,30 @@ function JoinSociety() {
     if (!match) return;
     if (!agreed) { toast.error("Please accept the Terms of Service"); return; }
     if (!aadhaarFile) { toast.error("Please upload your Aadhaar card"); return; }
-    if (aadhaarLast4.length !== 4) { toast.error("Enter the last 4 digits of your Aadhaar"); return; }
+    if (aadhaarLast4.length !== 4 || !/^\d{4}$/.test(aadhaarLast4)) {
+      toast.error("Last 4 digits must be numeric"); return;
+    }
+
+    const ALLOWED = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+    const MAX_BYTES = 5 * 1024 * 1024;
+    if (!ALLOWED.includes(aadhaarFile.type)) {
+      toast.error("Only JPG, PNG, WEBP or PDF files are allowed"); return;
+    }
+    if (aadhaarFile.size > MAX_BYTES) {
+      toast.error("File must be under 5 MB"); return;
+    }
 
     setJoining(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setJoining(false); toast.error("Please sign in again"); return; }
 
     setUploadingKyc(true);
-    const ext = (aadhaarFile.name.split(".").pop() || "jpg").toLowerCase();
+    const extRaw = (aadhaarFile.name.split(".").pop() || "jpg").toLowerCase();
+    const ext = /^[a-z0-9]{1,5}$/.test(extRaw) ? extRaw : "jpg";
     const path = `${user.id}/aadhaar-${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage.from("kyc").upload(path, aadhaarFile, {
       upsert: true,
-      contentType: aadhaarFile.type || "image/jpeg",
+      contentType: aadhaarFile.type,
     });
     setUploadingKyc(false);
     if (upErr) { setJoining(false); toast.error(upErr.message); return; }
