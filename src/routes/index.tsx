@@ -28,7 +28,10 @@ function IndexRedirect() {
     );
   }
 
-  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!isAuthenticated) {
+    const seen = typeof window !== "undefined" && localStorage.getItem("sociohub:welcomed");
+    return <Navigate to={seen ? "/login" : "/welcome"} />;
+  }
 
   // Residents (or users without a society yet) land on the onboarding chooser.
   if (!profile?.society_id && primaryRole !== "super_admin") {
