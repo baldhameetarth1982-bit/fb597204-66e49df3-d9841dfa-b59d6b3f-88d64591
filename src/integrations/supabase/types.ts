@@ -151,6 +151,39 @@ export type Database = {
         }
         Relationships: []
       }
+      family_members: {
+        Row: {
+          age: number | null
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          relation: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          relation: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          relation?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       flat_residents: {
         Row: {
           created_at: string
@@ -337,6 +370,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      plans: {
+        Row: {
+          ads_enabled: boolean
+          created_at: string
+          features: Json
+          id: string
+          is_recommended: boolean
+          name: string
+          price_monthly_inr: number
+          sort_order: number
+          trial_days: number
+          txn_fee_pct: number
+        }
+        Insert: {
+          ads_enabled?: boolean
+          created_at?: string
+          features?: Json
+          id: string
+          is_recommended?: boolean
+          name: string
+          price_monthly_inr: number
+          sort_order?: number
+          trial_days?: number
+          txn_fee_pct: number
+        }
+        Update: {
+          ads_enabled?: boolean
+          created_at?: string
+          features?: Json
+          id?: string
+          is_recommended?: boolean
+          name?: string
+          price_monthly_inr?: number
+          sort_order?: number
+          trial_days?: number
+          txn_fee_pct?: number
+        }
+        Relationships: []
       }
       poll_options: {
         Row: {
@@ -593,6 +665,27 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          bucket: string
+          count: number
+          subject: string
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          count?: number
+          subject: string
+          window_start: string
+        }
+        Update: {
+          bucket?: string
+          count?: number
+          subject?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       referral_earnings: {
         Row: {
           amount: number
@@ -632,6 +725,7 @@ export type Database = {
       societies: {
         Row: {
           address: string | null
+          billing_active: boolean
           city: string | null
           created_at: string
           id: string
@@ -640,13 +734,16 @@ export type Database = {
           name: string
           pincode: string | null
           plan: string
+          plan_id: string | null
           registration_no: string | null
           state: string | null
           status: string
+          trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
+          billing_active?: boolean
           city?: string | null
           created_at?: string
           id?: string
@@ -655,13 +752,16 @@ export type Database = {
           name: string
           pincode?: string | null
           plan?: string
+          plan_id?: string | null
           registration_no?: string | null
           state?: string | null
           status?: string
+          trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
+          billing_active?: boolean
           city?: string | null
           created_at?: string
           id?: string
@@ -670,12 +770,22 @@ export type Database = {
           name?: string
           pincode?: string | null
           plan?: string
+          plan_id?: string | null
           registration_no?: string | null
           state?: string | null
           status?: string
+          trial_ends_at?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "societies_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       support_tickets: {
         Row: {
