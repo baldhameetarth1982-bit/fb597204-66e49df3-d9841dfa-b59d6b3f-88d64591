@@ -51,7 +51,7 @@ function BillingPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from("bills")
-      .select("id, period_label, amount, due_date, status, flat:flats(flat_number, block:blocks(name))")
+      .select("id, period_label, amount, due_date, status, flat_id")
       .eq("society_id", societyId)
       .order("due_date", { ascending: false })
       .limit(500);
@@ -60,7 +60,29 @@ function BillingPage() {
       setLoading(false);
       return;
     }
-    setRows((data as any) ?? []);
+    const bills = (data as any[]) ?? [];
+    const flatIds = Array.from(new Set(bills.map((b) => b.flat_id).filter(Boolean)));
+    let flatMap: Record<string, { flat_number: string; block_id: string | null }> = {};
+    let blockMap: Record<string, string> = {};
+    if (flatIds.length) {
+      const { data: flats } = await supabase
+        .from("flats")
+        .select("id, flat_number, block_id")
+        .in("id", flatIds);
+      flatMap = Object.fromEntries((flats ?? []).map((f: any) => [f.id, { flat_number: f.flat_number, block_id: f.block_id }]));
+      const blockIds = Array.from(new Set((flats ?? []).map((f: any) => f.block_id).filter(Boolean)));
+      if (blockIds.length) {
+        const { data: blocks } = await supabase.from("blocks").select("id, name").in("id", blockIds);
+        blockMap = Object.fromEntries((blocks ?? []).map((b: any) => [b.id, b.name]));
+      }
+    }
+    setRows(bills.map((b) => {
+      const f = flatMap[b.flat_id];
+      return {
+        ...b,
+        flat: f ? { flat_number: f.flat_number, block: f.block_id ? { name: blockMap[f.block_id] ?? "" } : null } : null,
+      };
+    }));
     setLoading(false);
   }
 
@@ -75,8 +97,8 @@ function BillingPage() {
     setGenerating(true);
     const { data: flats, error: fErr } = await supabase
       .from("flats")
-      .select("id, block_id, blocks!inner(society_id)")
-      .eq("blocks.society_id", societyId);
+      .select("id")
+      .eq("society_id", societyId);
     if (fErr) {
       setGenerating(false);
       return toast.error(fErr.message);
@@ -109,6 +131,7 @@ function BillingPage() {
     setPeriod(""); setAmount(""); setDueDate("");
     void load();
   }
+
 
   const filtered = rows.filter((r) => {
     if (!q.trim()) return true;
