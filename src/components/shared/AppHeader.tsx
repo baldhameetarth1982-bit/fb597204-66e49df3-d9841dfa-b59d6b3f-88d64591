@@ -58,7 +58,7 @@ export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: 
             asChild
             className="relative rounded-xl h-10 w-10 text-foreground hover:bg-secondary"
           >
-            <Link to="/app/notices">
+            <Link to={notificationsHref}>
               <Bell className="h-5 w-5" />
             </Link>
           </Button>
