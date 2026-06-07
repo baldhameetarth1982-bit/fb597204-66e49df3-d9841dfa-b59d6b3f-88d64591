@@ -46,6 +46,14 @@ export const Route = createFileRoute("/api/support-chat")({
         }
         const userId = claims.claims.sub;
 
+        // Rate limit: 20 AI support requests per user per minute (prevents billing abuse)
+        try {
+          const { checkRateLimit } = await import("@/lib/rate-limit.server");
+          await checkRateLimit({ bucket: "support.chat", subject: userId, limit: 20 });
+        } catch (e: any) {
+          return new Response(e?.message ?? "Rate limit exceeded", { status: 429 });
+        }
+
         const {
           createLovableAiGatewayProvider,
           getLovableAiGatewayResponseHeaders,
