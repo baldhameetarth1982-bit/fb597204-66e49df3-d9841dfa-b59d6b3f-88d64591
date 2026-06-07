@@ -16,11 +16,11 @@ const items = [
   { title: "Residents", url: "/society/residents", icon: Users },
   { title: "Billing", url: "/society/billing", icon: Receipt },
   { title: "Ledger", url: "/society/ledger", icon: Calculator },
+  { title: "Announcements", url: "/society/announcements", icon: Megaphone },
   { title: "Polls", url: "/society/polls", icon: Vote },
   { title: "AI Digest", url: "/society/digest", icon: Sparkles },
   { title: "Team & Roles", url: "/society/team", icon: ShieldCheck },
-  { title: "Announcements", url: "/society/announcements", icon: Megaphone },
-];
+] as const;
 
 export function AppSidebar() {
   const { state } = useSidebar();
