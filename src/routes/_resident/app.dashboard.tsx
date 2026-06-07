@@ -1,10 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bell, ArrowRight, Receipt, ShieldCheck, ShieldAlert, Fingerprint } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, ArrowRight, Receipt, ShieldCheck, ShieldAlert, Fingerprint, Inbox } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { AdBanner } from "@/components/shared/AdBanner";
 import { requireBiometric } from "@/lib/biometric";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_resident/app/dashboard")({
   head: () => ({
@@ -16,30 +18,139 @@ export const Route = createFileRoute("/_resident/app/dashboard")({
   component: ResidentDashboard,
 });
 
+const INR = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+
+interface DueBill {
+  id: string;
+  amount: number;
+  due_date: string | null;
+  period_label: string | null;
+}
+interface Notice {
+  id: string;
+  excerpt: string;
+  created_at: string;
+}
+
+function excerpt(body: string, n = 80) {
+  const s = body.replace(/\s+/g, " ").trim();
+  return s.length > n ? `${s.slice(0, n)}…` : s;
+}
+
 function ResidentDashboard() {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const firstName = profile?.full_name?.split(" ")[0] ?? "there";
 
+  const [dueBill, setDueBill] = useState<DueBill | null>(null);
+  const [paidYearTotal, setPaidYearTotal] = useState(0);
+  const [visitorsToday, setVisitorsToday] = useState(0);
+  const [notices, setNotices] = useState<Notice[]>([]);
+
+  useEffect(() => {
+    const societyId = profile?.society_id;
+    const userId = profile?.id;
+    if (!societyId || !userId) return;
+    let cancelled = false;
+
+    (async () => {
+      const yearStart = new Date();
+      yearStart.setMonth(0, 1);
+      yearStart.setHours(0, 0, 0, 0);
+      const dayStart = new Date();
+      dayStart.setHours(0, 0, 0, 0);
+
+      // Resolve resident's flats
+      const { data: flatRows } = await supabase
+        .from("flat_residents")
+        .select("flat_id")
+        .eq("user_id", userId);
+      const flatIds = (flatRows ?? []).map((r: any) => r.flat_id).filter(Boolean);
+
+      const billsQ = flatIds.length
+        ? supabase
+            .from("bills")
+            .select("id, amount, due_date, period_label, status")
+            .eq("society_id", societyId)
+            .in("flat_id", flatIds)
+            .in("status", ["unpaid", "overdue"])
+            .order("due_date", { ascending: true })
+            .limit(1)
+        : Promise.resolve({ data: [] as any[] });
+
+      const [bills, payments, visitors, posts] = await Promise.all([
+        billsQ as any,
+        supabase
+          .from("payments")
+          .select("amount, paid_at, status, user_id")
+          .eq("society_id", societyId)
+          .eq("user_id", userId)
+          .eq("status", "success")
+          .gte("paid_at", yearStart.toISOString()),
+        supabase
+          .from("visitors")
+          .select("id", { count: "exact", head: true })
+          .eq("society_id", societyId)
+          .gte("entry_at", dayStart.toISOString()),
+        supabase
+          .from("posts")
+          .select("id, body, created_at")
+          .eq("society_id", societyId)
+          .order("created_at", { ascending: false })
+          .limit(3),
+      ]);
+
+      if (cancelled) return;
+      const bill = bills.data?.[0];
+      setDueBill(
+        bill
+          ? {
+              id: bill.id,
+              amount: Number(bill.amount),
+              due_date: bill.due_date,
+              period_label: bill.period_label ?? null,
+            }
+          : null,
+      );
+      setPaidYearTotal((payments.data ?? []).reduce((s: number, p: any) => s + Number(p.amount ?? 0), 0));
+      setVisitorsToday(visitors.count ?? 0);
+      setNotices(
+        (posts.data ?? []).map((p: any) => ({
+          id: p.id,
+          excerpt: excerpt(p.body ?? ""),
+          created_at: p.created_at,
+        })),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.society_id, profile?.id]);
+
   return (
     <div className="px-4 md:px-8 py-6 md:py-10 max-w-3xl mx-auto space-y-6">
       <header>
-        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
-          Hi {firstName} 👋
-        </h1>
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Hi {firstName} 👋</h1>
         <p className="mt-1 text-muted-foreground">Here's what needs your attention.</p>
       </header>
 
-      {/* Hero: Amount Due */}
-      <Card className="rounded-2xl bg-primary text-primary-foreground border-0 shadow-lg">
+      <Card className="rounded-2xl bg-primary text-primary-foreground border-0">
         <CardContent className="p-6 md:p-8">
-          <p className="text-sm opacity-80">Amount Due</p>
-          <p className="mt-1 text-4xl md:text-5xl font-semibold tabular-nums">₹4,500</p>
-          <p className="mt-1 text-sm opacity-80">Due by 10 May 2026 · May maintenance</p>
+          <p className="text-sm opacity-80">Amount due</p>
+          <p className="mt-1 text-4xl md:text-5xl font-semibold tabular-nums">
+            {dueBill ? INR.format(dueBill.amount) : INR.format(0)}
+          </p>
+          <p className="mt-1 text-sm opacity-80">
+            {dueBill
+              ? `${dueBill.period_label ?? "Maintenance"} · due ${dueBill.due_date ? new Date(dueBill.due_date).toLocaleDateString() : "soon"}`
+              : "You're all caught up. No outstanding dues."}
+          </p>
           <Button
             size="lg"
-            className="mt-6 w-full md:w-auto h-12 rounded-xl bg-background text-primary hover:bg-background/90 font-semibold"
+            disabled={!dueBill}
+            className="mt-6 w-full md:w-auto h-12 rounded-xl bg-background text-primary hover:bg-background/90 font-semibold disabled:opacity-60"
             onClick={async () => {
+              if (!dueBill) return;
               const ok = await requireBiometric("authorize this payment");
               if (ok) navigate({ to: "/app/dues" });
             }}
@@ -49,7 +160,6 @@ function ResidentDashboard() {
         </CardContent>
       </Card>
 
-      {/* Quick stats */}
       <section className="grid grid-cols-2 gap-4">
         <Card className="rounded-2xl">
           <CardContent className="p-5">
@@ -57,7 +167,7 @@ function ResidentDashboard() {
               <Receipt className="h-5 w-5 text-success" />
             </div>
             <p className="mt-3 text-xs text-muted-foreground">Paid this year</p>
-            <p className="text-xl font-semibold tabular-nums">₹40,500</p>
+            <p className="text-xl font-semibold tabular-nums">{INR.format(paidYearTotal)}</p>
           </CardContent>
         </Card>
         <Card className="rounded-2xl">
@@ -66,7 +176,7 @@ function ResidentDashboard() {
               <ShieldCheck className="h-5 w-5 text-primary" />
             </div>
             <p className="mt-3 text-xs text-muted-foreground">Visitors today</p>
-            <p className="text-xl font-semibold tabular-nums">2</p>
+            <p className="text-xl font-semibold tabular-nums">{visitorsToday}</p>
           </CardContent>
         </Card>
       </section>
@@ -81,23 +191,29 @@ function ResidentDashboard() {
         </Link>
       </Button>
 
-      {/* Notices */}
       <Card className="rounded-2xl">
         <CardContent className="p-5">
           <div className="flex items-center gap-2 mb-3">
             <Bell className="h-4 w-4 text-primary" />
             <h2 className="font-semibold">Recent notices</h2>
           </div>
-          <ul className="divide-y divide-border">
-            <li className="py-3 first:pt-0">
-              <p className="font-medium">Lift maintenance — Block B</p>
-              <p className="text-xs text-muted-foreground mt-0.5">06 May 2026 · Maintenance</p>
-            </li>
-            <li className="py-3 last:pb-0">
-              <p className="font-medium">Society AGM rescheduled</p>
-              <p className="text-xs text-muted-foreground mt-0.5">04 May 2026 · Notices</p>
-            </li>
-          </ul>
+          {notices.length === 0 ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              <Inbox className="h-5 w-5 mx-auto mb-1.5 opacity-60" />
+              No notices yet
+            </div>
+          ) : (
+            <ul className="divide-y divide-border">
+              {notices.map((n) => (
+                <li key={n.id} className="py-3 first:pt-0 last:pb-0">
+                  <p className="font-medium line-clamp-2">{n.excerpt}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {new Date(n.created_at).toLocaleDateString()}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
           <Button variant="ghost" size="sm" asChild className="mt-2 rounded-lg">
             <Link to="/app/notices">View all <ArrowRight className="h-4 w-4 ml-1" /></Link>
           </Button>
