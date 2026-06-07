@@ -13,6 +13,7 @@ import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as SocietyRouteImport } from './routes/_society'
 import { Route as ResidentRouteImport } from './routes/_resident'
@@ -51,6 +52,7 @@ import { Route as ResidentAppLedgerRouteImport } from './routes/_resident/app.le
 import { Route as ResidentAppHelpdeskRouteImport } from './routes/_resident/app.helpdesk'
 import { Route as ResidentAppGuardRouteImport } from './routes/_resident/app.guard'
 import { Route as ResidentAppFeedRouteImport } from './routes/_resident/app.feed'
+import { Route as ResidentAppFamilyRouteImport } from './routes/_resident/app.family'
 import { Route as ResidentAppEmergencyRouteImport } from './routes/_resident/app.emergency'
 import { Route as ResidentAppDuesRouteImport } from './routes/_resident/app.dues'
 import { Route as ResidentAppDashboardRouteImport } from './routes/_resident/app.dashboard'
@@ -58,6 +60,7 @@ import { Route as ResidentAppBillsRouteImport } from './routes/_resident/app.bil
 import { Route as ResidentAppActivityRouteImport } from './routes/_resident/app.activity'
 import { Route as ResidentAppAchievementsRouteImport } from './routes/_resident/app.achievements'
 import { Route as AdminAdminWithdrawalsRouteImport } from './routes/_admin/admin.withdrawals'
+import { Route as AdminAdminPlansRouteImport } from './routes/_admin/admin.plans'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin/admin.dashboard'
 import { Route as ResidentAppFeedPostIdRouteImport } from './routes/_resident/app.feed.$postId'
 
@@ -79,6 +82,11 @@ const SupportRoute = SupportRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -270,6 +278,11 @@ const ResidentAppFeedRoute = ResidentAppFeedRouteImport.update({
   path: '/app/feed',
   getParentRoute: () => ResidentRoute,
 } as any)
+const ResidentAppFamilyRoute = ResidentAppFamilyRouteImport.update({
+  id: '/app/family',
+  path: '/app/family',
+  getParentRoute: () => ResidentRoute,
+} as any)
 const ResidentAppEmergencyRoute = ResidentAppEmergencyRouteImport.update({
   id: '/app/emergency',
   path: '/app/emergency',
@@ -305,6 +318,11 @@ const AdminAdminWithdrawalsRoute = AdminAdminWithdrawalsRouteImport.update({
   path: '/admin/withdrawals',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAdminPlansRoute = AdminAdminPlansRouteImport.update({
+  id: '/admin/plans',
+  path: '/admin/plans',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
   id: '/admin/dashboard',
   path: '/admin/dashboard',
@@ -319,6 +337,7 @@ const ResidentAppFeedPostIdRoute = ResidentAppFeedPostIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRouteWithChildren
+  '/pricing': typeof PricingRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -331,6 +350,7 @@ export interface FileRoutesByFullPath {
   '/onboarding/join': typeof OnboardingJoinRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/admin/plans': typeof AdminAdminPlansRoute
   '/admin/withdrawals': typeof AdminAdminWithdrawalsRoute
   '/app/achievements': typeof ResidentAppAchievementsRoute
   '/app/activity': typeof ResidentAppActivityRoute
@@ -338,6 +358,7 @@ export interface FileRoutesByFullPath {
   '/app/dashboard': typeof ResidentAppDashboardRoute
   '/app/dues': typeof ResidentAppDuesRoute
   '/app/emergency': typeof ResidentAppEmergencyRoute
+  '/app/family': typeof ResidentAppFamilyRoute
   '/app/feed': typeof ResidentAppFeedRouteWithChildren
   '/app/guard': typeof ResidentAppGuardRoute
   '/app/helpdesk': typeof ResidentAppHelpdeskRoute
@@ -367,6 +388,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/pricing': typeof PricingRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -379,6 +401,7 @@ export interface FileRoutesByTo {
   '/onboarding/join': typeof OnboardingJoinRoute
   '/onboarding': typeof OnboardingIndexRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/admin/plans': typeof AdminAdminPlansRoute
   '/admin/withdrawals': typeof AdminAdminWithdrawalsRoute
   '/app/achievements': typeof ResidentAppAchievementsRoute
   '/app/activity': typeof ResidentAppActivityRoute
@@ -386,6 +409,7 @@ export interface FileRoutesByTo {
   '/app/dashboard': typeof ResidentAppDashboardRoute
   '/app/dues': typeof ResidentAppDuesRoute
   '/app/emergency': typeof ResidentAppEmergencyRoute
+  '/app/family': typeof ResidentAppFamilyRoute
   '/app/feed': typeof ResidentAppFeedRouteWithChildren
   '/app/guard': typeof ResidentAppGuardRoute
   '/app/helpdesk': typeof ResidentAppHelpdeskRoute
@@ -421,6 +445,7 @@ export interface FileRoutesById {
   '/_resident': typeof ResidentRouteWithChildren
   '/_society': typeof SocietyRouteWithChildren
   '/onboarding': typeof OnboardingRouteWithChildren
+  '/pricing': typeof PricingRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -433,6 +458,7 @@ export interface FileRoutesById {
   '/onboarding/join': typeof OnboardingJoinRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/_admin/admin/plans': typeof AdminAdminPlansRoute
   '/_admin/admin/withdrawals': typeof AdminAdminWithdrawalsRoute
   '/_resident/app/achievements': typeof ResidentAppAchievementsRoute
   '/_resident/app/activity': typeof ResidentAppActivityRoute
@@ -440,6 +466,7 @@ export interface FileRoutesById {
   '/_resident/app/dashboard': typeof ResidentAppDashboardRoute
   '/_resident/app/dues': typeof ResidentAppDuesRoute
   '/_resident/app/emergency': typeof ResidentAppEmergencyRoute
+  '/_resident/app/family': typeof ResidentAppFamilyRoute
   '/_resident/app/feed': typeof ResidentAppFeedRouteWithChildren
   '/_resident/app/guard': typeof ResidentAppGuardRoute
   '/_resident/app/helpdesk': typeof ResidentAppHelpdeskRoute
@@ -472,6 +499,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/onboarding'
+    | '/pricing'
     | '/settings'
     | '/support'
     | '/terms'
@@ -484,6 +512,7 @@ export interface FileRouteTypes {
     | '/onboarding/join'
     | '/onboarding/'
     | '/admin/dashboard'
+    | '/admin/plans'
     | '/admin/withdrawals'
     | '/app/achievements'
     | '/app/activity'
@@ -491,6 +520,7 @@ export interface FileRouteTypes {
     | '/app/dashboard'
     | '/app/dues'
     | '/app/emergency'
+    | '/app/family'
     | '/app/feed'
     | '/app/guard'
     | '/app/helpdesk'
@@ -520,6 +550,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/pricing'
     | '/settings'
     | '/support'
     | '/terms'
@@ -532,6 +563,7 @@ export interface FileRouteTypes {
     | '/onboarding/join'
     | '/onboarding'
     | '/admin/dashboard'
+    | '/admin/plans'
     | '/admin/withdrawals'
     | '/app/achievements'
     | '/app/activity'
@@ -539,6 +571,7 @@ export interface FileRouteTypes {
     | '/app/dashboard'
     | '/app/dues'
     | '/app/emergency'
+    | '/app/family'
     | '/app/feed'
     | '/app/guard'
     | '/app/helpdesk'
@@ -573,6 +606,7 @@ export interface FileRouteTypes {
     | '/_resident'
     | '/_society'
     | '/onboarding'
+    | '/pricing'
     | '/settings'
     | '/support'
     | '/terms'
@@ -585,6 +619,7 @@ export interface FileRouteTypes {
     | '/onboarding/join'
     | '/onboarding/'
     | '/_admin/admin/dashboard'
+    | '/_admin/admin/plans'
     | '/_admin/admin/withdrawals'
     | '/_resident/app/achievements'
     | '/_resident/app/activity'
@@ -592,6 +627,7 @@ export interface FileRouteTypes {
     | '/_resident/app/dashboard'
     | '/_resident/app/dues'
     | '/_resident/app/emergency'
+    | '/_resident/app/family'
     | '/_resident/app/feed'
     | '/_resident/app/guard'
     | '/_resident/app/helpdesk'
@@ -627,6 +663,7 @@ export interface RootRouteChildren {
   ResidentRoute: typeof ResidentRouteWithChildren
   SocietyRoute: typeof SocietyRouteWithChildren
   OnboardingRoute: typeof OnboardingRouteWithChildren
+  PricingRoute: typeof PricingRoute
   SettingsRoute: typeof SettingsRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
@@ -662,6 +699,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -930,6 +974,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResidentAppFeedRouteImport
       parentRoute: typeof ResidentRoute
     }
+    '/_resident/app/family': {
+      id: '/_resident/app/family'
+      path: '/app/family'
+      fullPath: '/app/family'
+      preLoaderRoute: typeof ResidentAppFamilyRouteImport
+      parentRoute: typeof ResidentRoute
+    }
     '/_resident/app/emergency': {
       id: '/_resident/app/emergency'
       path: '/app/emergency'
@@ -979,6 +1030,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminWithdrawalsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/admin/plans': {
+      id: '/_admin/admin/plans'
+      path: '/admin/plans'
+      fullPath: '/admin/plans'
+      preLoaderRoute: typeof AdminAdminPlansRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/admin/dashboard': {
       id: '/_admin/admin/dashboard'
       path: '/admin/dashboard'
@@ -998,11 +1056,13 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
+  AdminAdminPlansRoute: typeof AdminAdminPlansRoute
   AdminAdminWithdrawalsRoute: typeof AdminAdminWithdrawalsRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
+  AdminAdminPlansRoute: AdminAdminPlansRoute,
   AdminAdminWithdrawalsRoute: AdminAdminWithdrawalsRoute,
 }
 
@@ -1041,6 +1101,7 @@ interface ResidentRouteChildren {
   ResidentAppDashboardRoute: typeof ResidentAppDashboardRoute
   ResidentAppDuesRoute: typeof ResidentAppDuesRoute
   ResidentAppEmergencyRoute: typeof ResidentAppEmergencyRoute
+  ResidentAppFamilyRoute: typeof ResidentAppFamilyRoute
   ResidentAppFeedRoute: typeof ResidentAppFeedRouteWithChildren
   ResidentAppGuardRoute: typeof ResidentAppGuardRoute
   ResidentAppHelpdeskRoute: typeof ResidentAppHelpdeskRoute
@@ -1061,6 +1122,7 @@ const ResidentRouteChildren: ResidentRouteChildren = {
   ResidentAppDashboardRoute: ResidentAppDashboardRoute,
   ResidentAppDuesRoute: ResidentAppDuesRoute,
   ResidentAppEmergencyRoute: ResidentAppEmergencyRoute,
+  ResidentAppFamilyRoute: ResidentAppFamilyRoute,
   ResidentAppFeedRoute: ResidentAppFeedRouteWithChildren,
   ResidentAppGuardRoute: ResidentAppGuardRoute,
   ResidentAppHelpdeskRoute: ResidentAppHelpdeskRoute,
@@ -1138,6 +1200,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResidentRoute: ResidentRouteWithChildren,
   SocietyRoute: SocietyRouteWithChildren,
   OnboardingRoute: OnboardingRouteWithChildren,
+  PricingRoute: PricingRoute,
   SettingsRoute: SettingsRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
