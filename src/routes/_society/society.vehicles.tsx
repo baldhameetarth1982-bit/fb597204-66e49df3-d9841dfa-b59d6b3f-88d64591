@@ -42,10 +42,16 @@ function SocietyVehicles() {
       const flatIds = [...new Set(list.map((r) => r.flat_id).filter(Boolean))];
       const [profsRes, flatsRes] = await Promise.all([
         userIds.length ? supabase.from("profiles").select("id, full_name").in("id", userIds) : Promise.resolve({ data: [] as any[] }),
-        flatIds.length ? supabase.from("flats").select("id, flat_number, block:blocks(name)").in("id", flatIds) : Promise.resolve({ data: [] as any[] }),
+        flatIds.length ? supabase.from("flats").select("id, flat_number, block_id").in("id", flatIds) : Promise.resolve({ data: [] as any[] }),
       ]);
+      const flatsList = ((flatsRes as any).data ?? []) as any[];
+      const blockIds = [...new Set(flatsList.map((f) => f.block_id).filter(Boolean))];
+      const { data: blocks } = blockIds.length
+        ? await supabase.from("blocks").select("id, name").in("id", blockIds)
+        : { data: [] as any[] };
+      const blockNameMap = new Map<string, string>((blocks ?? []).map((b: any) => [b.id, b.name]));
       const profMap = new Map<string, string | null>(((profsRes as any).data ?? []).map((p: any) => [p.id, p.full_name]));
-      const flatMap = new Map<string, { flat_number: string; block_name: string | null }>(((flatsRes as any).data ?? []).map((f: any) => [f.id, { flat_number: f.flat_number, block_name: f.block?.name ?? null }]));
+      const flatMap = new Map<string, { flat_number: string; block_name: string | null }>(flatsList.map((f: any) => [f.id, { flat_number: f.flat_number, block_name: f.block_id ? (blockNameMap.get(f.block_id) ?? null) : null }]));
       setRows(list.map((r) => ({
         id: r.id, plate_number: r.plate_number, make_model: r.make_model,
         color: r.color, type: r.type,
