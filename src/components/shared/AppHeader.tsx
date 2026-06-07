@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 function initials(name?: string | null, email?: string | null) {
   const src = (name && name.trim()) || email || "U";
@@ -46,17 +47,18 @@ export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: 
         </Link>
 
         <div className="ml-auto flex items-center gap-1 md:gap-2">
+          <ThemeToggle />
+
           <Button
             variant="ghost"
             size="icon"
             aria-label="Notifications"
-            className="relative rounded-xl h-10 w-10 text-primary hover:bg-secondary hover:text-primary"
+            asChild
+            className="relative rounded-xl h-10 w-10 text-foreground hover:bg-secondary"
           >
-            <Bell className="h-5 w-5" />
-            <span
-              aria-hidden
-              className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background"
-            />
+            <Link to="/app/notices">
+              <Bell className="h-5 w-5" />
+            </Link>
           </Button>
 
           <DropdownMenu>
@@ -66,7 +68,7 @@ export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: 
                 className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Avatar className="h-10 w-10 ring-1 ring-border">
-                  <AvatarFallback className="bg-secondary text-primary font-semibold">
+                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                     {initials(profile?.full_name, user?.email)}
                   </AvatarFallback>
                 </Avatar>
@@ -82,16 +84,20 @@ export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: 
                 </span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="rounded-lg">
-                <User className="h-4 w-4 mr-2" /> Profile
+              <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                <Link to="/app/profile">
+                  <User className="h-4 w-4 mr-2" /> Profile
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="rounded-lg">
-                <Settings className="h-4 w-4 mr-2" /> Settings
+              <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                <Link to="/app/profile">
+                  <Settings className="h-4 w-4 mr-2" /> Settings
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleSignOut}
-                className="rounded-lg text-destructive focus:text-destructive"
+                className="rounded-lg text-destructive focus:text-destructive cursor-pointer"
               >
                 <LogOut className="h-4 w-4 mr-2" /> Log out
               </DropdownMenuItem>
