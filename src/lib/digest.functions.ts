@@ -2,7 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 
 /**
  * Generate an AI-written weekly community digest summarizing top posts/comments.
@@ -52,6 +51,7 @@ export const generateCommunityDigest = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI gateway not configured.");
 
+    const { createLovableAiGatewayProvider } = await import("@/lib/ai-gateway.server");
     const gateway = createLovableAiGatewayProvider(apiKey);
     const { text: summary } = await generateText({
       model: gateway("google/gemini-3-flash-preview"),
