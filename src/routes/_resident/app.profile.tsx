@@ -154,10 +154,10 @@ function ProfilePage() {
           onClose={(refresh) => {
             setOpenWithdraw(false);
             if (refresh && user) {
-              supabase.from("withdrawals").select("amount,status").eq("user_id", user.id)
-                .then(({ data }) => setWithdrawn((data ?? [])
-                  .filter((w: any) => ["pending", "approved", "paid"].includes(w.status))
-                  .reduce((s, r: any) => s + Number(r.amount), 0)));
+              loadPartnerSummary().then((summary) => {
+                setEarnings(Number(summary.total_earnings ?? 0));
+                setWithdrawn(Number(summary.pending_withdrawals ?? 0));
+              });
             }
           }}
         />
