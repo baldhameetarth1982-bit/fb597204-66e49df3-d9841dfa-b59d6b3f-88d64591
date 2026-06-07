@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Wallet, Bell, ArrowRight, Receipt, ShieldCheck, ShieldAlert, Fingerprint } from "lucide-react";
+import { Bell, ArrowRight, Receipt, ShieldCheck, ShieldAlert, Fingerprint } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
