@@ -85,12 +85,12 @@ export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: 
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
-                <Link to="/app/profile">
+                <Link to="/settings">
                   <User className="h-4 w-4 mr-2" /> Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
-                <Link to="/app/profile">
+                <Link to="/settings">
                   <Settings className="h-4 w-4 mr-2" /> Settings
                 </Link>
               </DropdownMenuItem>
