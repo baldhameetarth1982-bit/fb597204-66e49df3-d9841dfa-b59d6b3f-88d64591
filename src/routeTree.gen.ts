@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SupportRouteImport } from './routes/support'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as SocietyRouteImport } from './routes/_society'
 import { Route as ResidentRouteImport } from './routes/_resident'
@@ -61,6 +62,11 @@ const TermsRoute = TermsRouteImport.update({
 const SupportRoute = SupportRouteImport.update({
   id: '/support',
   path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -268,6 +274,7 @@ const ResidentAppFeedPostIdRoute = ResidentAppFeedPostIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRouteWithChildren
+  '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
@@ -308,6 +315,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
@@ -354,6 +362,7 @@ export interface FileRoutesById {
   '/_resident': typeof ResidentRouteWithChildren
   '/_society': typeof SocietyRouteWithChildren
   '/onboarding': typeof OnboardingRouteWithChildren
+  '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -397,6 +406,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/onboarding'
+    | '/settings'
     | '/support'
     | '/terms'
     | '/forgot-password'
@@ -437,6 +447,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/settings'
     | '/support'
     | '/terms'
     | '/forgot-password'
@@ -482,6 +493,7 @@ export interface FileRouteTypes {
     | '/_resident'
     | '/_society'
     | '/onboarding'
+    | '/settings'
     | '/support'
     | '/terms'
     | '/_auth/forgot-password'
@@ -528,6 +540,7 @@ export interface RootRouteChildren {
   ResidentRoute: typeof ResidentRouteWithChildren
   SocietyRoute: typeof SocietyRouteWithChildren
   OnboardingRoute: typeof OnboardingRouteWithChildren
+  SettingsRoute: typeof SettingsRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   ApiSupportChatRoute: typeof ApiSupportChatRoute
@@ -547,6 +560,13 @@ declare module '@tanstack/react-router' {
       path: '/support'
       fullPath: '/support'
       preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -969,6 +989,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResidentRoute: ResidentRouteWithChildren,
   SocietyRoute: SocietyRouteWithChildren,
   OnboardingRoute: OnboardingRouteWithChildren,
+  SettingsRoute: SettingsRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   ApiSupportChatRoute: ApiSupportChatRoute,
