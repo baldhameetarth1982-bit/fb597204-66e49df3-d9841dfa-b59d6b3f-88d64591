@@ -130,11 +130,11 @@ function RootComponent() {
 }
 
 function ReferralCapture() {
-  const search = useRouterState({ select: (s) => s.location.search });
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   useEffect(() => {
-    const ref = new URLSearchParams(search).get("ref");
+    const ref = new URLSearchParams(window.location.search).get("ref");
     if (ref) localStorage.setItem("sociohub:ref", ref);
-  }, [search]);
+  }, [pathname]);
   return null;
 }
 
