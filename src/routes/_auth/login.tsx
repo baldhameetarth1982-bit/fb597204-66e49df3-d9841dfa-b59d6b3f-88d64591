@@ -78,6 +78,7 @@ function LoginPage() {
         if (error) throw error;
         if (signUpData.user) {
           await supabase.from("profiles").update({ accepted_terms_at: new Date().toISOString() }).eq("id", signUpData.user.id);
+          localStorage.removeItem("sociohub:ref");
         }
         toast.success("Account created — check your inbox to verify.");
       }
