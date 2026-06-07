@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSocietyId } from "@/hooks/useSocietyId";
+import { SocietyFinanceChart } from "@/components/shared/SocietyFinanceChart";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_society/society/dashboard")({
@@ -242,7 +243,14 @@ function SocietyDashboard() {
         </Card>
       )}
 
+      {societyId && (
+        <section className="mb-6">
+          <SocietyFinanceChart societyId={societyId} />
+        </section>
+      )}
+
       <section className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
         <Card className="rounded-2xl lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
