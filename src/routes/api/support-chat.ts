@@ -3,12 +3,6 @@ import { createClient } from "@supabase/supabase-js";
 import { convertToModelMessages, streamText, stepCountIs, tool, type UIMessage } from "ai";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
-import {
-  createLovableAiGatewayProvider,
-  getLovableAiGatewayResponseHeaders,
-  getLovableAiGatewayRunId,
-  withLovableAiGatewayRunIdHeader,
-} from "@/lib/ai-gateway.server";
 
 const SYSTEM = `You are SocioHub Support, a crisp AI assistant for residents, society admins, and guards using the SocioHub housing society app.
 
@@ -52,6 +46,12 @@ export const Route = createFileRoute("/api/support-chat")({
         }
         const userId = claims.claims.sub;
 
+        const {
+          createLovableAiGatewayProvider,
+          getLovableAiGatewayResponseHeaders,
+          getLovableAiGatewayRunId,
+          withLovableAiGatewayRunIdHeader,
+        } = await import("@/lib/ai-gateway.server");
         const initialRunId = getLovableAiGatewayRunId(request);
         const gateway = createLovableAiGatewayProvider(lovableApiKey, initialRunId);
         const result = streamText({
