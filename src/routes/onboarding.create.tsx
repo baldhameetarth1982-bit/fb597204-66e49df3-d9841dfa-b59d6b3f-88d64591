@@ -80,7 +80,8 @@ function CreateSociety() {
       .single();
     if (socErr || !soc) {
       setSaving(false);
-      toast.error(socErr?.message ?? "Could not create society");
+      console.error("[create-society] societies.insert failed", socErr);
+      toast.error(`Society: ${socErr?.message ?? "Could not create society"}`);
       return;
     }
     const { error: roleErr } = await supabase.from("user_roles").insert({
@@ -90,7 +91,8 @@ function CreateSociety() {
     });
     if (roleErr) {
       setSaving(false);
-      toast.error(roleErr.message);
+      console.error("[create-society] user_roles.insert failed", roleErr, { userId: user.id, societyId: soc.id });
+      toast.error(`Role: ${roleErr.message}${roleErr.code ? ` (${roleErr.code})` : ""}`);
       return;
     }
     await supabase.from("profiles").update({ society_id: soc.id, accepted_terms_at: new Date().toISOString() }).eq("id", user.id);
