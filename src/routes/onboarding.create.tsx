@@ -72,9 +72,9 @@ function CreateSociety() {
     const { data: soc, error: socErr } = await supabase
       .rpc("create_society_for_current_user", {
         _name: form.name.trim(),
-        _city: form.city.trim() || null,
-        _state: form.state.trim() || null,
-        _referral_code: ref || null,
+        _city: form.city.trim() || undefined,
+        _state: form.state.trim() || undefined,
+        _referral_code: ref || undefined,
       })
       .single();
     if (socErr || !soc) {
