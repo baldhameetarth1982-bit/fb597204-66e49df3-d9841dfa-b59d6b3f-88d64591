@@ -155,6 +155,46 @@ function JoinSociety() {
                   </p>
                 </div>
               </div>
+
+              <div className="rounded-2xl border border-border bg-secondary/30 p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                  <p className="text-sm font-semibold">Verify your identity</p>
+                </div>
+                <p className="text-xs text-muted-foreground -mt-2">
+                  Upload your Aadhaar card so the society admin can confirm you live here. Stored privately, encrypted.
+                </p>
+
+                <div className="space-y-2">
+                  <Label htmlFor="aadhaar4" className="text-xs">Last 4 digits of Aadhaar</Label>
+                  <Input
+                    id="aadhaar4"
+                    inputMode="numeric"
+                    placeholder="••••"
+                    value={aadhaarLast4}
+                    onChange={(e) => setAadhaarLast4(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    className="h-11 rounded-xl tracking-[0.4em] text-center font-semibold"
+                  />
+                </div>
+
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="hidden"
+                  onChange={(e) => setAadhaarFile(e.target.files?.[0] ?? null)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileRef.current?.click()}
+                  className="w-full h-11 rounded-xl gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  {aadhaarFile ? aadhaarFile.name : "Upload Aadhaar (image or PDF)"}
+                </Button>
+              </div>
+
               <label className="flex items-start gap-2 text-xs text-muted-foreground px-1">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)}
                   className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary" />
@@ -167,11 +207,11 @@ function JoinSociety() {
               </label>
               <Button
                 onClick={handleConfirm}
-                disabled={joining || !agreed}
+                disabled={joining || uploadingKyc || !agreed || !aadhaarFile || aadhaarLast4.length !== 4}
                 className="w-full h-12 rounded-xl"
               >
-                {joining && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Confirm &amp; Join
+                {(joining || uploadingKyc) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {uploadingKyc ? "Uploading…" : "Submit & Join"}
               </Button>
               <Button
                 type="button"
