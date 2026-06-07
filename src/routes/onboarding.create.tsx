@@ -68,41 +68,22 @@ function CreateSociety() {
       return;
     }
     setSaving(true);
+    const ref = typeof window !== "undefined" ? localStorage.getItem("sociohub:ref") : null;
     const { data: soc, error: socErr } = await supabase
-      .from("societies")
-      .insert({
-        name: form.name.trim(),
-        city: form.city.trim() || null,
-        state: form.state.trim() || null,
-        status: "active",
+      .rpc("create_society_for_current_user", {
+        _name: form.name.trim(),
+        _city: form.city.trim() || undefined,
+        _state: form.state.trim() || undefined,
+        _referral_code: ref || undefined,
       })
-      .select("id, name, invite_code")
       .single();
     if (socErr || !soc) {
       setSaving(false);
-      console.error("[create-society] societies.insert failed", socErr);
+      console.error("[create-society] create_society_for_current_user failed", socErr);
       toast.error(`Society: ${socErr?.message ?? "Could not create society"}`);
       return;
     }
-    const { error: roleErr } = await supabase.from("user_roles").insert({
-      user_id: user.id,
-      role: "society_admin",
-      society_id: soc.id,
-    });
-    if (roleErr) {
-      setSaving(false);
-      console.error("[create-society] user_roles.insert failed", roleErr, { userId: user.id, societyId: soc.id });
-      toast.error(`Role: ${roleErr.message}${roleErr.code ? ` (${roleErr.code})` : ""}`);
-      return;
-    }
-    await supabase.from("profiles").update({ society_id: soc.id, accepted_terms_at: new Date().toISOString() }).eq("id", user.id);
-    // Apply pending referral code (if any) before signup commission trigger fires elsewhere
-    const ref = typeof window !== "undefined" ? localStorage.getItem("sociohub:ref") : null;
     if (ref) {
-      try {
-        const { applyReferralCode } = await import("@/lib/referral.functions");
-        await applyReferralCode({ data: { code: ref } });
-      } catch { /* non-fatal */ }
       localStorage.removeItem("sociohub:ref");
     }
     await refresh();
