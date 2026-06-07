@@ -47,7 +47,7 @@ export const Route = createFileRoute("/api/support-chat")({
         const supabase = getAuthedClient(request);
         const token = request.headers.get("authorization")!.replace("Bearer ", "");
         const { data: claims, error: authError } = await supabase.auth.getClaims(token);
-        if (authError || !claims.claims?.sub) {
+        if (authError || !claims?.claims?.sub) {
           return new Response("Please sign in to use support", { status: 401 });
         }
         const userId = claims.claims.sub;
