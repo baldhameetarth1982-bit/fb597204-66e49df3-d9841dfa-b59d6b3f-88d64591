@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Building2, DoorOpen, Users, Receipt, Megaphone,
-  ShieldCheck, Vote, Calculator, Sparkles, Car, UserCheck, Trophy,
+  ShieldCheck, Vote, Calculator, Sparkles, Car, UserCheck, Trophy, Wallet,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
@@ -15,6 +15,7 @@ const items = [
   { title: "Flats", url: "/society/flats", icon: DoorOpen },
   { title: "Residents", url: "/society/residents", icon: Users },
   { title: "Billing", url: "/society/billing", icon: Receipt },
+  { title: "Expenses", url: "/society/expenses", icon: Wallet },
   { title: "Ledger", url: "/society/ledger", icon: Calculator },
   { title: "Vehicles", url: "/society/vehicles", icon: Car },
   { title: "Visitors", url: "/society/visitors", icon: UserCheck },

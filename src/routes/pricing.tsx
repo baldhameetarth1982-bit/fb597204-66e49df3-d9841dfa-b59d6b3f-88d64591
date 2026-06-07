@@ -112,7 +112,7 @@ function PricingPage() {
                         recommended ? "bg-[#B91C1C] hover:bg-[#991B1B]" : "bg-white/5 hover:bg-white/10"
                       }`}
                     >
-                      <a href="/onboarding/create">Choose {p.name}</a>
+                      <a href={`/checkout/${p.id}`}>Choose {p.name}</a>
                     </Button>
                   </Card>
                 );

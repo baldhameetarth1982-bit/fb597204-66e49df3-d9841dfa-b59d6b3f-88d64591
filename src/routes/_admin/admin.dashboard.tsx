@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { LayoutDashboard, Banknote, CreditCard, Tags, ArrowRight } from "lucide-react";
+import { LayoutDashboard, Banknote, CreditCard, Tags, ArrowRight, BarChart3, Megaphone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -9,9 +9,12 @@ export const Route = createFileRoute("/_admin/admin/dashboard")({
 });
 
 const TILES = [
+  { to: "/admin/income", icon: BarChart3, title: "Income & Analytics", desc: "Platform revenue, subscriptions and transaction fees." },
   { to: "/admin/plans", icon: Tags, title: "Plans & Pricing", desc: "Manage the trial, Basic, Pro and Premium tiers." },
-  { to: "/admin/withdrawals", icon: Banknote, title: "Withdrawals", desc: "Review and pay out partner referral commissions." },
-  { to: "/pricing", icon: CreditCard, title: "Public pricing", desc: "Preview the public pricing page." },
+  { to: "/admin/razorpay", icon: CreditCard, title: "Razorpay", desc: "Connect keys to enable plan checkout and payouts." },
+  { to: "/admin/ads", icon: Megaphone, title: "Ads", desc: "Banner placements and full-screen ad timing (10–30s)." },
+  { to: "/admin/withdrawals", icon: Banknote, title: "Withdrawals", desc: "Approve partner referral payouts." },
+  { to: "/pricing", icon: CreditCard, title: "Public pricing page", desc: "Preview what visitors see." },
 ] as const;
 
 function AdminDashboard() {
@@ -21,7 +24,7 @@ function AdminDashboard() {
         <h1 className="text-3xl font-semibold tracking-tight flex items-center gap-2">
           <LayoutDashboard className="h-7 w-7 text-primary" /> Super Admin
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">Platform-wide tools for SocioHub operations</p>
+        <p className="text-sm text-muted-foreground mt-1">Platform-wide tools — analytics, plans, payments and ads only.</p>
       </header>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
