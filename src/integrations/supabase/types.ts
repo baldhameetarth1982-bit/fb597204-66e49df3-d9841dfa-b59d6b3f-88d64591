@@ -923,6 +923,19 @@ export type Database = {
       }
     }
     Functions: {
+      create_society_for_current_user: {
+        Args: {
+          _city?: string
+          _name: string
+          _referral_code?: string
+          _state?: string
+        }
+        Returns: {
+          id: string
+          invite_code: string
+          name: string
+        }[]
+      }
       find_referrer_by_code: { Args: { _code: string }; Returns: string }
       find_society_by_code: {
         Args: { _code: string }
