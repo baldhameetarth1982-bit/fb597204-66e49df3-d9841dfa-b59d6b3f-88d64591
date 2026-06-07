@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SupportRouteImport } from './routes/support'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as SocietyRouteImport } from './routes/_society'
 import { Route as ResidentRouteImport } from './routes/_resident'
@@ -32,6 +33,8 @@ import { Route as SocietySocietyFlatsRouteImport } from './routes/_society/socie
 import { Route as SocietySocietyDigestRouteImport } from './routes/_society/society.digest'
 import { Route as SocietySocietyDashboardRouteImport } from './routes/_society/society.dashboard'
 import { Route as SocietySocietyBlocksRouteImport } from './routes/_society/society.blocks'
+import { Route as SocietySocietyBillingRouteImport } from './routes/_society/society.billing'
+import { Route as SocietySocietyAnnouncementsRouteImport } from './routes/_society/society.announcements'
 import { Route as ResidentAppVisitorsRouteImport } from './routes/_resident/app.visitors'
 import { Route as ResidentAppVehiclesRouteImport } from './routes/_resident/app.vehicles'
 import { Route as ResidentAppTrustRouteImport } from './routes/_resident/app.trust'
@@ -61,6 +64,11 @@ const TermsRoute = TermsRouteImport.update({
 const SupportRoute = SupportRouteImport.update({
   id: '/support',
   path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -164,6 +172,17 @@ const SocietySocietyBlocksRoute = SocietySocietyBlocksRouteImport.update({
   path: '/society/blocks',
   getParentRoute: () => SocietyRoute,
 } as any)
+const SocietySocietyBillingRoute = SocietySocietyBillingRouteImport.update({
+  id: '/society/billing',
+  path: '/society/billing',
+  getParentRoute: () => SocietyRoute,
+} as any)
+const SocietySocietyAnnouncementsRoute =
+  SocietySocietyAnnouncementsRouteImport.update({
+    id: '/society/announcements',
+    path: '/society/announcements',
+    getParentRoute: () => SocietyRoute,
+  } as any)
 const ResidentAppVisitorsRoute = ResidentAppVisitorsRouteImport.update({
   id: '/app/visitors',
   path: '/app/visitors',
@@ -268,6 +287,7 @@ const ResidentAppFeedPostIdRoute = ResidentAppFeedPostIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRouteWithChildren
+  '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
@@ -296,6 +316,8 @@ export interface FileRoutesByFullPath {
   '/app/trust': typeof ResidentAppTrustRoute
   '/app/vehicles': typeof ResidentAppVehiclesRoute
   '/app/visitors': typeof ResidentAppVisitorsRoute
+  '/society/announcements': typeof SocietySocietyAnnouncementsRoute
+  '/society/billing': typeof SocietySocietyBillingRoute
   '/society/blocks': typeof SocietySocietyBlocksRoute
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/digest': typeof SocietySocietyDigestRoute
@@ -308,6 +330,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
@@ -336,6 +359,8 @@ export interface FileRoutesByTo {
   '/app/trust': typeof ResidentAppTrustRoute
   '/app/vehicles': typeof ResidentAppVehiclesRoute
   '/app/visitors': typeof ResidentAppVisitorsRoute
+  '/society/announcements': typeof SocietySocietyAnnouncementsRoute
+  '/society/billing': typeof SocietySocietyBillingRoute
   '/society/blocks': typeof SocietySocietyBlocksRoute
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/digest': typeof SocietySocietyDigestRoute
@@ -354,6 +379,7 @@ export interface FileRoutesById {
   '/_resident': typeof ResidentRouteWithChildren
   '/_society': typeof SocietyRouteWithChildren
   '/onboarding': typeof OnboardingRouteWithChildren
+  '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -382,6 +408,8 @@ export interface FileRoutesById {
   '/_resident/app/trust': typeof ResidentAppTrustRoute
   '/_resident/app/vehicles': typeof ResidentAppVehiclesRoute
   '/_resident/app/visitors': typeof ResidentAppVisitorsRoute
+  '/_society/society/announcements': typeof SocietySocietyAnnouncementsRoute
+  '/_society/society/billing': typeof SocietySocietyBillingRoute
   '/_society/society/blocks': typeof SocietySocietyBlocksRoute
   '/_society/society/dashboard': typeof SocietySocietyDashboardRoute
   '/_society/society/digest': typeof SocietySocietyDigestRoute
@@ -397,6 +425,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/onboarding'
+    | '/settings'
     | '/support'
     | '/terms'
     | '/forgot-password'
@@ -425,6 +454,8 @@ export interface FileRouteTypes {
     | '/app/trust'
     | '/app/vehicles'
     | '/app/visitors'
+    | '/society/announcements'
+    | '/society/billing'
     | '/society/blocks'
     | '/society/dashboard'
     | '/society/digest'
@@ -437,6 +468,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/settings'
     | '/support'
     | '/terms'
     | '/forgot-password'
@@ -465,6 +497,8 @@ export interface FileRouteTypes {
     | '/app/trust'
     | '/app/vehicles'
     | '/app/visitors'
+    | '/society/announcements'
+    | '/society/billing'
     | '/society/blocks'
     | '/society/dashboard'
     | '/society/digest'
@@ -482,6 +516,7 @@ export interface FileRouteTypes {
     | '/_resident'
     | '/_society'
     | '/onboarding'
+    | '/settings'
     | '/support'
     | '/terms'
     | '/_auth/forgot-password'
@@ -510,6 +545,8 @@ export interface FileRouteTypes {
     | '/_resident/app/trust'
     | '/_resident/app/vehicles'
     | '/_resident/app/visitors'
+    | '/_society/society/announcements'
+    | '/_society/society/billing'
     | '/_society/society/blocks'
     | '/_society/society/dashboard'
     | '/_society/society/digest'
@@ -528,6 +565,7 @@ export interface RootRouteChildren {
   ResidentRoute: typeof ResidentRouteWithChildren
   SocietyRoute: typeof SocietyRouteWithChildren
   OnboardingRoute: typeof OnboardingRouteWithChildren
+  SettingsRoute: typeof SettingsRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   ApiSupportChatRoute: typeof ApiSupportChatRoute
@@ -547,6 +585,13 @@ declare module '@tanstack/react-router' {
       path: '/support'
       fullPath: '/support'
       preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -694,6 +739,20 @@ declare module '@tanstack/react-router' {
       path: '/society/blocks'
       fullPath: '/society/blocks'
       preLoaderRoute: typeof SocietySocietyBlocksRouteImport
+      parentRoute: typeof SocietyRoute
+    }
+    '/_society/society/billing': {
+      id: '/_society/society/billing'
+      path: '/society/billing'
+      fullPath: '/society/billing'
+      preLoaderRoute: typeof SocietySocietyBillingRouteImport
+      parentRoute: typeof SocietyRoute
+    }
+    '/_society/society/announcements': {
+      id: '/_society/society/announcements'
+      path: '/society/announcements'
+      fullPath: '/society/announcements'
+      preLoaderRoute: typeof SocietySocietyAnnouncementsRouteImport
       parentRoute: typeof SocietyRoute
     }
     '/_resident/app/visitors': {
@@ -922,6 +981,8 @@ const ResidentRouteWithChildren = ResidentRoute._addFileChildren(
 )
 
 interface SocietyRouteChildren {
+  SocietySocietyAnnouncementsRoute: typeof SocietySocietyAnnouncementsRoute
+  SocietySocietyBillingRoute: typeof SocietySocietyBillingRoute
   SocietySocietyBlocksRoute: typeof SocietySocietyBlocksRoute
   SocietySocietyDashboardRoute: typeof SocietySocietyDashboardRoute
   SocietySocietyDigestRoute: typeof SocietySocietyDigestRoute
@@ -933,6 +994,8 @@ interface SocietyRouteChildren {
 }
 
 const SocietyRouteChildren: SocietyRouteChildren = {
+  SocietySocietyAnnouncementsRoute: SocietySocietyAnnouncementsRoute,
+  SocietySocietyBillingRoute: SocietySocietyBillingRoute,
   SocietySocietyBlocksRoute: SocietySocietyBlocksRoute,
   SocietySocietyDashboardRoute: SocietySocietyDashboardRoute,
   SocietySocietyDigestRoute: SocietySocietyDigestRoute,
@@ -969,6 +1032,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResidentRoute: ResidentRouteWithChildren,
   SocietyRoute: SocietyRouteWithChildren,
   OnboardingRoute: OnboardingRouteWithChildren,
+  SettingsRoute: SettingsRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   ApiSupportChatRoute: ApiSupportChatRoute,

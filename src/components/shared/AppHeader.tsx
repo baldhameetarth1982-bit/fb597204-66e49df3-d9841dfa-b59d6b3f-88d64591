@@ -26,8 +26,10 @@ function initials(name?: string | null, email?: string | null) {
 }
 
 export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: boolean } = {}) {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, hasRole } = useAuth() as any;
   const navigate = useNavigate();
+  const isSocietyAdmin = typeof hasRole === "function" && (hasRole("society_admin") || hasRole("super_admin"));
+  const notificationsHref = isSocietyAdmin ? "/society/announcements" : "/app/notices";
 
   const handleSignOut = async () => {
     await signOut();
@@ -56,7 +58,7 @@ export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: 
             asChild
             className="relative rounded-xl h-10 w-10 text-foreground hover:bg-secondary"
           >
-            <Link to="/app/notices">
+            <Link to={notificationsHref as any}>
               <Bell className="h-5 w-5" />
             </Link>
           </Button>
@@ -85,12 +87,12 @@ export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: 
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
-                <Link to="/app/profile">
+                <Link to="/settings">
                   <User className="h-4 w-4 mr-2" /> Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
-                <Link to="/app/profile">
+                <Link to="/settings">
                   <Settings className="h-4 w-4 mr-2" /> Settings
                 </Link>
               </DropdownMenuItem>
