@@ -30,6 +30,8 @@ export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: 
   const navigate = useNavigate();
   const isSocietyAdmin = typeof hasRole === "function" && (hasRole("society_admin") || hasRole("super_admin"));
   const notificationsHref = isSocietyAdmin ? "/society/announcements" : "/app/notices";
+  const profileHref = isSocietyAdmin ? "/settings" : "/app/profile";
+  const settingsHref = "/settings";
 
   const handleSignOut = async () => {
     await signOut();
@@ -87,12 +89,12 @@ export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: 
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
-                <Link to="/settings">
+                <Link to={profileHref as any}>
                   <User className="h-4 w-4 mr-2" /> Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
-                <Link to="/settings">
+                <Link to={settingsHref as any}>
                   <Settings className="h-4 w-4 mr-2" /> Settings
                 </Link>
               </DropdownMenuItem>
