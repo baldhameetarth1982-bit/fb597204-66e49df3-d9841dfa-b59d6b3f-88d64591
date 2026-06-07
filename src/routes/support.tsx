@@ -112,7 +112,7 @@ function SupportPage() {
         >
           <PromptInputTextarea ref={textareaRef} placeholder="Describe your issue…" disabled={busy} />
           <PromptInputFooter className="justify-end">
-            <PromptInputSubmit status={status} onStop={stop} disabled={busy} />
+            <PromptInputSubmit status={status} onStop={stop} />
           </PromptInputFooter>
         </PromptInput>
       </div>
