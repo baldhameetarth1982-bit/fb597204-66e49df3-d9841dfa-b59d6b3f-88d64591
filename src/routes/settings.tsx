@@ -541,3 +541,81 @@ function LinkRow({
     </Link>
   );
 }
+
+function AppearanceCard({
+  currentTheme, societyId, userId, onChanged,
+}: { currentTheme: string; societyId: string | null; userId: string | null; onChanged: () => void }) {
+  const [plan, setPlan] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const { NeonThemePreview } = require("@/components/shared/NeonThemePreview");
+
+  useEffect(() => {
+    if (!societyId) { setPlan(null); return; }
+    supabase.from("societies").select("plan").eq("id", societyId).maybeSingle()
+      .then(({ data }) => setPlan((data as any)?.plan ?? null));
+  }, [societyId]);
+
+  const isPremium = plan === "premium";
+
+  async function setTheme(next: "default" | "neon") {
+    if (next === "neon" && !isPremium) {
+      toast.error("Neon theme is a Premium-plan feature");
+      return;
+    }
+    if (!userId) return;
+    setSaving(true);
+    const { error } = await (supabase as any).from("profiles").update({ theme: next }).eq("id", userId);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success(next === "neon" ? "Neon theme applied" : "Switched to standard theme");
+    onChanged();
+  }
+
+  return (
+    <Card className="rounded-2xl">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <UserIcon className="h-5 w-5 text-primary" /> Appearance
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => setTheme("default")}
+            disabled={saving}
+            className={`rounded-2xl border-2 p-4 text-left transition ${
+              currentTheme !== "neon" ? "border-primary" : "border-transparent hover:border-muted-foreground/30"
+            }`}
+          >
+            <div className="h-20 rounded-lg bg-gradient-to-br from-background to-muted border mb-2" />
+            <p className="font-semibold">Standard</p>
+            <p className="text-xs text-muted-foreground">Clean and trustworthy.</p>
+          </button>
+          <button
+            onClick={() => setTheme("neon")}
+            disabled={saving || !isPremium}
+            className={`rounded-2xl border-2 p-4 text-left transition relative ${
+              currentTheme === "neon" ? "border-primary" : "border-transparent hover:border-muted-foreground/30"
+            } ${!isPremium ? "opacity-60" : ""}`}
+          >
+            <div className="h-20 rounded-lg mb-2 border"
+              style={{ background: "radial-gradient(circle at 30% 20%, #b91c5c, #1a0a14)" }} />
+            <p className="font-semibold flex items-center gap-1">Neon
+              {!isPremium && <Badge variant="outline" className="text-[10px] ml-1">Premium</Badge>}
+            </p>
+            <p className="text-xs text-muted-foreground">Advanced premium look.</p>
+          </button>
+        </div>
+        {!isPremium && (
+          <p className="text-xs text-muted-foreground">
+            Upgrade to <Link to="/pricing" className="underline">Premium</Link> to unlock the Neon theme.
+          </p>
+        )}
+        <details className="rounded-xl border p-3">
+          <summary className="cursor-pointer text-sm font-medium">Live Neon preview</summary>
+          <div className="mt-3"><NeonThemePreview /></div>
+        </details>
+      </CardContent>
+    </Card>
+  );
+}
