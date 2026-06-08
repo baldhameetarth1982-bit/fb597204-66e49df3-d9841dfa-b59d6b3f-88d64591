@@ -179,3 +179,24 @@ function CompareRow({ label, values }: { label: string; values: string[] }) {
     </tr>
   );
 }
+
+function ThemePreviewButton() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button className="text-xs inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-[#B91C1C]/15 text-[#F87171] border border-[#B91C1C]/30 hover:bg-[#B91C1C]/25">
+          <Eye className="h-3 w-3" /> Preview
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-sm bg-[#0d0d0d] border-white/10">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><Palette className="h-4 w-4" /> Neon theme preview</DialogTitle>
+        </DialogHeader>
+        <NeonThemePreview />
+        <p className="text-xs text-muted-foreground mt-2">
+          Premium-only. Switch back to the standard theme anytime in <b>Settings → Appearance</b>.
+        </p>
+      </DialogContent>
+    </Dialog>
+  );
+}
