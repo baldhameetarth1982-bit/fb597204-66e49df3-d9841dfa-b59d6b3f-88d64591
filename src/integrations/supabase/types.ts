@@ -1330,6 +1330,10 @@ export type Database = {
           total_earnings: number
         }[]
       }
+      get_society_invite_code: {
+        Args: { _society_id: string }
+        Returns: string
+      }
       get_user_society_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
