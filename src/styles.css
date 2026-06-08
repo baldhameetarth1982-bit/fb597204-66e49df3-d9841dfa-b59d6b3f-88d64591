@@ -158,6 +158,52 @@
   --sidebar-ring: oklch(0.62 0.13 178);
 }
 
+/* ---------- NEON (Premium-only) — magenta/pink on deep charcoal ---------- */
+.theme-neon {
+  color-scheme: dark;
+  --background: oklch(0.16 0.015 350);
+  --foreground: oklch(0.97 0.005 340);
+  --card: oklch(0.21 0.04 350);
+  --card-foreground: oklch(0.97 0.005 340);
+  --popover: oklch(0.21 0.04 350);
+  --popover-foreground: oklch(0.97 0.005 340);
+  --primary: oklch(0.7 0.28 350);                  /* hot pink */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.24 0.05 350);
+  --secondary-foreground: oklch(0.97 0.005 340);
+  --muted: oklch(0.22 0.04 350);
+  --muted-foreground: oklch(0.75 0.04 340);
+  --accent: oklch(0.75 0.25 340);
+  --accent-foreground: oklch(0.12 0.02 340);
+  --destructive: oklch(0.65 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --success: oklch(0.75 0.18 158);
+  --success-foreground: oklch(0.12 0.02 192);
+  --warning: oklch(0.82 0.16 75);
+  --warning-foreground: oklch(0.16 0 0);
+  --border: oklch(0.3 0.06 340);
+  --input: oklch(0.28 0.05 340);
+  --ring: oklch(0.7 0.28 350);
+  --sidebar: oklch(0.18 0.025 350);
+  --sidebar-foreground: oklch(0.97 0.005 340);
+  --sidebar-primary: oklch(0.7 0.28 350);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.24 0.05 350);
+  --sidebar-accent-foreground: oklch(0.97 0.005 340);
+  --sidebar-border: oklch(0.3 0.06 340);
+  --sidebar-ring: oklch(0.7 0.28 350);
+}
+.theme-neon body {
+  background-image:
+    radial-gradient(1200px 600px at 0% -10%, oklch(0.35 0.18 340 / 0.35), transparent 60%),
+    radial-gradient(900px 500px at 100% 110%, oklch(0.3 0.2 320 / 0.3), transparent 60%);
+  background-attachment: fixed;
+}
+.theme-neon .bg-primary,
+.theme-neon button[class*="bg-primary"] {
+  box-shadow: 0 8px 30px -8px oklch(0.7 0.28 350 / 0.55);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
