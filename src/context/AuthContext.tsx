@@ -17,6 +17,7 @@ export interface AuthProfile {
   email: string | null;
   avatar_url: string | null;
   society_id: string | null;
+  theme?: string | null;
 }
 
 export interface AuthState {
