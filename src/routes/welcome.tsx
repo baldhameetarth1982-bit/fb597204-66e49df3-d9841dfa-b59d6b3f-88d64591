@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import slide1 from "@/assets/w7.jpeg.asset.json";
-import slide2 from "@/assets/w71.jpeg.asset.json";
-import slide3 from "@/assets/w72.jpeg.asset.json";
-import slide4 from "@/assets/w73.jpeg.asset.json";
-import slide5 from "@/assets/w8.jpeg.asset.json";
+import slide1 from "@/assets/welcome-1.jpg";
+import slide2 from "@/assets/welcome-2.jpg";
+import slide3 from "@/assets/welcome-3.jpg";
+import slide4 from "@/assets/welcome-4.jpg";
+import slide5 from "@/assets/welcome-5.jpg";
 
 export const Route = createFileRoute("/welcome")({
   head: () => ({
@@ -20,11 +20,11 @@ export const Route = createFileRoute("/welcome")({
 });
 
 const slides = [
-  { img: slide1.url, title: "Welcome to a new\nliving experience", body: "SocioHub brings your entire society together — one calm, simple home for everything." },
-  { img: slide2.url, title: "Knock, knock", body: "Always know who's at the gate. Approve visitors and deliveries in a single tap." },
-  { img: slide3.url, title: "Know a guy?", body: "Find trusted electricians, plumbers and helpers — all rated by your community." },
-  { img: slide4.url, title: "Pay like a pro", body: "Stay on top of maintenance, rent and society dues with secure UPI & card payments." },
-  { img: slide5.url, title: "Step into the circle", body: "Make new friends, join polls, and stay connected with your neighbours." },
+  { img: slide1, title: "Welcome to a new\nliving experience", body: "SocioHub brings your entire society together — one calm, simple home for everything." },
+  { img: slide2, title: "Knock, knock", body: "Always know who's at the gate. Approve visitors and deliveries in a single tap." },
+  { img: slide3, title: "Know a guy?", body: "Find trusted electricians, plumbers and helpers — all rated by your community." },
+  { img: slide4, title: "Pay like a pro", body: "Stay on top of maintenance, rent and society dues with secure UPI & card payments." },
+  { img: slide5, title: "Step into the circle", body: "Make new friends, join polls, and stay connected with your neighbours." },
 ];
 
 function WelcomeCarousel() {
