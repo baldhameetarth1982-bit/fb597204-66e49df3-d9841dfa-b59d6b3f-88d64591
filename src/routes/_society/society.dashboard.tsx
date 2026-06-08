@@ -88,8 +88,9 @@ function SocietyDashboard() {
     let cancelled = false;
 
     (async () => {
-      const [{ data: soc }, { count: flatCount }, { count: blockCount }, posts, payments] = await Promise.all([
-        supabase.from("societies").select("name, invite_code").eq("id", societyId).maybeSingle(),
+      const [{ data: soc }, { data: inviteCode }, { count: flatCount }, { count: blockCount }, posts, payments] = await Promise.all([
+        supabase.from("societies").select("name").eq("id", societyId).maybeSingle(),
+        (supabase as any).rpc("get_society_invite_code", { _society_id: societyId }),
         supabase.from("flats").select("id", { count: "exact", head: true }).eq("society_id", societyId),
         supabase.from("blocks").select("id", { count: "exact", head: true }).eq("society_id", societyId),
         supabase
@@ -108,7 +109,7 @@ function SocietyDashboard() {
 
       if (cancelled) return;
 
-      setSociety((soc as any) ?? null);
+      setSociety({ name: (soc as any)?.name ?? "", invite_code: (inviteCode as string) ?? null });
 
       const monthStart = new Date();
       monthStart.setDate(1);
