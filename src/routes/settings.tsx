@@ -349,6 +349,13 @@ function SettingsPage() {
 
         {/* MORE */}
         <TabsContent value="more" className="mt-6 space-y-6">
+          <AppearanceCard
+            currentTheme={(profile as any)?.theme ?? "default"}
+            societyId={profile?.society_id ?? null}
+            userId={user?.id ?? null}
+            onChanged={() => refresh?.()}
+          />
+
           <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -361,6 +368,7 @@ function SettingsPage() {
               <LanguageRow />
             </CardContent>
           </Card>
+
 
           <Card className="rounded-2xl">
             <CardHeader>
