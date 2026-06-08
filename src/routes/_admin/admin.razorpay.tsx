@@ -41,21 +41,15 @@ function RazorpayPage() {
       toast.error("Key ID must start with rzp_live_ or rzp_test_");
       return;
     }
-    if (keySecret && keySecret.length < 20) {
-      toast.error("Secret looks too short");
+    if (keySecret) {
+      toast.error("Paste the secret in Project Settings → Secrets as RAZORPAY_KEY_SECRET, not here. Only the Key ID is saved in the database.");
       return;
     }
     setSaving(true);
-    const payload: {
-      razorpay_key_id: string;
-      razorpay_configured: boolean;
-      razorpay_key_secret?: string;
-    } = {
-      razorpay_key_id: keyId.trim(),
-      razorpay_configured: true,
-    };
-    if (keySecret) payload.razorpay_key_secret = keySecret.trim();
-    const { error } = await supabase.from("platform_settings").update(payload).eq("id", 1);
+    const { error } = await supabase
+      .from("platform_settings")
+      .update({ razorpay_key_id: keyId.trim(), razorpay_configured: true })
+      .eq("id", 1);
     setSaving(false);
     if (error) {
       toast.error(error.message);
@@ -63,7 +57,7 @@ function RazorpayPage() {
     }
     setConfigured(true);
     setKeySecret("");
-    toast.success("Razorpay credentials saved. Plan checkout is now live.");
+    toast.success("Razorpay Key ID saved. Make sure RAZORPAY_KEY_SECRET is set in server secrets.");
   }
 
   async function disconnect() {
@@ -77,6 +71,7 @@ function RazorpayPage() {
     setConfigured(false);
     toast.success("Razorpay disconnected. Checkout is paused.");
   }
+
 
   if (loading) {
     return <div className="p-12 grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
@@ -114,17 +109,15 @@ function RazorpayPage() {
             <Label htmlFor="rzp-key">Key ID</Label>
             <Input id="rzp-key" value={keyId} onChange={(e) => setKeyId(e.target.value)} placeholder="rzp_live_xxxxxxxxxxxx" />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="rzp-secret">Key Secret</Label>
-            <Input
-              id="rzp-secret"
-              type="password"
-              value={keySecret}
-              onChange={(e) => setKeySecret(e.target.value)}
-              placeholder={configured ? "•••••••••• (leave blank to keep current)" : "Paste your live secret"}
-            />
-            <p className="text-xs text-muted-foreground">Stored encrypted at rest. Never sent to the browser after save.</p>
+          <div className="space-y-1.5 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+            <Label className="text-sm font-medium">Key Secret</Label>
+            <p className="text-xs text-muted-foreground">
+              For security the Razorpay <b>secret</b> is never stored in the database.
+              Add it as a server secret named <code className="px-1 rounded bg-muted">RAZORPAY_KEY_SECRET</code> in
+              Project Settings → Secrets. Server-side payment code reads it from there.
+            </p>
           </div>
+
           <div className="flex gap-2">
             <Button onClick={save} disabled={saving || !keyId} className="rounded-xl">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Save & enable checkout

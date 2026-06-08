@@ -463,7 +463,6 @@ export type Database = {
           id: number
           razorpay_configured: boolean
           razorpay_key_id: string | null
-          razorpay_key_secret: string | null
           updated_at: string
         }
         Insert: {
@@ -474,7 +473,6 @@ export type Database = {
           id?: number
           razorpay_configured?: boolean
           razorpay_key_id?: string | null
-          razorpay_key_secret?: string | null
           updated_at?: string
         }
         Update: {
@@ -485,7 +483,6 @@ export type Database = {
           id?: number
           razorpay_configured?: boolean
           razorpay_key_id?: string | null
-          razorpay_key_secret?: string | null
           updated_at?: string
         }
         Relationships: []
