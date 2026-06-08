@@ -43,8 +43,9 @@ function initials(name?: string | null, email?: string | null) {
 }
 
 function SettingsPage() {
-  const { user, profile, isLoading, isAuthenticated, refresh, signOut } =
+  const { user, profile, isLoading, isAuthenticated, refresh, signOut, hasRole } =
     useAuth() as any;
+  const isSuperAdmin = hasRole?.("super_admin") ?? false;
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
@@ -354,8 +355,10 @@ function SettingsPage() {
             currentTheme={(profile as any)?.theme ?? "default"}
             societyId={profile?.society_id ?? null}
             userId={user?.id ?? null}
+            isSuperAdmin={isSuperAdmin}
             onChanged={() => refresh?.()}
           />
+
 
           <Card className="rounded-2xl">
             <CardHeader>
@@ -544,8 +547,8 @@ function LinkRow({
 }
 
 function AppearanceCard({
-  currentTheme, societyId, userId, onChanged,
-}: { currentTheme: string; societyId: string | null; userId: string | null; onChanged: () => void }) {
+  currentTheme, societyId, userId, isSuperAdmin, onChanged,
+}: { currentTheme: string; societyId: string | null; userId: string | null; isSuperAdmin: boolean; onChanged: () => void }) {
   const [plan, setPlan] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -555,7 +558,7 @@ function AppearanceCard({
       .then(({ data }) => setPlan((data as any)?.plan ?? null));
   }, [societyId]);
 
-  const isPremium = plan === "premium";
+  const isPremium = isSuperAdmin || plan === "premium";
 
   async function setTheme(next: "default" | "neon") {
     if (next === "neon" && !isPremium) {
@@ -611,6 +614,12 @@ function AppearanceCard({
             Upgrade to <Link to="/pricing" className="underline">Premium</Link> to unlock the Neon theme.
           </p>
         )}
+        {isSuperAdmin && (
+          <p className="text-xs text-emerald-600 dark:text-emerald-400">
+            Super Admin — all premium features unlocked, no payment needed.
+          </p>
+        )}
+
         <details className="rounded-xl border p-3">
           <summary className="cursor-pointer text-sm font-medium">Live Neon preview</summary>
           <div className="mt-3"><NeonThemePreview /></div>
