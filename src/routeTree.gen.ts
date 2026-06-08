@@ -26,6 +26,7 @@ import { Route as OnboardingCreateRouteImport } from './routes/onboarding.create
 import { Route as CheckoutPlanIdRouteImport } from './routes/checkout.$planId'
 import { Route as ApiSupportChatRouteImport } from './routes/api/support-chat'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
+import { Route as AuthPhoneOtpRouteImport } from './routes/_auth/phone-otp'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as SocietySocietyVisitorsRouteImport } from './routes/_society/society.visitors'
@@ -150,6 +151,11 @@ const ApiSupportChatRoute = ApiSupportChatRouteImport.update({
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthPhoneOtpRoute = AuthPhoneOtpRouteImport.update({
+  id: '/phone-otp',
+  path: '/phone-otp',
   getParentRoute: () => AuthRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
@@ -388,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof WelcomeRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
+  '/phone-otp': typeof AuthPhoneOtpRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/api/support-chat': typeof ApiSupportChatRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
@@ -446,6 +453,7 @@ export interface FileRoutesByTo {
   '/welcome': typeof WelcomeRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
+  '/phone-otp': typeof AuthPhoneOtpRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/api/support-chat': typeof ApiSupportChatRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
@@ -510,6 +518,7 @@ export interface FileRoutesById {
   '/welcome': typeof WelcomeRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
+  '/_auth/phone-otp': typeof AuthPhoneOtpRoute
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/api/support-chat': typeof ApiSupportChatRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
@@ -571,6 +580,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/forgot-password'
     | '/login'
+    | '/phone-otp'
     | '/reset-password'
     | '/api/support-chat'
     | '/checkout/$planId'
@@ -629,6 +639,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/forgot-password'
     | '/login'
+    | '/phone-otp'
     | '/reset-password'
     | '/api/support-chat'
     | '/checkout/$planId'
@@ -692,6 +703,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/_auth/forgot-password'
     | '/_auth/login'
+    | '/_auth/phone-otp'
     | '/_auth/reset-password'
     | '/api/support-chat'
     | '/checkout/$planId'
@@ -878,6 +890,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/phone-otp': {
+      id: '/_auth/phone-otp'
+      path: '/phone-otp'
+      fullPath: '/phone-otp'
+      preLoaderRoute: typeof AuthPhoneOtpRouteImport
       parentRoute: typeof AuthRoute
     }
     '/_auth/login': {
@@ -1214,12 +1233,14 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 interface AuthRouteChildren {
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
+  AuthPhoneOtpRoute: typeof AuthPhoneOtpRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
+  AuthPhoneOtpRoute: AuthPhoneOtpRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
 }
 
