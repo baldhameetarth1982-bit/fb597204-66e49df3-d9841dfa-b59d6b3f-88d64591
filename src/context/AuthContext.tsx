@@ -17,6 +17,7 @@ export interface AuthProfile {
   email: string | null;
   avatar_url: string | null;
   society_id: string | null;
+  theme?: string | null;
 }
 
 export interface AuthState {
@@ -55,9 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     const [{ data: profileData }, { data: roleData }] = await Promise.all([
-      supabase
+      (supabase as any)
         .from("profiles")
-        .select("id, full_name, email, avatar_url, society_id")
+        .select("id, full_name, email, avatar_url, society_id, theme")
         .eq("id", uid)
         .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", uid),

@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Check, X, Sparkles, Loader2, ShieldCheck } from "lucide-react";
+import { Check, X, Sparkles, Loader2, ShieldCheck, Eye, Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { NeonThemePreview } from "@/components/shared/NeonThemePreview";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -105,6 +107,15 @@ function PricingPage() {
                       <Row label={`Transaction fee: ${p.txn_fee_pct}%`} ok={p.txn_fee_pct === 0} />
                       <Row label={p.ads_enabled ? "Ad-supported" : "Ad-free"} ok={!p.ads_enabled} />
                       {(p.features ?? []).map((f, i) => <Row key={i} label={f} ok />)}
+                      {p.id === "premium" ? (
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
+                          <span className="flex-1">Premium <b>Neon</b> theme (advanced look)</span>
+                          <ThemePreviewButton />
+                        </div>
+                      ) : (
+                        <Row label="Standard theme only" ok={false} />
+                      )}
                     </div>
                     <Button
                       asChild
@@ -166,5 +177,26 @@ function CompareRow({ label, values }: { label: string; values: string[] }) {
       <td className="p-4 font-medium">{label}</td>
       {values.map((v, i) => <td key={i} className="p-4 text-muted-foreground">{v}</td>)}
     </tr>
+  );
+}
+
+function ThemePreviewButton() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button className="text-xs inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-[#B91C1C]/15 text-[#F87171] border border-[#B91C1C]/30 hover:bg-[#B91C1C]/25">
+          <Eye className="h-3 w-3" /> Preview
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-sm bg-[#0d0d0d] border-white/10">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><Palette className="h-4 w-4" /> Neon theme preview</DialogTitle>
+        </DialogHeader>
+        <NeonThemePreview />
+        <p className="text-xs text-muted-foreground mt-2">
+          Premium-only. Switch back to the standard theme anytime in <b>Settings → Appearance</b>.
+        </p>
+      </DialogContent>
+    </Dialog>
   );
 }
