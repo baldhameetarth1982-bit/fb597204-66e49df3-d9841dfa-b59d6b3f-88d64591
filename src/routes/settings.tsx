@@ -355,8 +355,10 @@ function SettingsPage() {
             currentTheme={(profile as any)?.theme ?? "default"}
             societyId={profile?.society_id ?? null}
             userId={user?.id ?? null}
+            isSuperAdmin={isSuperAdmin}
             onChanged={() => refresh?.()}
           />
+
 
           <Card className="rounded-2xl">
             <CardHeader>
