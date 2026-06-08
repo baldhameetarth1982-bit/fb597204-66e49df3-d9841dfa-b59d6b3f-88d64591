@@ -43,8 +43,9 @@ function initials(name?: string | null, email?: string | null) {
 }
 
 function SettingsPage() {
-  const { user, profile, isLoading, isAuthenticated, refresh, signOut } =
+  const { user, profile, isLoading, isAuthenticated, refresh, signOut, hasRole } =
     useAuth() as any;
+  const isSuperAdmin = hasRole?.("super_admin") ?? false;
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
