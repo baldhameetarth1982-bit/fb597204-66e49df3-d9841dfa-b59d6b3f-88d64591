@@ -51,12 +51,12 @@ function BillStudio() {
         const { schedule } = await get({ data: { societyId } });
         if (schedule) {
           setSch(schedule);
-          setMode(schedule.mode);
+          setMode(schedule.mode as any);
           setAmount(String(schedule.amount));
-          setCycle(schedule.cycle);
+          setCycle(schedule.cycle as any);
           setAnchorDay(String(schedule.anchor_day));
           setDueOffsetDays(String(schedule.due_offset_days));
-          setLateFeeType(schedule.late_fee_type);
+          setLateFeeType(schedule.late_fee_type as any);
           setLateFeeValue(String(schedule.late_fee_value));
           setProrate(schedule.prorate);
           setEnabled(schedule.enabled);
