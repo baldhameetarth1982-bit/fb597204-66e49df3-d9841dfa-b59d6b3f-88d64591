@@ -35,6 +35,7 @@ interface BillRow {
 }
 
 function BillingPage() {
+  const { user } = useAuth();
   const { societyId, loading: sidLoading } = useSocietyId();
   const [rows, setRows] = useState<BillRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +47,12 @@ function BillingPage() {
   const [amount, setAmount] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [generating, setGenerating] = useState(false);
+
+  // Mark-paid dialog state
+  const [payBill, setPayBill] = useState<BillRow | null>(null);
+  const [payMethod, setPayMethod] = useState<"cash" | "upi" | "bank" | "cheque" | "other">("cash");
+  const [payRef, setPayRef] = useState("");
+  const [payingNow, setPayingNow] = useState(false);
 
   async function load() {
     if (!societyId) {
