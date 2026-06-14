@@ -211,23 +211,14 @@ function LoginPage() {
         variant="outline"
         disabled={loading}
         onClick={async () => {
-          if (!isFirebaseConfigured()) {
-            toast.error("Google sign-in unavailable — Firebase not configured");
-            return;
-          }
           setLoading(true);
           try {
-            const provider = new GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: "select_account" });
-            const result = await signInWithPopup(getFirebaseAuth(), provider);
-            const cred = GoogleAuthProvider.credentialFromResult(result);
-            const idToken = cred?.idToken;
-            if (!idToken) throw new Error("Could not get Google ID token");
-            const { error } = await supabase.auth.signInWithIdToken({
-              provider: "google",
-              token: idToken,
+            const result = await lovable.auth.signInWithOAuth("google", {
+              redirect_uri: window.location.origin,
+              extraParams: { prompt: "select_account" },
             });
-            if (error) throw error;
+            if (result.error) throw result.error;
+            if (result.redirected) return;
             toast.success("Welcome");
             navigate({ to: "/" });
           } catch (e) {
@@ -242,42 +233,6 @@ function LoginPage() {
         Continue with Google
       </Button>
 
-      <Button
-        type="button"
-        variant="outline"
-        disabled={loading}
-        onClick={async () => {
-          if (!isFirebaseConfigured()) {
-            toast.error("Apple sign-in unavailable");
-            return;
-          }
-          setLoading(true);
-          try {
-            const provider = new OAuthProvider("apple.com");
-            provider.addScope("email");
-            provider.addScope("name");
-            const result = await signInWithPopup(getFirebaseAuth(), provider);
-            const cred = OAuthProvider.credentialFromResult(result);
-            const idToken = cred?.idToken;
-            if (!idToken) throw new Error("Could not get Apple ID token");
-            const { error } = await supabase.auth.signInWithIdToken({
-              provider: "apple",
-              token: idToken,
-            });
-            if (error) throw error;
-            toast.success("Welcome");
-            navigate({ to: "/" });
-          } catch (e) {
-            toast.error(e instanceof Error ? e.message : "Apple sign-in failed");
-          } finally {
-            setLoading(false);
-          }
-        }}
-        className="mt-2 w-full h-11 rounded-xl font-semibold gap-2"
-      >
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M17.05 12.04c-.03-2.93 2.39-4.34 2.5-4.41-1.36-1.99-3.48-2.27-4.24-2.3-1.81-.18-3.53 1.07-4.45 1.07-.92 0-2.34-1.04-3.85-1.01-1.98.03-3.81 1.15-4.83 2.92-2.06 3.58-.53 8.87 1.48 11.78.98 1.42 2.15 3.02 3.68 2.96 1.48-.06 2.04-.96 3.83-.96 1.79 0 2.29.96 3.85.93 1.59-.03 2.6-1.45 3.57-2.88 1.13-1.65 1.59-3.25 1.61-3.33-.03-.01-3.09-1.19-3.15-4.77zM14.5 3.96c.82-.99 1.37-2.37 1.22-3.74-1.18.05-2.61.78-3.45 1.77-.76.88-1.42 2.28-1.24 3.63 1.31.1 2.65-.67 3.47-1.66z"/></svg>
-        Continue with Apple
-      </Button>
 
       <div className="mt-6 rounded-2xl bg-secondary/60 p-4 space-y-2">
         <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
