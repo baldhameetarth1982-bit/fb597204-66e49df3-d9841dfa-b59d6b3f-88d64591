@@ -44,9 +44,7 @@ export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: 
         {withSidebarTrigger && <SidebarTrigger className="hidden md:inline-flex rounded-xl h-10 w-10" />}
 
         <Link to="/" className="md:hidden flex items-center gap-2 ml-1">
-          <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground grid place-items-center text-sm font-bold">
-            S
-          </div>
+          <Logo size={32} />
           <span className="font-semibold tracking-tight">SocioHub</span>
         </Link>
 
