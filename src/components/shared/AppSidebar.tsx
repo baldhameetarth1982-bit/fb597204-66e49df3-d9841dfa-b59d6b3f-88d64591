@@ -9,6 +9,7 @@ import {
   SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton,
   SidebarMenuItem, useSidebar,
 } from "@/components/ui/sidebar";
+import { Logo } from "@/components/shared/Logo";
 
 const items = [
   { title: "Dashboard", url: "/society/dashboard", icon: LayoutDashboard },
