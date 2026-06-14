@@ -1,0 +1,13 @@
+REVOKE EXECUTE ON FUNCTION public.award_payment_points() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.award_post_points() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.award_society_referral() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.set_society_invite_code() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.set_profile_referral_code() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.touch_updated_at() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.generate_society_code() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.generate_referral_code() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.find_referrer_by_code(text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.get_society_invite_code(uuid) FROM anon, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.is_razorpay_live() FROM anon, PUBLIC;
+DROP POLICY IF EXISTS "post images publicly readable" ON storage.objects;
