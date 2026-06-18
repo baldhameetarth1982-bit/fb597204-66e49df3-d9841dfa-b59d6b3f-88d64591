@@ -140,6 +140,13 @@ function ThemeApplier() {
     if (theme === "neon") root.classList.add("theme-neon");
     else root.classList.remove("theme-neon");
   }, [profile]);
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("sociohub:a11y") === "1") {
+        document.documentElement.classList.add("a11y");
+      }
+    } catch {}
+  }, []);
   return null;
 }
 
