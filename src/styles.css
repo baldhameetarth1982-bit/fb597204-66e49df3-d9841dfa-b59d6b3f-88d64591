@@ -270,3 +270,23 @@
     font-size: 16px;
   }
 }
+
+/* ========================================================================
+ * Accessibility utilities (toggled via .a11y class on <html>)
+ * ====================================================================== */
+@layer base {
+  /* Always-on: visible keyboard focus ring on interactive elements. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring, 180 100% 25%));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Accessibility Mode: larger text, looser spacing for elderly users. */
+  html.a11y { font-size: 18px; }
+  html.a11y body { line-height: 1.7; letter-spacing: 0.01em; }
+  html.a11y p, html.a11y li, html.a11y label, html.a11y span { font-size: 1.05rem; }
+  html.a11y button, html.a11y [role="button"] { min-height: 52px; }
+  html.a11y .text-xs { font-size: 0.875rem; }
+  html.a11y .text-sm { font-size: 1rem; }
+}
