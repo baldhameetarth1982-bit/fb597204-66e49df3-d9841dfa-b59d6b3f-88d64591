@@ -13,8 +13,10 @@ import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as GdprRouteImport } from './routes/gdpr'
 import { Route as SocietyRouteImport } from './routes/_society'
 import { Route as ResidentRouteImport } from './routes/_resident'
 import { Route as AuthRouteImport } from './routes/_auth'
@@ -92,6 +94,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -100,6 +107,11 @@ const PricingRoute = PricingRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GdprRoute = GdprRouteImport.update({
+  id: '/gdpr',
+  path: '/gdpr',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SocietyRoute = SocietyRouteImport.update({
@@ -386,8 +398,10 @@ const ResidentAppFeedPostIdRoute = ResidentAppFeedPostIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/gdpr': typeof GdprRoute
   '/onboarding': typeof OnboardingRouteWithChildren
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -446,7 +460,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/gdpr': typeof GdprRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -510,8 +526,10 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteWithChildren
   '/_resident': typeof ResidentRouteWithChildren
   '/_society': typeof SocietyRouteWithChildren
+  '/gdpr': typeof GdprRoute
   '/onboarding': typeof OnboardingRouteWithChildren
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -572,8 +590,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/gdpr'
     | '/onboarding'
     | '/pricing'
+    | '/privacy'
     | '/settings'
     | '/support'
     | '/terms'
@@ -632,7 +652,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/gdpr'
     | '/pricing'
+    | '/privacy'
     | '/settings'
     | '/support'
     | '/terms'
@@ -695,8 +717,10 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/_resident'
     | '/_society'
+    | '/gdpr'
     | '/onboarding'
     | '/pricing'
+    | '/privacy'
     | '/settings'
     | '/support'
     | '/terms'
@@ -760,8 +784,10 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   ResidentRoute: typeof ResidentRouteWithChildren
   SocietyRoute: typeof SocietyRouteWithChildren
+  GdprRoute: typeof GdprRoute
   OnboardingRoute: typeof OnboardingRouteWithChildren
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
   SettingsRoute: typeof SettingsRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
@@ -801,6 +827,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -813,6 +846,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gdpr': {
+      id: '/gdpr'
+      path: '/gdpr'
+      fullPath: '/gdpr'
+      preLoaderRoute: typeof GdprRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_society': {
@@ -1367,8 +1407,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   ResidentRoute: ResidentRouteWithChildren,
   SocietyRoute: SocietyRouteWithChildren,
+  GdprRoute: GdprRoute,
   OnboardingRoute: OnboardingRouteWithChildren,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
   SettingsRoute: SettingsRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
@@ -1380,13 +1422,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
