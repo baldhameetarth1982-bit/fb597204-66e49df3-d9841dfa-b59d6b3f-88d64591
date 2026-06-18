@@ -620,6 +620,9 @@ function AppearanceCard({
           </p>
         )}
 
+        <Separator />
+        <A11yToggle />
+
         <details className="rounded-xl border p-3">
           <summary className="cursor-pointer text-sm font-medium">Live Neon preview</summary>
           <div className="mt-3"><NeonThemePreview /></div>
