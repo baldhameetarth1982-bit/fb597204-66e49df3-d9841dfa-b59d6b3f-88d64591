@@ -151,6 +151,52 @@ function LoginPage() {
     }
   };
 
+  if (mfa) {
+    return (
+      <AuthShell>
+        <h1 className="text-2xl font-semibold tracking-tight text-center">
+          Two-factor verification
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground text-center">
+          Enter the 6-digit code from your authenticator app.
+        </p>
+        <form
+          className="mt-6 space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void verifyMfa();
+          }}
+        >
+          <Input
+            inputMode="numeric"
+            maxLength={6}
+            value={mfaCode}
+            onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
+            placeholder="123456"
+            className="rounded-xl h-12 text-center tracking-[0.5em] text-xl"
+            autoFocus
+          />
+          <Button type="submit" disabled={loading} className="w-full rounded-xl h-11">
+            {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            Verify
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full rounded-xl"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              setMfa(null);
+              setMfaCode("");
+            }}
+          >
+            Cancel
+          </Button>
+        </form>
+      </AuthShell>
+    );
+  }
+
   return (
     <AuthShell>
       <h1 className="text-2xl font-semibold tracking-tight text-center">
@@ -161,6 +207,7 @@ function LoginPage() {
           ? "Sign in to manage your society."
           : "Get started in under a minute."}
       </p>
+
 
       <Tabs
         value={mode}
