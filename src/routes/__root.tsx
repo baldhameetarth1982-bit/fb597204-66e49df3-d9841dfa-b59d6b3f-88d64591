@@ -118,19 +118,25 @@ const AUTH_PATHS = ["/login", "/forgot-password", "/reset-password", "/support",
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    installGlobalErrorLogger();
+  }, []);
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <SplashScreen />
-        <ThemeApplier />
-        <ReferralCapture />
-        <MarketingAnalytics />
-        <ShellSwitcher />
-        <Toaster richColors closeButton position="top-right" />
-      </AuthProvider>
-    </QueryClientProvider>
+    <RootErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <SplashScreen />
+          <ThemeApplier />
+          <ReferralCapture />
+          <MarketingAnalytics />
+          <ShellSwitcher />
+          <Toaster richColors closeButton position="top-right" />
+        </AuthProvider>
+      </QueryClientProvider>
+    </RootErrorBoundary>
   );
 }
+
 
 function ThemeApplier() {
   const { profile } = useAuth();
