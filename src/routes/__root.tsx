@@ -19,6 +19,7 @@ import { ResidentBottomNav } from "@/components/shared/ResidentBottomNav";
 import { SocietyBottomNav } from "@/components/shared/SocietyBottomNav";
 import { Toaster } from "@/components/ui/sonner";
 import { SplashScreen } from "@/components/shared/SplashScreen";
+import { RootErrorBoundary, installGlobalErrorLogger } from "@/components/shared/RootErrorBoundary";
 
 function NotFoundComponent() {
   return (
