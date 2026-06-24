@@ -10,6 +10,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
+import {
+  assertLoginAllowed,
+  recordLoginFailure,
+  clearLoginFailures,
+} from "@/lib/login-guard.functions";
 
 export const Route = createFileRoute("/_auth/login")({
   head: () => ({
@@ -47,11 +52,17 @@ function LoginPage() {
           toast.error(parsed.error.issues[0].message);
           return;
         }
+        // Pre-auth rate-limit + soft lockout (5 fails / 15 min per email).
+        await assertLoginAllowed({ data: { email: parsed.data.email } });
         const { error } = await supabase.auth.signInWithPassword({
           email: parsed.data.email,
           password: parsed.data.password,
         });
-        if (error) throw error;
+        if (error) {
+          await recordLoginFailure({ data: { email: parsed.data.email } }).catch(() => {});
+          throw error;
+        }
+        await clearLoginFailures({ data: { email: parsed.data.email } }).catch(() => {});
         toast.success("Welcome back");
         navigate({ to: "/" });
       } else {
