@@ -52,11 +52,17 @@ function LoginPage() {
           toast.error(parsed.error.issues[0].message);
           return;
         }
+        // Pre-auth rate-limit + soft lockout (5 fails / 15 min per email).
+        await assertLoginAllowed({ data: { email: parsed.data.email } });
         const { error } = await supabase.auth.signInWithPassword({
           email: parsed.data.email,
           password: parsed.data.password,
         });
-        if (error) throw error;
+        if (error) {
+          await recordLoginFailure({ data: { email: parsed.data.email } }).catch(() => {});
+          throw error;
+        }
+        await clearLoginFailures({ data: { email: parsed.data.email } }).catch(() => {});
         toast.success("Welcome back");
         navigate({ to: "/" });
       } else {
