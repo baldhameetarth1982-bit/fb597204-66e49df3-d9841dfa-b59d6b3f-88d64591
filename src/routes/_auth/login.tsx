@@ -41,6 +41,56 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", full_name: "" });
   const [agreed, setAgreed] = useState(false);
+  // MFA challenge state — set after a successful password sign-in when the
+  // account has a verified TOTP factor (Supabase AAL2 required).
+  const [mfa, setMfa] = useState<{ factorId: string; challengeId: string } | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
+
+  async function completeSignIn(email: string) {
+    // If the account requires 2FA, Supabase reports nextLevel === 'aal2'.
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aal?.currentLevel !== "aal2" && aal?.nextLevel === "aal2") {
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const totp = factors?.totp.find((f) => f.status === "verified");
+      if (totp) {
+        const { data: ch, error: chErr } = await supabase.auth.mfa.challenge({
+          factorId: totp.id,
+        });
+        if (chErr) throw chErr;
+        setMfa({ factorId: totp.id, challengeId: ch.id });
+        return; // wait for code entry
+      }
+    }
+    await clearLoginFailures({ data: { email } }).catch(() => {});
+    toast.success("Welcome back");
+    navigate({ to: "/" });
+  }
+
+  async function verifyMfa() {
+    if (!mfa) return;
+    if (!/^\d{6}$/.test(mfaCode)) {
+      toast.error("Enter the 6-digit code");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.mfa.verify({
+        factorId: mfa.factorId,
+        challengeId: mfa.challengeId,
+        code: mfaCode,
+      });
+      if (error) throw error;
+      await clearLoginFailures({ data: { email: form.email } }).catch(() => {});
+      toast.success("Welcome back");
+      setMfa(null);
+      setMfaCode("");
+      navigate({ to: "/" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Invalid code");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,9 +112,8 @@ function LoginPage() {
           await recordLoginFailure({ data: { email: parsed.data.email } }).catch(() => {});
           throw error;
         }
-        await clearLoginFailures({ data: { email: parsed.data.email } }).catch(() => {});
-        toast.success("Welcome back");
-        navigate({ to: "/" });
+        await completeSignIn(parsed.data.email);
+
       } else {
         if (!agreed) {
           toast.error("Please accept the Terms of Service and Privacy Policy");
