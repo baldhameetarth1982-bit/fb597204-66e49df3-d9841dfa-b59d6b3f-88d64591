@@ -348,7 +348,10 @@ function SettingsPage() {
               />
             </CardContent>
           </Card>
+
+          <TwoFactorCard />
         </TabsContent>
+
 
         {/* MORE */}
         <TabsContent value="more" className="mt-6 space-y-6">
