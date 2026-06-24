@@ -1,18 +1,99 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
- * Daily cron hook. Generates bills for every society whose billing schedule
- * is enabled and due. Called by pg_cron via /api/public/hooks/run-billing.
+ * Daily billing cron hook.
  *
- * No external authentication required — Supabase service role is server-side
- * and the route only mutates internal billing tables. Idempotent per day:
- * if next_run_at is in the future we skip the society.
+ * SECURITY — DO NOT MAKE PUBLIC:
+ * This endpoint generates real billing rows for every society whose schedule
+ * is due. An unauthenticated caller could spam duplicate bills, exhaust the
+ * Data API quota, or pollute residents' ledgers. Therefore it lives under
+ * /api/public/* (which bypasses Lovable's edge auth) but enforces its OWN
+ * shared-secret check + per-IP rate limit. The secret MUST be a Cloudflare
+ * Worker secret (CRON_SECRET) — never a VITE_-prefixed variable, which would
+ * ship to every browser bundle.
+ *
+ * Caller contract:
+ *   POST /api/public/hooks/run-billing
+ *   Authorization: Bearer <CRON_SECRET>
+ *     -- or --
+ *   X-Cron-Secret: <CRON_SECRET>
+ *
+ * Configure pg_cron with:
+ *   SELECT net.http_post(
+ *     url := 'https://<project>.lovable.app/api/public/hooks/run-billing',
+ *     headers := jsonb_build_object(
+ *       'Content-Type','application/json',
+ *       'Authorization', 'Bearer ' || current_setting('app.cron_secret')
+ *     ),
+ *     body := '{}'::jsonb
+ *   );
+ *
+ * Idempotency: before inserting bills for (society, period_start, period_end),
+ * we check for an existing bill in that window and skip the society if found.
  */
 export const Route = createFileRoute("/api/public/hooks/run-billing")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const secret = process.env.CRON_SECRET;
+        if (!secret) {
+          // Fail closed; never run unauthenticated.
+          return new Response("Unauthorized", { status: 401 });
+        }
+
+        const auth = request.headers.get("authorization") ?? "";
+        const headerSecret = request.headers.get("x-cron-secret") ?? "";
+        const bearer = auth.toLowerCase().startsWith("bearer ")
+          ? auth.slice(7).trim()
+          : "";
+        const provided = bearer || headerSecret;
+
+        // Constant-time compare to avoid timing oracles.
+        function safeEqual(a: string, b: string) {
+          if (a.length !== b.length) return false;
+          let r = 0;
+          for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+          return r === 0;
+        }
+        if (!provided || !safeEqual(provided, secret)) {
+          // Generic error — never leak society_id, schedule state, or counts.
+          return new Response("Unauthorized", { status: 401 });
+        }
+
+        // Defense-in-depth: 1 req/min per IP.
+        const ip =
+          request.headers.get("cf-connecting-ip") ||
+          request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+          "unknown";
+
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+        const windowSec = 60;
+        const slot = new Date(
+          Math.floor(Date.now() / (windowSec * 1000)) * windowSec * 1000,
+        ).toISOString();
+        const { data: rl } = await supabaseAdmin
+          .from("rate_limits")
+          .select("count")
+          .eq("bucket", "cron:run-billing")
+          .eq("subject", ip)
+          .eq("window_start", slot)
+          .maybeSingle();
+        if ((rl?.count ?? 0) >= 1) {
+          return new Response("Too Many Requests", { status: 429 });
+        }
+        if (rl) {
+          await supabaseAdmin
+            .from("rate_limits")
+            .update({ count: (rl.count ?? 0) + 1 })
+            .eq("bucket", "cron:run-billing")
+            .eq("subject", ip)
+            .eq("window_start", slot);
+        } else {
+          await supabaseAdmin
+            .from("rate_limits")
+            .insert({ bucket: "cron:run-billing", subject: ip, window_start: slot, count: 1 });
+        }
 
         const nowIso = new Date().toISOString();
         const { data: schedules, error: schErr } = await supabaseAdmin
@@ -20,18 +101,35 @@ export const Route = createFileRoute("/api/public/hooks/run-billing")({
           .select("*")
           .eq("enabled", true)
           .lte("next_run_at", nowIso);
-        if (schErr) return Response.json({ error: schErr.message }, { status: 500 });
+        if (schErr) return new Response("Internal error", { status: 500 });
 
         let totalGenerated = 0;
-        const results: any[] = [];
+        let societiesProcessed = 0;
+        let societiesSkipped = 0;
 
         for (const sch of schedules ?? []) {
+          const now = new Date();
+          const pStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+          const pEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
+
+          // Idempotency: skip if any bill already exists for this society/period.
+          const { count: existingCount } = await supabaseAdmin
+            .from("bills")
+            .select("id", { count: "exact", head: true })
+            .eq("society_id", sch.society_id)
+            .eq("period_start", pStart)
+            .eq("period_end", pEnd);
+          if ((existingCount ?? 0) > 0) {
+            societiesSkipped++;
+            continue;
+          }
+
           const { data: flats } = await supabaseAdmin
             .from("flats")
             .select("id, area_sqft, type")
             .eq("society_id", sch.society_id);
           if (!flats?.length) {
-            results.push({ society: sch.society_id, skipped: "no_units" });
+            societiesSkipped++;
             continue;
           }
           const { data: overrides } = await supabaseAdmin
@@ -42,12 +140,9 @@ export const Route = createFileRoute("/api/public/hooks/run-billing")({
             (overrides ?? []).map((o: any) => [o.flat_id, Number(o.amount)]),
           );
 
-          const now = new Date();
           const due = new Date(now);
           due.setDate(due.getDate() + sch.due_offset_days);
           const period = now.toLocaleString("en-IN", { month: "long", year: "numeric" });
-          const pStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-          const pEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
 
           function bhk(t?: string | null) {
             if (!t) return 2;
@@ -75,11 +170,12 @@ export const Route = createFileRoute("/api/public/hooks/run-billing")({
 
           const { error: insErr } = await supabaseAdmin.from("bills").insert(rows);
           if (insErr) {
-            results.push({ society: sch.society_id, error: insErr.message });
+            societiesSkipped++;
             continue;
           }
 
           totalGenerated += rows.length;
+          societiesProcessed++;
           const cycle = sch.cycle as "weekly" | "monthly" | "quarterly";
           const next = new Date(now);
           if (cycle === "weekly") next.setDate(next.getDate() + 7);
@@ -95,11 +191,15 @@ export const Route = createFileRoute("/api/public/hooks/run-billing")({
               next_run_at: next.toISOString(),
             })
             .eq("id", sch.id);
-
-          results.push({ society: sch.society_id, generated: rows.length });
         }
 
-        return Response.json({ ok: true, totalGenerated, results });
+        // Aggregate-only response — no society_id or per-society details.
+        return Response.json({
+          ok: true,
+          totalGenerated,
+          societiesProcessed,
+          societiesSkipped,
+        });
       },
     },
   },
