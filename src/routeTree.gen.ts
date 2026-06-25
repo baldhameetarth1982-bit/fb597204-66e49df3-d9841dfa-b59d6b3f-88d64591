@@ -55,6 +55,7 @@ import { Route as ResidentAppTrustRouteImport } from './routes/_resident/app.tru
 import { Route as ResidentAppServicesRouteImport } from './routes/_resident/app.services'
 import { Route as ResidentAppProfileRouteImport } from './routes/_resident/app.profile'
 import { Route as ResidentAppPollsRouteImport } from './routes/_resident/app.polls'
+import { Route as ResidentAppPlanRequiredRouteImport } from './routes/_resident/app.plan-required'
 import { Route as ResidentAppNoticesRouteImport } from './routes/_resident/app.notices'
 import { Route as ResidentAppLedgerRouteImport } from './routes/_resident/app.ledger'
 import { Route as ResidentAppHelpdeskRouteImport } from './routes/_resident/app.helpdesk'
@@ -307,6 +308,11 @@ const ResidentAppPollsRoute = ResidentAppPollsRouteImport.update({
   path: '/app/polls',
   getParentRoute: () => ResidentRoute,
 } as any)
+const ResidentAppPlanRequiredRoute = ResidentAppPlanRequiredRouteImport.update({
+  id: '/app/plan-required',
+  path: '/app/plan-required',
+  getParentRoute: () => ResidentRoute,
+} as any)
 const ResidentAppNoticesRoute = ResidentAppNoticesRouteImport.update({
   id: '/app/notices',
   path: '/app/notices',
@@ -447,6 +453,7 @@ export interface FileRoutesByFullPath {
   '/app/helpdesk': typeof ResidentAppHelpdeskRoute
   '/app/ledger': typeof ResidentAppLedgerRoute
   '/app/notices': typeof ResidentAppNoticesRoute
+  '/app/plan-required': typeof ResidentAppPlanRequiredRoute
   '/app/polls': typeof ResidentAppPollsRoute
   '/app/profile': typeof ResidentAppProfileRoute
   '/app/services': typeof ResidentAppServicesRoute
@@ -510,6 +517,7 @@ export interface FileRoutesByTo {
   '/app/helpdesk': typeof ResidentAppHelpdeskRoute
   '/app/ledger': typeof ResidentAppLedgerRoute
   '/app/notices': typeof ResidentAppNoticesRoute
+  '/app/plan-required': typeof ResidentAppPlanRequiredRoute
   '/app/polls': typeof ResidentAppPollsRoute
   '/app/profile': typeof ResidentAppProfileRoute
   '/app/services': typeof ResidentAppServicesRoute
@@ -579,6 +587,7 @@ export interface FileRoutesById {
   '/_resident/app/helpdesk': typeof ResidentAppHelpdeskRoute
   '/_resident/app/ledger': typeof ResidentAppLedgerRoute
   '/_resident/app/notices': typeof ResidentAppNoticesRoute
+  '/_resident/app/plan-required': typeof ResidentAppPlanRequiredRoute
   '/_resident/app/polls': typeof ResidentAppPollsRoute
   '/_resident/app/profile': typeof ResidentAppProfileRoute
   '/_resident/app/services': typeof ResidentAppServicesRoute
@@ -645,6 +654,7 @@ export interface FileRouteTypes {
     | '/app/helpdesk'
     | '/app/ledger'
     | '/app/notices'
+    | '/app/plan-required'
     | '/app/polls'
     | '/app/profile'
     | '/app/services'
@@ -708,6 +718,7 @@ export interface FileRouteTypes {
     | '/app/helpdesk'
     | '/app/ledger'
     | '/app/notices'
+    | '/app/plan-required'
     | '/app/polls'
     | '/app/profile'
     | '/app/services'
@@ -776,6 +787,7 @@ export interface FileRouteTypes {
     | '/_resident/app/helpdesk'
     | '/_resident/app/ledger'
     | '/_resident/app/notices'
+    | '/_resident/app/plan-required'
     | '/_resident/app/polls'
     | '/_resident/app/profile'
     | '/_resident/app/services'
@@ -1146,6 +1158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResidentAppPollsRouteImport
       parentRoute: typeof ResidentRoute
     }
+    '/_resident/app/plan-required': {
+      id: '/_resident/app/plan-required'
+      path: '/app/plan-required'
+      fullPath: '/app/plan-required'
+      preLoaderRoute: typeof ResidentAppPlanRequiredRouteImport
+      parentRoute: typeof ResidentRoute
+    }
     '/_resident/app/notices': {
       id: '/_resident/app/notices'
       path: '/app/notices'
@@ -1350,6 +1369,7 @@ interface ResidentRouteChildren {
   ResidentAppHelpdeskRoute: typeof ResidentAppHelpdeskRoute
   ResidentAppLedgerRoute: typeof ResidentAppLedgerRoute
   ResidentAppNoticesRoute: typeof ResidentAppNoticesRoute
+  ResidentAppPlanRequiredRoute: typeof ResidentAppPlanRequiredRoute
   ResidentAppPollsRoute: typeof ResidentAppPollsRoute
   ResidentAppProfileRoute: typeof ResidentAppProfileRoute
   ResidentAppServicesRoute: typeof ResidentAppServicesRoute
@@ -1371,6 +1391,7 @@ const ResidentRouteChildren: ResidentRouteChildren = {
   ResidentAppHelpdeskRoute: ResidentAppHelpdeskRoute,
   ResidentAppLedgerRoute: ResidentAppLedgerRoute,
   ResidentAppNoticesRoute: ResidentAppNoticesRoute,
+  ResidentAppPlanRequiredRoute: ResidentAppPlanRequiredRoute,
   ResidentAppPollsRoute: ResidentAppPollsRoute,
   ResidentAppProfileRoute: ResidentAppProfileRoute,
   ResidentAppServicesRoute: ResidentAppServicesRoute,
