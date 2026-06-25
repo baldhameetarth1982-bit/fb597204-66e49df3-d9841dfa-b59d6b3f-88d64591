@@ -23,6 +23,7 @@ import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OnboardingIndexRouteImport } from './routes/onboarding.index'
+import { Route as OnboardingPlanRouteImport } from './routes/onboarding.plan'
 import { Route as OnboardingJoinRouteImport } from './routes/onboarding.join'
 import { Route as OnboardingCreateRouteImport } from './routes/onboarding.create'
 import { Route as CheckoutPlanIdRouteImport } from './routes/checkout.$planId'
@@ -138,6 +139,11 @@ const IndexRoute = IndexRouteImport.update({
 const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => OnboardingRoute,
+} as any)
+const OnboardingPlanRoute = OnboardingPlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
   getParentRoute: () => OnboardingRoute,
 } as any)
 const OnboardingJoinRoute = OnboardingJoinRouteImport.update({
@@ -414,6 +420,7 @@ export interface FileRoutesByFullPath {
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/onboarding/create': typeof OnboardingCreateRoute
   '/onboarding/join': typeof OnboardingJoinRoute
+  '/onboarding/plan': typeof OnboardingPlanRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/admin/ads': typeof AdminAdminAdsRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
@@ -475,6 +482,7 @@ export interface FileRoutesByTo {
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/onboarding/create': typeof OnboardingCreateRoute
   '/onboarding/join': typeof OnboardingJoinRoute
+  '/onboarding/plan': typeof OnboardingPlanRoute
   '/onboarding': typeof OnboardingIndexRoute
   '/admin/ads': typeof AdminAdminAdsRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
@@ -542,6 +550,7 @@ export interface FileRoutesById {
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/onboarding/create': typeof OnboardingCreateRoute
   '/onboarding/join': typeof OnboardingJoinRoute
+  '/onboarding/plan': typeof OnboardingPlanRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/_admin/admin/ads': typeof AdminAdminAdsRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
@@ -606,6 +615,7 @@ export interface FileRouteTypes {
     | '/checkout/$planId'
     | '/onboarding/create'
     | '/onboarding/join'
+    | '/onboarding/plan'
     | '/onboarding/'
     | '/admin/ads'
     | '/admin/dashboard'
@@ -667,6 +677,7 @@ export interface FileRouteTypes {
     | '/checkout/$planId'
     | '/onboarding/create'
     | '/onboarding/join'
+    | '/onboarding/plan'
     | '/onboarding'
     | '/admin/ads'
     | '/admin/dashboard'
@@ -733,6 +744,7 @@ export interface FileRouteTypes {
     | '/checkout/$planId'
     | '/onboarding/create'
     | '/onboarding/join'
+    | '/onboarding/plan'
     | '/onboarding/'
     | '/_admin/admin/ads'
     | '/_admin/admin/dashboard'
@@ -895,6 +907,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/onboarding/'
       preLoaderRoute: typeof OnboardingIndexRouteImport
+      parentRoute: typeof OnboardingRoute
+    }
+    '/onboarding/plan': {
+      id: '/onboarding/plan'
+      path: '/plan'
+      fullPath: '/onboarding/plan'
+      preLoaderRoute: typeof OnboardingPlanRouteImport
       parentRoute: typeof OnboardingRoute
     }
     '/onboarding/join': {
@@ -1388,12 +1407,14 @@ const SocietyRouteWithChildren =
 interface OnboardingRouteChildren {
   OnboardingCreateRoute: typeof OnboardingCreateRoute
   OnboardingJoinRoute: typeof OnboardingJoinRoute
+  OnboardingPlanRoute: typeof OnboardingPlanRoute
   OnboardingIndexRoute: typeof OnboardingIndexRoute
 }
 
 const OnboardingRouteChildren: OnboardingRouteChildren = {
   OnboardingCreateRoute: OnboardingCreateRoute,
   OnboardingJoinRoute: OnboardingJoinRoute,
+  OnboardingPlanRoute: OnboardingPlanRoute,
   OnboardingIndexRoute: OnboardingIndexRoute,
 }
 
