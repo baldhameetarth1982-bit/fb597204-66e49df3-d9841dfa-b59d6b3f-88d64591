@@ -182,10 +182,10 @@ function CreateSociety() {
         </Card>
 
         <Button
-          onClick={() => navigate({ to: "/society/dashboard" })}
+          onClick={() => navigate({ to: "/onboarding/plan" })}
           className="w-full h-12 rounded-xl"
         >
-          Continue to dashboard
+          Continue — choose your plan
         </Button>
       </div>
     );
