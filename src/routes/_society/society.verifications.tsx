@@ -183,6 +183,7 @@ function VerificationCard({
   signedUrl,
   busy,
   onApprove,
+  onReject,
   onRevoke,
   verified,
 }: {
@@ -190,6 +191,7 @@ function VerificationCard({
   signedUrl?: string;
   busy: boolean;
   onApprove?: () => void;
+  onReject?: () => void;
   onRevoke?: () => void;
   verified?: boolean;
 }) {
@@ -202,6 +204,10 @@ function VerificationCard({
             {verified ? (
               <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">
                 Verified
+              </Badge>
+            ) : p.aadhaar_rejected_at ? (
+              <Badge className="bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30">
+                Rejected
               </Badge>
             ) : (
               <Badge variant="secondary">Pending</Badge>
@@ -217,8 +223,13 @@ function VerificationCard({
               ? new Date(p.aadhaar_uploaded_at).toLocaleDateString()
               : "—"}
           </p>
+          {p.aadhaar_rejected_reason && !verified && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+              Reason: {p.aadhaar_rejected_reason}
+            </p>
+          )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {signedUrl ? (
             <Button asChild variant="outline" size="sm" className="rounded-xl">
               <a href={signedUrl} target="_blank" rel="noreferrer">
@@ -233,6 +244,17 @@ function VerificationCard({
           {!verified && onApprove && (
             <Button size="sm" className="rounded-xl" disabled={busy} onClick={onApprove}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Approve"}
+            </Button>
+          )}
+          {!verified && onReject && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl text-destructive border-destructive/40"
+              disabled={busy}
+              onClick={onReject}
+            >
+              <XCircle className="h-4 w-4 mr-1" /> Reject
             </Button>
           )}
           {verified && onRevoke && (
