@@ -480,9 +480,9 @@ function DeleteAccountRow({ email, onSignOut }: { email: string | null; onSignOu
               // Soft-delete: clear profile fields. Auth user removal needs admin/support.
               const { data: { user } } = await supabase.auth.getUser();
               if (user) {
+                await (supabase as any).rpc("reset_own_kyc");
                 await supabase.from("profiles").update({
                   full_name: "Deleted user", phone: null, avatar_url: null,
-                  aadhaar_url: null, aadhaar_last4: null, aadhaar_verified: false,
                 } as any).eq("id", user.id);
                 await supabase.from("family_members").delete().eq("user_id", user.id);
               }
