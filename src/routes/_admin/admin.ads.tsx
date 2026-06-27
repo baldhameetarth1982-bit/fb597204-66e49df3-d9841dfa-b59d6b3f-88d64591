@@ -41,7 +41,16 @@ function AdsPage() {
       (supabase as any).from("ads").select("*").order("created_at", { ascending: false }),
       supabase.from("platform_settings").select("ads_interstitial_enabled, ads_interstitial_seconds").eq("id", 1).maybeSingle(),
     ]);
-    setAds((adsData ?? []) as Ad[]);
+    const list = (adsData ?? []) as (Ad & { image_path?: string | null })[];
+    // Refresh signed URLs for private bucket entries
+    const refreshed = await Promise.all(list.map(async (ad) => {
+      if (ad.image_path) {
+        const { data } = await supabase.storage.from("ads").createSignedUrl(ad.image_path, 60 * 60 * 24 * 7);
+        if (data?.signedUrl) return { ...ad, image_url: data.signedUrl };
+      }
+      return ad;
+    }));
+    setAds(refreshed as Ad[]);
     if (settings) {
       setInterstitial(settings.ads_interstitial_enabled ?? false);
       setSeconds(settings.ads_interstitial_seconds ?? 15);
