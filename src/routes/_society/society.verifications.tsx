@@ -174,6 +174,38 @@ function VerificationsPage() {
           )}
         </div>
       )}
+      <Dialog open={!!rejectId} onOpenChange={(o) => { if (!o) { setRejectId(null); setRejectReason(""); } }}>
+        <DialogContent className="rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Reject KYC submission</DialogTitle>
+            <DialogDescription>
+              The resident will see this reason and be asked to re-upload their Aadhaar.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2">
+            <Label htmlFor="reject-reason">Reason</Label>
+            <Textarea
+              id="reject-reason"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Document is blurry — please re-upload a clearer photo."
+              rows={4}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setRejectId(null); setRejectReason(""); }}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={submitReject}
+              disabled={busyId === rejectId || rejectReason.trim().length === 0}
+            >
+              {busyId === rejectId ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send rejection"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }
