@@ -1,12 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ShieldCheck, Loader2, BadgeCheck, FileText, Clock } from "lucide-react";
+import { ShieldCheck, Loader2, BadgeCheck, FileText, Clock, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSocietyId } from "@/hooks/useSocietyId";
 import { PageHeader, PageShell, EmptyState } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_society/society/verifications")({
@@ -23,6 +28,8 @@ interface Pending {
   aadhaar_url: string | null;
   aadhaar_uploaded_at: string | null;
   aadhaar_verified: boolean | null;
+  aadhaar_rejected_reason?: string | null;
+  aadhaar_rejected_at?: string | null;
 }
 
 function VerificationsPage() {
@@ -38,7 +45,7 @@ function VerificationsPage() {
     const { data, error } = await (supabase as any)
       .from("profiles")
       .select(
-        "id, full_name, email, phone, aadhaar_last4, aadhaar_url, aadhaar_uploaded_at, aadhaar_verified",
+        "id, full_name, email, phone, aadhaar_last4, aadhaar_url, aadhaar_uploaded_at, aadhaar_verified, aadhaar_rejected_reason, aadhaar_rejected_at",
       )
       .eq("society_id", societyId)
       .not("aadhaar_uploaded_at", "is", null)
@@ -69,15 +76,33 @@ function VerificationsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [societyId, sidLoading]);
 
-  async function setVerified(id: string, value: boolean) {
+  const [rejectId, setRejectId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+
+  async function approve(id: string) {
     setBusyId(id);
-    const { error } = await (supabase as any)
-      .from("profiles")
-      .update({ aadhaar_verified: value })
-      .eq("id", id);
+    const { error } = await (supabase as any).rpc("verify_resident_kyc", {
+      _user_id: id, _approved: true, _reason: null,
+    });
     setBusyId(null);
     if (error) return toast.error(error.message);
-    toast.success(value ? "Resident verified" : "Marked unverified");
+    toast.success("Resident verified");
+    void load();
+  }
+
+  async function submitReject() {
+    if (!rejectId) return;
+    const reason = rejectReason.trim();
+    if (!reason) return toast.error("Please add a reason");
+    setBusyId(rejectId);
+    const { error } = await (supabase as any).rpc("verify_resident_kyc", {
+      _user_id: rejectId, _approved: false, _reason: reason,
+    });
+    setBusyId(null);
+    if (error) return toast.error(error.message);
+    toast.success("KYC rejected — resident notified");
+    setRejectId(null);
+    setRejectReason("");
     void load();
   }
 
@@ -124,7 +149,8 @@ function VerificationsPage() {
                   p={p}
                   signedUrl={signedUrls[p.id]}
                   busy={busyId === p.id}
-                  onApprove={() => setVerified(p.id, true)}
+                  onApprove={() => approve(p.id)}
+                  onReject={() => { setRejectId(p.id); setRejectReason(""); }}
                 />
               ))
             )}
@@ -140,7 +166,7 @@ function VerificationsPage() {
                   p={p}
                   signedUrl={signedUrls[p.id]}
                   busy={busyId === p.id}
-                  onRevoke={() => setVerified(p.id, false)}
+                  onRevoke={() => { setRejectId(p.id); setRejectReason("Verification revoked"); }}
                   verified
                 />
               ))}
@@ -148,6 +174,38 @@ function VerificationsPage() {
           )}
         </div>
       )}
+      <Dialog open={!!rejectId} onOpenChange={(o) => { if (!o) { setRejectId(null); setRejectReason(""); } }}>
+        <DialogContent className="rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Reject KYC submission</DialogTitle>
+            <DialogDescription>
+              The resident will see this reason and be asked to re-upload their Aadhaar.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2">
+            <Label htmlFor="reject-reason">Reason</Label>
+            <Textarea
+              id="reject-reason"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Document is blurry — please re-upload a clearer photo."
+              rows={4}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setRejectId(null); setRejectReason(""); }}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={submitReject}
+              disabled={busyId === rejectId || rejectReason.trim().length === 0}
+            >
+              {busyId === rejectId ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send rejection"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }
@@ -157,6 +215,7 @@ function VerificationCard({
   signedUrl,
   busy,
   onApprove,
+  onReject,
   onRevoke,
   verified,
 }: {
@@ -164,6 +223,7 @@ function VerificationCard({
   signedUrl?: string;
   busy: boolean;
   onApprove?: () => void;
+  onReject?: () => void;
   onRevoke?: () => void;
   verified?: boolean;
 }) {
@@ -176,6 +236,10 @@ function VerificationCard({
             {verified ? (
               <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">
                 Verified
+              </Badge>
+            ) : p.aadhaar_rejected_at ? (
+              <Badge className="bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30">
+                Rejected
               </Badge>
             ) : (
               <Badge variant="secondary">Pending</Badge>
@@ -191,8 +255,13 @@ function VerificationCard({
               ? new Date(p.aadhaar_uploaded_at).toLocaleDateString()
               : "—"}
           </p>
+          {p.aadhaar_rejected_reason && !verified && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+              Reason: {p.aadhaar_rejected_reason}
+            </p>
+          )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {signedUrl ? (
             <Button asChild variant="outline" size="sm" className="rounded-xl">
               <a href={signedUrl} target="_blank" rel="noreferrer">
@@ -207,6 +276,17 @@ function VerificationCard({
           {!verified && onApprove && (
             <Button size="sm" className="rounded-xl" disabled={busy} onClick={onApprove}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Approve"}
+            </Button>
+          )}
+          {!verified && onReject && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl text-destructive border-destructive/40"
+              disabled={busy}
+              onClick={onReject}
+            >
+              <XCircle className="h-4 w-4 mr-1" /> Reject
             </Button>
           )}
           {verified && onRevoke && (
