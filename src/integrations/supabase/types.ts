@@ -893,6 +893,10 @@ export type Database = {
       }
       profiles: {
         Row: {
+          aadhaar_rejected_at: string | null
+          aadhaar_rejected_reason: string | null
+          aadhaar_verified_at: string | null
+          aadhaar_verified_by: string | null
           accepted_terms_at: string | null
           avatar_url: string | null
           created_at: string
@@ -907,6 +911,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          aadhaar_rejected_at?: string | null
+          aadhaar_rejected_reason?: string | null
+          aadhaar_verified_at?: string | null
+          aadhaar_verified_by?: string | null
           accepted_terms_at?: string | null
           avatar_url?: string | null
           created_at?: string
@@ -921,6 +929,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          aadhaar_rejected_at?: string | null
+          aadhaar_rejected_reason?: string | null
+          aadhaar_verified_at?: string | null
+          aadhaar_verified_by?: string | null
           accepted_terms_at?: string | null
           avatar_url?: string | null
           created_at?: string
@@ -1481,10 +1493,19 @@ export type Database = {
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       join_society_with_code: { Args: { _code: string }; Returns: string }
+      reset_own_kyc: { Args: never; Returns: undefined }
+      reupload_own_kyc: {
+        Args: { _aadhaar_last4: string; _aadhaar_url: string }
+        Returns: undefined
+      }
       society_has_access: { Args: { _society_id: string }; Returns: boolean }
       start_trial_for_society: {
         Args: { _society_id: string }
         Returns: string
+      }
+      verify_resident_kyc: {
+        Args: { _approved: boolean; _reason?: string; _user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
