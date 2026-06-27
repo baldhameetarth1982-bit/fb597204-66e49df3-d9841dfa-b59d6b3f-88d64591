@@ -45,7 +45,7 @@ function VerificationsPage() {
     const { data, error } = await (supabase as any)
       .from("profiles")
       .select(
-        "id, full_name, email, phone, aadhaar_last4, aadhaar_url, aadhaar_uploaded_at, aadhaar_verified",
+        "id, full_name, email, phone, aadhaar_last4, aadhaar_url, aadhaar_uploaded_at, aadhaar_verified, aadhaar_rejected_reason, aadhaar_rejected_at",
       )
       .eq("society_id", societyId)
       .not("aadhaar_uploaded_at", "is", null)
