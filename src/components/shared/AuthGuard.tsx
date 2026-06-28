@@ -28,6 +28,10 @@ export function ProtectedRoute({ pathname, children }: { pathname: string; child
   if (isLoading || isCheckingProfile) return <FullScreenLoader />;
   if (!isAuthenticated) return <HardRedirectToLogin />;
 
+  if (pathname === "/admin") return <Navigate to="/admin/dashboard" replace />;
+  if (pathname === "/society") return <Navigate to="/society/dashboard" replace />;
+  if (pathname === "/app") return <Navigate to="/app/dashboard" replace />;
+
   if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
     return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/onboarding"} replace />;
   }
