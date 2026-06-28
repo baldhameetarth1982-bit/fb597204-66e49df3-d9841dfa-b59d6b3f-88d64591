@@ -15,29 +15,16 @@ function IncomePage() {
   const { data } = useQuery({
     queryKey: ["admin-income"],
     queryFn: async () => {
-      const [{ data: societies }, { data: payments }, { data: plans }] = await Promise.all([
-        supabase.from("societies").select("id, plan_id, status"),
-        supabase.from("payments").select("amount, status, created_at, society_id"),
-        supabase.from("plans").select("id, name, price_monthly_inr, txn_fee_pct"),
-      ]);
-      return { societies: societies ?? [], payments: payments ?? [], plans: plans ?? [] };
+      const { data, error } = await supabase.rpc("admin_income_summary" as any).maybeSingle();
+      if (error) throw error;
+      return data as any;
     },
   });
 
-  const planMap: Record<string, any> = Object.fromEntries((data?.plans ?? []).map((p: any) => [p.id, p]));
-  const subRev = (data?.societies ?? []).reduce((s: number, soc: any) => {
-    const p = soc.plan_id ? planMap[soc.plan_id] : null;
-    return s + (p ? Number(p.price_monthly_inr) : 0);
-  }, 0);
-  const txnRev = (data?.payments ?? []).reduce((s: number, pmt: any) => {
-    if (pmt.status !== "success") return s;
-    const soc = (data?.societies ?? []).find((x: any) => x.id === pmt.society_id);
-    const plan = soc?.plan_id ? planMap[soc.plan_id] : null;
-    const pct = plan ? Number(plan.txn_fee_pct) : 1.5;
-    return s + (Number(pmt.amount) * pct) / 100;
-  }, 0);
-
-  const total = subRev + txnRev;
+  const subRev = Number(data?.subscription_mrr ?? 0);
+  const txnRev = Number(data?.transaction_fee_revenue ?? 0);
+  const total = Number(data?.total_revenue ?? subRev + txnRev);
+  const plans = Array.isArray(data?.plans) ? data.plans : [];
 
   return (
     <div className="px-6 py-8 space-y-6 max-w-5xl">
@@ -58,8 +45,8 @@ function IncomePage() {
         <CardHeader><CardTitle className="text-base">Societies by plan</CardTitle></CardHeader>
         <CardContent>
           <div className="grid sm:grid-cols-2 gap-3">
-            {(data?.plans ?? []).map((p: any) => {
-              const count = (data?.societies ?? []).filter((s: any) => s.plan_id === p.id).length;
+            {plans.map((p: any) => {
+              const count = Number(p.society_count ?? 0);
               return (
                 <div key={p.id} className="flex items-center justify-between rounded-xl border p-3">
                   <div>
