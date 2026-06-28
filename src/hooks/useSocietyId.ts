@@ -47,13 +47,13 @@ export function useSocietyId() {
         return;
       }
 
-      if (hasRole(ROLES.SOCIETY_ADMIN) || hasRole(ROLES.BLOCK_ADMIN) || hasRole(ROLES.SECURITY)) {
+      if (hasRole(ROLES.SOCIETY_ADMIN) || hasRole(ROLES.BLOCK_ADMIN) || hasRole(ROLES.SECURITY) || hasRole(ROLES.RESIDENT)) {
         const { data } = await supabase
           .from("user_roles")
           .select("society_id")
           .eq("user_id", user.id)
-          .eq("role", "society_admin")
           .not("society_id", "is", null)
+          .order("created_at", { ascending: true })
           .limit(1)
           .maybeSingle();
         if (!cancelled) setSocietyId((data?.society_id as string) ?? null);

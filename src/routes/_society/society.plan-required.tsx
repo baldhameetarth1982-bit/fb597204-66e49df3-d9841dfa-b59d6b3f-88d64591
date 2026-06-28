@@ -22,8 +22,13 @@ function PlanRequired() {
   const { data: society } = useQuery({
     enabled: !!societyId,
     queryKey: ["society-state", societyId],
-    queryFn: async () =>
-      (await supabase.from("societies").select("id,name,plan_status,trial_ends_at,plan_id").eq("id", societyId!).maybeSingle()).data,
+    queryFn: async () => {
+      const [{ data: row }, { data: access }] = await Promise.all([
+        supabase.from("societies").select("id,name,plan_status,trial_ends_at,plan_id").eq("id", societyId!).maybeSingle(),
+        supabase.rpc("society_has_access", { _society_id: societyId! }),
+      ]);
+      return { ...(row ?? {}), has_access: Boolean(access) } as any;
+    },
   });
 
   const { data: plans } = useQuery({
@@ -34,9 +39,7 @@ function PlanRequired() {
   // If access magically came back, leave the page
   useEffect(() => {
     if (!society) return;
-    const ok = society.plan_status === "active" ||
-      (society.plan_status === "trialing" && society.trial_ends_at && new Date(society.trial_ends_at) > new Date());
-    if (ok) navigate({ to: "/society/dashboard" });
+    if (society.has_access) navigate({ to: "/society/dashboard", replace: true });
   }, [society, navigate]);
 
   const trialed = society?.plan_status === "trialing";
