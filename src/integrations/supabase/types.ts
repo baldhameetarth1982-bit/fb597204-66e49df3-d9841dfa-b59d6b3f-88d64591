@@ -1479,6 +1479,13 @@ export type Database = {
           total_earnings: number
         }[]
       }
+      get_razorpay_public_config: {
+        Args: never
+        Returns: {
+          configured: boolean
+          key_id: string
+        }[]
+      }
       get_society_invite_code: {
         Args: { _society_id: string }
         Returns: string
