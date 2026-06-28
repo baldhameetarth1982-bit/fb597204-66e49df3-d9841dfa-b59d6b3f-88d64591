@@ -85,7 +85,9 @@ function ResidentsPage() {
       setLoading(false);
     }
     if (!sidLoading) void load();
-  }, [societyId, sidLoading]);
+  }, [societyId, sidLoading, reloadKey]);
+
+  const unassignedCount = rows.filter((r) => !r.flat).length;
 
   const filtered = rows.filter((r) => {
     if (!q) return true;
