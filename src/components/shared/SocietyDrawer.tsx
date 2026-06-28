@@ -3,7 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Building2, Car, DoorOpen, LayoutDashboard, Megaphone, Menu, Receipt,
   ShieldCheck, Trophy, UserCheck, Users, Vote, Wallet, Wand2, Sparkles,
-  Calculator, BadgeCheck, LogOut, Settings, ListChecks, Wrench,
+  Calculator, BadgeCheck, LogOut, Settings, ListChecks, Wrench, CalendarRange,
 } from "lucide-react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose,
@@ -39,6 +39,7 @@ const GROUPS: Group[] = [
   {
     label: "Money",
     items: [
+      { label: "Maintenance", to: "/society/maintenance", icon: CalendarRange },
       { label: "Bill Studio", to: "/society/bill-studio", icon: Wand2 },
       { label: "Billing", to: "/society/billing", icon: Receipt },
       { label: "Expenses", to: "/society/expenses", icon: Wallet },
