@@ -100,7 +100,7 @@ function MaintenancePage() {
     try {
       const { created } = await seed({ data: { societyId: societyId!, amount: amt } });
       toast.success(`Seeded ${created} flat(s) for this month`);
-      load();
+      reload();
     } catch (e: any) { toast.error(e.message); } finally { setSeeding(false); }
   }
 
@@ -122,12 +122,12 @@ function MaintenancePage() {
       });
       toast.success("Bill generated");
       setBillFlat(null);
-      load();
+      reload();
       if (billId) window.location.href = `/society/billing#${billId}`;
     } catch (e: any) { toast.error(e.message); } finally { setCreating(false); }
   }
 
-  if (sidLoading || loading) {
+  if (sidLoading || isLoading) {
     return (
       <div className="min-h-[40vh] grid place-items-center text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin" />
