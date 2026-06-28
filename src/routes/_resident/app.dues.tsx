@@ -25,6 +25,8 @@ function DuesPage() {
   const { profile } = useAuth();
   const [bills, setBills] = useState<BillItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [noFlat, setNoFlat] = useState(false);
+  const [claimOpen, setClaimOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
