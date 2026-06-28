@@ -84,7 +84,7 @@ function SettingsPage() {
       </div>
     );
   }
-  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   async function save() {
     if (!user) return;

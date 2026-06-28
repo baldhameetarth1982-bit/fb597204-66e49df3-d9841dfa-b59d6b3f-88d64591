@@ -109,15 +109,26 @@ function BillingPage() {
     setGenerating(true);
     const { data: flats, error: fErr } = await supabase
       .from("flats")
-      .select("id")
-      .eq("society_id", societyId);
+      .select("id, block_id")
+      .eq("society_id", societyId)
+      .not("block_id", "is", null);
     if (fErr) {
       setGenerating(false);
       return toast.error(fErr.message);
     }
     if (!flats?.length) {
       setGenerating(false);
-      return toast.error("No flats found. Add blocks and flats first.");
+      return toast.error("Add blocks and assigned flats before generating bills.");
+    }
+    const { data: assigned } = await supabase
+      .from("flat_residents")
+      .select("flat_id")
+      .in("flat_id", flats.map((f: any) => f.id));
+    const assignedFlatIds = new Set((assigned ?? []).map((r: any) => r.flat_id));
+    const billableFlats = flats.filter((f: any) => assignedFlatIds.has(f.id));
+    if (!billableFlats.length) {
+      setGenerating(false);
+      return toast.error("Assign residents to flats before generating bills.");
     }
     const due = new Date(dueDate);
     const start = new Date(due.getFullYear(), due.getMonth(), 1)
@@ -125,7 +136,7 @@ function BillingPage() {
     const end = new Date(due.getFullYear(), due.getMonth() + 1, 0)
       .toISOString().slice(0, 10);
 
-    const payload = flats.map((f: any) => ({
+    const payload = billableFlats.map((f: any) => ({
       society_id: societyId,
       flat_id: f.id,
       period_label: period.trim(),

@@ -18,9 +18,9 @@ function AdminGuard() {
       </div>
     );
   }
-  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!hasRole(ROLES.SUPER_ADMIN)) {
-    return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/login"} />;
+    return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/login"} replace />;
   }
   return <Outlet />;
 }

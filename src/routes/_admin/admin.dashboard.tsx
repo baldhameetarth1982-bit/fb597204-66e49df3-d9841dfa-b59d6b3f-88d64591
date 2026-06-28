@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LayoutDashboard, Banknote, CreditCard, Tags, ArrowRight, BarChart3, Megaphone, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -19,6 +21,15 @@ const TILES = [
 ] as const;
 
 function AdminDashboard() {
+  const { data: summary } = useQuery({
+    queryKey: ["admin-platform-summary"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_platform_summary");
+      if (error) throw error;
+      return data?.[0] ?? null;
+    },
+  });
+
   return (
     <div className="px-6 py-8 space-y-6 max-w-5xl">
       <header>
@@ -27,6 +38,13 @@ function AdminDashboard() {
         </h1>
         <p className="text-sm text-muted-foreground mt-1">Platform-wide tools — analytics, plans, payments and ads only.</p>
       </header>
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Metric title="Users" value={summary?.total_users ?? "—"} />
+        <Metric title="Societies" value={summary?.total_societies ?? "—"} />
+        <Metric title="Active plans" value={summary?.active_societies ?? "—"} />
+        <Metric title="Trials" value={summary?.trialing_societies ?? "—"} />
+      </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {TILES.map((t) => (
@@ -45,5 +63,16 @@ function AdminDashboard() {
         ))}
       </div>
     </div>
+  );
+}
+
+function Metric({ title, value }: { title: string; value: number | string }) {
+  return (
+    <Card className="rounded-2xl">
+      <CardContent className="p-5">
+        <p className="text-sm text-muted-foreground">{title}</p>
+        <p className="mt-1 text-3xl font-bold tabular-nums">{value}</p>
+      </CardContent>
+    </Card>
   );
 }

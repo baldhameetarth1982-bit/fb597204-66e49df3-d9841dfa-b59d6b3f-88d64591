@@ -23,7 +23,7 @@ function OnboardingChoice() {
     );
   }
   if (profile?.society_id && primaryRole) {
-    return <Navigate to={ROLE_HOME[primaryRole]} />;
+    return <Navigate to={ROLE_HOME[primaryRole]} replace />;
   }
   const firstName = profile?.full_name?.split(" ")[0] ?? "there";
 

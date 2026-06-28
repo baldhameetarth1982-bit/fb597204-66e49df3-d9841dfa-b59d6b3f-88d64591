@@ -1446,6 +1446,45 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_list_societies: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          name: string
+          plan_expires_at: string
+          plan_id: string
+          plan_status: string
+          status: string
+        }[]
+      }
+      admin_list_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string
+          plan_expires_at: string
+          plan_id: string
+          plan_status: string
+          roles: Json
+          society_id: string
+          society_name: string
+        }[]
+      }
+      admin_platform_summary: {
+        Args: never
+        Returns: {
+          active_societies: number
+          successful_payment_total: number
+          total_societies: number
+          total_users: number
+          trialing_societies: number
+          unpaid_bill_total: number
+        }[]
+      }
       apply_referral_for_current_user: {
         Args: { _code: string }
         Returns: boolean
@@ -1481,6 +1520,15 @@ export type Database = {
       generate_society_code: { Args: never; Returns: string }
       get_admin_block_ids: { Args: { _user_id: string }; Returns: string[] }
       get_admin_society_ids: { Args: { _user_id: string }; Returns: string[] }
+      get_current_auth_context: {
+        Args: never
+        Returns: {
+          primary_role: string
+          profile: Json
+          roles: Json
+          society_id: string
+        }[]
+      }
       get_partner_summary_for_current_user: {
         Args: never
         Returns: {
@@ -1508,6 +1556,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_active_society_plan: {
+        Args: { _society_id: string }
         Returns: boolean
       }
       is_block_admin: {

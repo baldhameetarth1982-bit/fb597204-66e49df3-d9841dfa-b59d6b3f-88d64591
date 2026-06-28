@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import {
   Outlet,
   Link,
-  Navigate,
   createRootRouteWithContext,
   useRouter,
   useRouterState,
@@ -21,6 +20,7 @@ import { SocietyBottomNav } from "@/components/shared/SocietyBottomNav";
 import { Toaster } from "@/components/ui/sonner";
 import { SplashScreen } from "@/components/shared/SplashScreen";
 import { RootErrorBoundary, installGlobalErrorLogger } from "@/components/shared/RootErrorBoundary";
+import { ProtectedRoute } from "@/components/shared/AuthGuard";
 
 function NotFoundComponent() {
   return (
@@ -199,28 +199,27 @@ function MarketingAnalytics() {
 
 function ShellSwitcher() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { isLoading, isAuthenticated } = useAuth();
   const isProtectedPath = ["/app", "/society", "/admin", "/settings", "/onboarding"].some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
-  );
+  ) || pathname === "/dashboard" || pathname.startsWith("/dashboard/");
 
-  // Bare shell: auth pages
-  if (AUTH_PATHS.some((p) => pathname.startsWith(p))) {
+  // Bare shell: auth/redirect pages must not mount app layouts before routing settles.
+  if (pathname === "/" || AUTH_PATHS.some((p) => pathname.startsWith(p))) {
     return <Outlet />;
   }
 
-  if (isProtectedPath && isLoading) {
+  if (isProtectedPath) {
     return (
-      <div className="min-h-screen grid place-items-center bg-background text-muted-foreground">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
+      <ProtectedRoute pathname={pathname}>
+        <ProtectedShell pathname={pathname} />
+      </ProtectedRoute>
     );
   }
 
-  if (isProtectedPath && !isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
+  return <DefaultShell />;
+}
 
+function ProtectedShell({ pathname }: { pathname: string }) {
   // Resident shell: native mobile app frame, fixed bottom nav
   if (pathname.startsWith("/app") || pathname.startsWith("/onboarding")) {
     return (
@@ -256,6 +255,10 @@ function ShellSwitcher() {
   }
 
   // Default admin shell: sidebar + header
+  return <DefaultShell />;
+}
+
+function DefaultShell() {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">

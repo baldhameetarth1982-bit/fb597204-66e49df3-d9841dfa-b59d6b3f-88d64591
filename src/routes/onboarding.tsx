@@ -19,10 +19,10 @@ function OnboardingLayout() {
       </div>
     );
   }
-  if (!isAuthenticated) return <Navigate to="/login" />;
-  if (primaryRole === ROLES.SUPER_ADMIN) return <Navigate to={ROLE_HOME[ROLES.SUPER_ADMIN]} />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (primaryRole === ROLES.SUPER_ADMIN) return <Navigate to={ROLE_HOME[ROLES.SUPER_ADMIN]} replace />;
   if (societyId && primaryRole && pathname !== "/onboarding/plan") {
-    return <Navigate to={ROLE_HOME[primaryRole]} />;
+    return <Navigate to={ROLE_HOME[primaryRole]} replace />;
   }
   return <Outlet />;
 }

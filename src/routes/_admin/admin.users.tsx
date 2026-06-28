@@ -38,11 +38,7 @@ function UsersPage() {
   const { data: users, isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ["admin-users-all"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name, email, phone, created_at, society_id, societies(id, name, plan_id, plan_status, plan_expires_at)")
-        .order("created_at", { ascending: false })
-        .limit(500);
+      const { data, error } = await supabase.rpc("admin_list_users");
       if (error) { toast.error(`Users: ${error.message}`); throw error; }
       return data ?? [];
     },
@@ -51,10 +47,7 @@ function UsersPage() {
   const { data: societies, error: societiesError } = useQuery({
     queryKey: ["admin-societies-all"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("societies")
-        .select("id, name, plan_id, plan_status, plan_expires_at")
-        .order("name");
+      const { data, error } = await supabase.rpc("admin_list_societies");
       if (error) { toast.error(`Societies: ${error.message}`); throw error; }
       return (data ?? []) as Society[];
     },
@@ -91,7 +84,7 @@ function UsersPage() {
       (u.full_name ?? "").toLowerCase().includes(q) ||
       (u.email ?? "").toLowerCase().includes(q) ||
       (u.phone ?? "").toLowerCase().includes(q) ||
-      (u.societies?.name ?? "").toLowerCase().includes(q),
+      (u.society_name ?? "").toLowerCase().includes(q),
     );
   }, [users, search]);
 
@@ -204,18 +197,24 @@ function UsersPage() {
                         <div>{u.email || "—"}</div>
                         {u.phone && <div className="text-muted-foreground">{u.phone}</div>}
                       </TableCell>
-                      <TableCell>{u.societies?.name ?? <span className="text-muted-foreground">—</span>}</TableCell>
+                      <TableCell>{u.society_name ?? <span className="text-muted-foreground">—</span>}</TableCell>
                       <TableCell>
-                        {u.societies ? <Badge variant="secondary">{u.societies.plan_id ?? "—"}</Badge> : "—"}
+                        {u.society_id ? <Badge variant="secondary">{u.plan_id ?? "—"}</Badge> : "—"}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(u.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right">
-                        {u.societies ? (
+                        {u.society_id ? (
                           <Button size="sm" variant="outline" className="rounded-lg" onClick={() => {
-                            setGrantTarget(u.societies as Society);
-                            setPlanId(u.societies.plan_id && u.societies.plan_id !== "trial" ? u.societies.plan_id : "pro");
+                            setGrantTarget({
+                              id: u.society_id,
+                              name: u.society_name ?? "Society",
+                              plan_id: u.plan_id,
+                              plan_status: u.plan_status,
+                              plan_expires_at: u.plan_expires_at,
+                            });
+                            setPlanId(u.plan_id && u.plan_id !== "trial" ? u.plan_id : "pro");
                             setMonths(12);
                           }}>
                             <Crown className="h-4 w-4 mr-1" /> Grant plan

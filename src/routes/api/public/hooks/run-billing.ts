@@ -126,9 +126,21 @@ export const Route = createFileRoute("/api/public/hooks/run-billing")({
 
           const { data: flats } = await supabaseAdmin
             .from("flats")
-            .select("id, area_sqft, type")
-            .eq("society_id", sch.society_id);
+            .select("id, area_sqft, type, block_id")
+            .eq("society_id", sch.society_id)
+            .not("block_id", "is", null);
           if (!flats?.length) {
+            societiesSkipped++;
+            continue;
+          }
+          const flatIds = (flats as any[]).map((f) => f.id);
+          const { data: assignedResidents } = await supabaseAdmin
+            .from("flat_residents")
+            .select("flat_id")
+            .in("flat_id", flatIds);
+          const assignedFlatIds = new Set((assignedResidents ?? []).map((r: any) => r.flat_id));
+          const billableFlats = (flats as any[]).filter((f) => assignedFlatIds.has(f.id));
+          if (!billableFlats.length) {
             societiesSkipped++;
             continue;
           }
@@ -150,7 +162,7 @@ export const Route = createFileRoute("/api/public/hooks/run-billing")({
             return m ? Number(m[1]) : 2;
           }
 
-          const rows = (flats as any[]).map((f) => {
+          const rows = billableFlats.map((f) => {
             let amt: number;
             if (ovMap.has(f.id)) amt = ovMap.get(f.id)!;
             else if (sch.mode === "per_sqft") amt = Number(sch.amount) * Number(f.area_sqft || 0);

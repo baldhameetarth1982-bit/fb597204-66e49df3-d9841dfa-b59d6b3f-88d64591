@@ -26,8 +26,17 @@ function PlanGate() {
   const { data: society } = useQuery({
     enabled: !!societyId,
     queryKey: ["society-plan-state", societyId],
-    queryFn: async () =>
-      (await supabase.from("societies").select("id,name,plan_status,trial_ends_at").eq("id", societyId!).maybeSingle()).data,
+    queryFn: async () => {
+      const [{ data: row }, { data: access }] = await Promise.all([
+        supabase
+          .from("societies")
+          .select("id,name,plan_id,plan_status,plan_expires_at,trial_ends_at")
+          .eq("id", societyId!)
+          .maybeSingle(),
+        supabase.rpc("society_has_access", { _society_id: societyId! }),
+      ]);
+      return { ...(row ?? {}), has_access: Boolean(access) } as any;
+    },
   });
 
   const { data: plans } = useQuery({
@@ -38,9 +47,7 @@ function PlanGate() {
   // If access is already granted, kick into the app.
   useEffect(() => {
     if (!society) return;
-    const active = society.plan_status === "active" ||
-      (society.plan_status === "trialing" && society.trial_ends_at && new Date(society.trial_ends_at) > new Date());
-    if (active) navigate({ to: "/society/dashboard" });
+    if (society.has_access) navigate({ to: "/society/dashboard", replace: true });
   }, [society, navigate]);
 
   if (isLoading || sLoading) {
@@ -50,8 +57,8 @@ function PlanGate() {
       </div>
     );
   }
-  if (!isAuthenticated) return <Navigate to="/login" />;
-  if (!societyId) return <Navigate to="/onboarding/create" />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!societyId) return <Navigate to="/onboarding/create" replace />;
 
   async function startTrial() {
     setBusy(true);
@@ -59,7 +66,7 @@ function PlanGate() {
     setBusy(false);
     if (error) { toast.error(error.message); return; }
     toast.success("14-day free trial started 🎉");
-    navigate({ to: "/society/dashboard" });
+    navigate({ to: "/society/dashboard", replace: true });
   }
 
   const paid = (plans ?? []).filter((p: any) => p.id !== "trial");
