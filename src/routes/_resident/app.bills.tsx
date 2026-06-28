@@ -107,7 +107,26 @@ function BillsScreen() {
         <p className="text-sm text-muted-foreground">Your maintenance & society dues{online ? "" : " · offline cache"}</p>
       </header>
 
-      {/* Outstanding hero */}
+      {noFlat && (
+        <Card className="rounded-2xl border-amber-500/30 bg-amber-500/10">
+          <CardContent className="p-4 flex items-start gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-500/20 grid place-items-center shrink-0">
+              <Home className="h-5 w-5 text-amber-700 dark:text-amber-200" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-sm">You're not linked to a flat yet</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Pick your flat so bills can reach you. Your society admin will approve it.
+              </p>
+              <Button size="sm" className="mt-3 rounded-lg" onClick={() => setClaimOpen(true)}>
+                Pick my flat
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+
       <Card className="rounded-3xl border-0 shadow-md bg-gradient-to-br from-primary to-primary/85 text-primary-foreground">
         <CardContent className="p-6">
           <div className="flex items-center gap-2 opacity-80">
