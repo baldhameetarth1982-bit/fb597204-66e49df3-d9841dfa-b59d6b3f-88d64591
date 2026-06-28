@@ -23,9 +23,9 @@ function HardRedirectToLogin() {
 }
 
 export function ProtectedRoute({ pathname, children }: { pathname: string; children: ReactNode }) {
-  const { isLoading, isAuthenticated, primaryRole, profile } = useAuth();
+  const { isLoading, isCheckingProfile, isAuthenticated, primaryRole, profile } = useAuth();
 
-  if (isLoading) return <FullScreenLoader />;
+  if (isLoading || isCheckingProfile) return <FullScreenLoader />;
   if (!isAuthenticated) return <HardRedirectToLogin />;
 
   if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {

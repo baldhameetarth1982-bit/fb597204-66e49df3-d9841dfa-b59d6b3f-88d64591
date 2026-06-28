@@ -26,6 +26,7 @@ export interface AuthProfile {
 
 export interface AuthState {
   isLoading: boolean;
+  isCheckingProfile: boolean;
   isAuthenticated: boolean;
   user: User | null;
   session: Session | null;
@@ -189,6 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ROLE_PRIORITY.find((r) => roles.includes(r)) ?? null;
     return {
       isLoading,
+      isCheckingProfile: isLoading,
       isAuthenticated: !!session,
       user,
       session,
