@@ -297,6 +297,104 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_field_values: {
+        Row: {
+          created_at: string
+          field_id: string
+          file_path: string | null
+          id: string
+          society_id: string
+          updated_at: string
+          user_id: string
+          value: Json | null
+        }
+        Insert: {
+          created_at?: string
+          field_id: string
+          file_path?: string | null
+          id?: string
+          society_id: string
+          updated_at?: string
+          user_id: string
+          value?: Json | null
+        }
+        Update: {
+          created_at?: string
+          field_id?: string
+          file_path?: string | null
+          id?: string
+          society_id?: string
+          updated_at?: string
+          user_id?: string
+          value?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_field_values_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "custom_fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_field_values_society_id_fkey"
+            columns: ["society_id"]
+            isOneToOne: false
+            referencedRelation: "societies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_fields: {
+        Row: {
+          created_at: string
+          field_type: string
+          id: string
+          key: string
+          label: string
+          options: Json | null
+          required: boolean
+          society_id: string
+          sort_order: number
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          created_at?: string
+          field_type: string
+          id?: string
+          key: string
+          label: string
+          options?: Json | null
+          required?: boolean
+          society_id: string
+          sort_order?: number
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          created_at?: string
+          field_type?: string
+          id?: string
+          key?: string
+          label?: string
+          options?: Json | null
+          required?: boolean
+          society_id?: string
+          sort_order?: number
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_fields_society_id_fkey"
+            columns: ["society_id"]
+            isOneToOne: false
+            referencedRelation: "societies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number
@@ -1196,6 +1294,80 @@ export type Database = {
           },
         ]
       }
+      society_settings: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          grace_days: number
+          late_fee_amount: number
+          late_fee_type: string
+          maintenance_due_day: number
+          maintenance_frequency: string
+          opening_balance_date: string | null
+          opening_bank: number
+          opening_cash: number
+          pincode: string | null
+          registration_no: string | null
+          setup_completed_at: string | null
+          society_id: string
+          state: string | null
+          structure_type: string
+          updated_at: string
+          wizard_step: number
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          grace_days?: number
+          late_fee_amount?: number
+          late_fee_type?: string
+          maintenance_due_day?: number
+          maintenance_frequency?: string
+          opening_balance_date?: string | null
+          opening_bank?: number
+          opening_cash?: number
+          pincode?: string | null
+          registration_no?: string | null
+          setup_completed_at?: string | null
+          society_id: string
+          state?: string | null
+          structure_type?: string
+          updated_at?: string
+          wizard_step?: number
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          grace_days?: number
+          late_fee_amount?: number
+          late_fee_type?: string
+          maintenance_due_day?: number
+          maintenance_frequency?: string
+          opening_balance_date?: string | null
+          opening_bank?: number
+          opening_cash?: number
+          pincode?: string | null
+          registration_no?: string | null
+          setup_completed_at?: string | null
+          society_id?: string
+          state?: string | null
+          structure_type?: string
+          updated_at?: string
+          wizard_step?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "society_settings_society_id_fkey"
+            columns: ["society_id"]
+            isOneToOne: true
+            referencedRelation: "societies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_tickets: {
         Row: {
           ai_transcript: Json | null
@@ -1549,6 +1721,10 @@ export type Database = {
       authorize_membership: {
         Args: { _society_id: string; _user_id: string }
         Returns: boolean
+      }
+      complete_setup_wizard: {
+        Args: { _society_id: string }
+        Returns: undefined
       }
       create_society_for_current_user: {
         Args: {
