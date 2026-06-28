@@ -41,6 +41,20 @@ function GuardDashboard() {
     vehicle_number: "",
     purpose: "",
   });
+  const [code, setCode] = useState("");
+  const [codeBusy, setCodeBusy] = useState(false);
+
+  async function checkinByCode() {
+    if (!societyId) return;
+    if (!/^\d{6}$/.test(code)) return toast.error("Enter the 6-digit code");
+    setCodeBusy(true);
+    const { error } = await supabase.rpc("guard_checkin_by_code", { _society_id: societyId, _code: code });
+    setCodeBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Visitor checked in");
+    setCode("");
+    void load();
+  }
 
   const allowed =
     roles.includes("security" as never) ||
