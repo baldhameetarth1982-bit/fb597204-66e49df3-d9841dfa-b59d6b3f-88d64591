@@ -39,7 +39,7 @@ export const ensureMaintenancePeriod = createServerFn({ method: "POST" })
       _flat_id: data.flatId,
       _period_start: data.periodStart,
       _amount: data.amount,
-      _due_date: data.dueDate ?? null,
+      _due_date: data.dueDate ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { id };
@@ -77,7 +77,7 @@ export const seedCurrentMonthMaintenance = createServerFn({ method: "POST" })
         _flat_id: f.id,
         _period_start: periodStart,
         _amount: data.amount,
-        _due_date: null,
+        _due_date: undefined,
       });
       if (!rpcErr) created++;
     }
@@ -104,8 +104,8 @@ export const generateFlatBill = createServerFn({ method: "POST" })
       _flat_id: data.flatId,
       _period_ids: data.periodIds,
       _additional: data.additional as any,
-      _due_date: data.dueDate ?? null,
-      _notes: data.notes ?? null,
+      _due_date: data.dueDate ?? undefined,
+      _notes: data.notes ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { billId };
