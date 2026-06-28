@@ -35,7 +35,7 @@ function UsersPage() {
   const [planId, setPlanId] = useState("pro");
   const [months, setMonths] = useState(12);
 
-  const { data: users, isLoading: usersLoading } = useQuery({
+  const { data: users, isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ["admin-users-all"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -43,18 +43,19 @@ function UsersPage() {
         .select("id, full_name, email, phone, created_at, society_id, societies(id, name, plan_id, plan_status, plan_expires_at)")
         .order("created_at", { ascending: false })
         .limit(500);
-      if (error) throw error;
+      if (error) { toast.error(`Users: ${error.message}`); throw error; }
       return data ?? [];
     },
   });
 
-  const { data: societies } = useQuery({
+  const { data: societies, error: societiesError } = useQuery({
     queryKey: ["admin-societies-all"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("societies")
         .select("id, name, plan_id, plan_status, plan_expires_at")
         .order("name");
+      if (error) { toast.error(`Societies: ${error.message}`); throw error; }
       return (data ?? []) as Society[];
     },
   });
@@ -115,6 +116,12 @@ function UsersPage() {
           />
         </div>
       </header>
+
+      {(usersError || societiesError) && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+          {(usersError as any)?.message || (societiesError as any)?.message}
+        </div>
+      )}
 
       {/* Societies — quick grant */}
       <Card className="rounded-2xl">
