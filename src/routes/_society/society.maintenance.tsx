@@ -140,9 +140,8 @@ function MaintenancePage() {
   return (
     <PageShell>
       <PageHeader
-        icon={CalendarRange}
         title="Maintenance"
-        subtitle="Track every flat's monthly maintenance — independent of bills."
+        description="Track every flat's monthly maintenance — independent of bills."
       />
 
       <Card className="rounded-2xl">
