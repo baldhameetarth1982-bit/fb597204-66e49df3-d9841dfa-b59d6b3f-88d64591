@@ -1,15 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Users, Loader2, Search } from "lucide-react";
+import { Users, Loader2, Search, AlertTriangle, Link2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSocietyId } from "@/hooks/useSocietyId";
 import { PageHeader, PageShell, EmptyState } from "@/components/shared/PageHeader";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import { AssignFlatDialog } from "@/components/society/AssignFlatDialog";
 
 export const Route = createFileRoute("/_society/society/residents")({
   head: () => ({ meta: [{ title: "Residents — SocioHub" }] }),
@@ -36,6 +38,8 @@ function ResidentsPage() {
   const [rows, setRows] = useState<ResidentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+  const [assignTarget, setAssignTarget] = useState<ResidentRow | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     async function load() {
@@ -81,7 +85,9 @@ function ResidentsPage() {
       setLoading(false);
     }
     if (!sidLoading) void load();
-  }, [societyId, sidLoading]);
+  }, [societyId, sidLoading, reloadKey]);
+
+  const unassignedCount = rows.filter((r) => !r.flat).length;
 
   const filtered = rows.filter((r) => {
     if (!q) return true;
@@ -104,6 +110,16 @@ function ResidentsPage() {
         title="Residents"
         description="Everyone living in your society."
       />
+
+      {!loading && unassignedCount > 0 && (
+        <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-200 px-4 py-3 flex items-start gap-3">
+          <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+          <div className="text-sm">
+            <p className="font-medium">{unassignedCount} resident{unassignedCount === 1 ? "" : "s"} not linked to a flat</p>
+            <p className="text-xs opacity-80">They will see ₹0 in their Bills until you assign them to a flat.</p>
+          </div>
+        </div>
+      )}
 
       <div className="mb-4 relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -135,6 +151,7 @@ function ResidentsPage() {
                 <TableHead>Phone</TableHead>
                 <TableHead>Flat</TableHead>
                 <TableHead>Type</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -156,11 +173,22 @@ function ResidentsPage() {
                     {r.flat ? (
                       <span className="font-medium">{r.block ? `${r.block}-` : ""}{r.flat}</span>
                     ) : (
-                      <span className="text-xs text-muted-foreground">Unassigned</span>
+                      <span className="text-xs text-amber-600 dark:text-amber-300 font-medium">Unassigned</span>
                     )}
                   </TableCell>
                   <TableCell className="capitalize text-muted-foreground">
                     {r.relationship ?? "—"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      size="sm"
+                      variant={r.flat ? "outline" : "default"}
+                      className="rounded-lg"
+                      onClick={() => setAssignTarget(r)}
+                    >
+                      <Link2 className="h-3.5 w-3.5 mr-1" />
+                      {r.flat ? "Change" : "Assign"}
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -168,6 +196,18 @@ function ResidentsPage() {
           </Table>
         </div>
       )}
+
+      {assignTarget && societyId && (
+        <AssignFlatDialog
+          open={!!assignTarget}
+          onOpenChange={(v) => { if (!v) setAssignTarget(null); }}
+          societyId={societyId}
+          userId={assignTarget.id}
+          userName={assignTarget.full_name}
+          onAssigned={() => setReloadKey((k) => k + 1)}
+        />
+      )}
     </PageShell>
   );
 }
+

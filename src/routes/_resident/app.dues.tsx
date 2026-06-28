@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Wallet, ArrowRight, Check, Clock, IndianRupee, Loader2 } from "lucide-react";
+import { Wallet, ArrowRight, Check, Clock, IndianRupee, Loader2, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { ClaimFlatSheet } from "@/components/resident/ClaimFlatSheet";
 
 export const Route = createFileRoute("/_resident/app/dues")({
   head: () => ({ meta: [{ title: "Dues — SocioHub" }] }),
@@ -24,6 +25,8 @@ function DuesPage() {
   const { profile } = useAuth();
   const [bills, setBills] = useState<BillItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [noFlat, setNoFlat] = useState(false);
+  const [claimOpen, setClaimOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,10 +44,12 @@ function DuesPage() {
       if (!flatIds.length) {
         if (!cancelled) {
           setBills([]);
+          setNoFlat(true);
           setLoading(false);
         }
         return;
       }
+      if (!cancelled) setNoFlat(false);
       const { data } = await supabase
         .from("bills")
         .select("id, period_label, amount, due_date, status")
@@ -89,6 +94,25 @@ function DuesPage() {
           <p className="text-xs text-muted-foreground">Your maintenance bills</p>
         </div>
       </div>
+
+      {noFlat && (
+        <Card className="rounded-2xl border-amber-500/30 bg-amber-500/10">
+          <CardContent className="p-4 flex items-start gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-500/20 grid place-items-center shrink-0">
+              <Home className="h-5 w-5 text-amber-700 dark:text-amber-200" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-sm">You're not linked to a flat yet</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Pick your flat so bills can reach you.
+              </p>
+              <Button size="sm" className="mt-3 rounded-lg" onClick={() => setClaimOpen(true)}>
+                Pick my flat
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Current bill */}
       <Card className="rounded-2xl border-0 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg">
@@ -156,6 +180,14 @@ function DuesPage() {
           <Link to="/app/ledger">View full ledger →</Link>
         </Button>
       </div>
+
+      {profile?.society_id && (
+        <ClaimFlatSheet
+          open={claimOpen}
+          onOpenChange={setClaimOpen}
+          societyId={profile.society_id}
+        />
+      )}
     </div>
   );
 }

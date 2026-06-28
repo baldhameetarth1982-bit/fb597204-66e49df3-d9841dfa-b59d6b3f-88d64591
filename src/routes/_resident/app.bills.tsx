@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Receipt, Download, Clock, CheckCircle2, ArrowRight, Fingerprint, Loader2 } from "lucide-react";
+import { Receipt, Download, Clock, CheckCircle2, ArrowRight, Fingerprint, Loader2, Home } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { cacheSet, cacheGet } from "@/lib/offline-cache";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { ClaimFlatSheet } from "@/components/resident/ClaimFlatSheet";
 
 export const Route = createFileRoute("/_resident/app/bills")({
   head: () => ({ meta: [{ title: "Bills — SocioHub" }] }),
@@ -29,6 +30,8 @@ function BillsScreen() {
   const [visibleBills, setVisibleBills] = useState<BillRow[]>([]);
   const [online, setOnline] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [noFlat, setNoFlat] = useState(false);
+  const [claimOpen, setClaimOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,10 +53,12 @@ function BillsScreen() {
         if (!flatIds.length) {
           if (!cancelled) {
             setVisibleBills([]);
+            setNoFlat(true);
             setLoading(false);
           }
           return;
         }
+        if (!cancelled) setNoFlat(false);
         const { data } = await supabase
           .from("bills")
           .select("id, period_label, amount, due_date, status")
@@ -102,7 +107,26 @@ function BillsScreen() {
         <p className="text-sm text-muted-foreground">Your maintenance & society dues{online ? "" : " · offline cache"}</p>
       </header>
 
-      {/* Outstanding hero */}
+      {noFlat && (
+        <Card className="rounded-2xl border-amber-500/30 bg-amber-500/10">
+          <CardContent className="p-4 flex items-start gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-500/20 grid place-items-center shrink-0">
+              <Home className="h-5 w-5 text-amber-700 dark:text-amber-200" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-sm">You're not linked to a flat yet</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Pick your flat so bills can reach you. Your society admin will approve it.
+              </p>
+              <Button size="sm" className="mt-3 rounded-lg" onClick={() => setClaimOpen(true)}>
+                Pick my flat
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+
       <Card className="rounded-3xl border-0 shadow-md bg-gradient-to-br from-primary to-primary/85 text-primary-foreground">
         <CardContent className="p-6">
           <div className="flex items-center gap-2 opacity-80">
@@ -189,6 +213,14 @@ function BillsScreen() {
         <Receipt className="h-3.5 w-3.5" />
         Powered by SocioHub
       </div>
+
+      {profile?.society_id && (
+        <ClaimFlatSheet
+          open={claimOpen}
+          onOpenChange={setClaimOpen}
+          societyId={profile.society_id}
+        />
+      )}
     </div>
   );
 }
