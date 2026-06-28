@@ -165,3 +165,72 @@ BEFORE INSERT OR UPDATE OF society_id, flat_id ON public.bills
 FOR EACH ROW EXECUTE FUNCTION public.prevent_invalid_bill_scope();
 
 REVOKE ALL ON FUNCTION public.prevent_invalid_bill_scope() FROM PUBLIC, anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.admin_list_users()
+RETURNS TABLE(
+  id uuid,
+  full_name text,
+  email text,
+  phone text,
+  created_at timestamptz,
+  society_id uuid,
+  society_name text,
+  plan_id text,
+  plan_status text,
+  plan_expires_at timestamptz,
+  roles jsonb
+)
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE v_user uuid := auth.uid();
+BEGIN
+  IF v_user IS NULL OR NOT public.is_super_admin(v_user) THEN
+    RAISE EXCEPTION 'Not authorized';
+  END IF;
+
+  RETURN QUERY
+  WITH role_society AS (
+    SELECT DISTINCT ON (ur.user_id)
+      ur.user_id,
+      ur.society_id
+    FROM public.user_roles ur
+    WHERE ur.society_id IS NOT NULL
+    ORDER BY ur.user_id,
+      CASE ur.role
+        WHEN 'society_admin'::public.app_role THEN 1
+        WHEN 'resident'::public.app_role THEN 2
+        WHEN 'block_admin'::public.app_role THEN 3
+        WHEN 'security'::public.app_role THEN 4
+        ELSE 9
+      END,
+      ur.created_at
+  )
+  SELECT
+    p.id,
+    p.full_name,
+    p.email,
+    p.phone,
+    p.created_at,
+    COALESCE(p.society_id, rs.society_id) AS society_id,
+    s.name AS society_name,
+    s.plan_id,
+    s.plan_status,
+    s.plan_expires_at,
+    COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('role', ur.role, 'society_id', ur.society_id, 'block_id', ur.block_id) ORDER BY ur.created_at)
+      FROM public.user_roles ur
+      WHERE ur.user_id = p.id
+    ), '[]'::jsonb) AS roles
+  FROM public.profiles p
+  LEFT JOIN role_society rs ON rs.user_id = p.id
+  LEFT JOIN public.societies s ON s.id = COALESCE(p.society_id, rs.society_id)
+  ORDER BY p.created_at DESC
+  LIMIT 1000;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.admin_list_users() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_list_users() TO authenticated;
