@@ -1,6 +1,6 @@
 import { createFileRoute, Navigate, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Building2, ArrowLeft, Copy, CheckCircle2, ShieldCheck, Phone } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Loader2, Building2, ArrowLeft, Copy, CheckCircle2, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { getFirebaseAuth } from "@/lib/firebase";
-import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from "firebase/auth";
+import { AadhaarVerifyCard } from "@/components/onboarding/AadhaarVerifyCard";
 
 export const Route = createFileRoute("/onboarding/create")({
   head: () => ({ meta: [{ title: "Create society — SocioHub" }] }),
