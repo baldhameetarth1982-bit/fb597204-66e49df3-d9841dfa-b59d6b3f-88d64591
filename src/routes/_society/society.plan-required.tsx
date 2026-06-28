@@ -1,13 +1,15 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { Sparkles, ArrowRight, ShieldCheck, Rocket, TrendingUp, Zap } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { Sparkles, ArrowRight, ShieldCheck, Rocket, TrendingUp, Zap, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { useSocietyId } from "@/hooks/useSocietyId";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { openRazorpayCheckout } from "@/lib/razorpay";
 
 export const Route = createFileRoute("/_society/society/plan-required")({
   head: () => ({ meta: [{ title: "Unlock SocioHub — Renew plan" }] }),
@@ -15,15 +17,19 @@ export const Route = createFileRoute("/_society/society/plan-required")({
 });
 
 function PlanRequired() {
-  const { signOut } = useAuth();
+  const { signOut, profile, user } = useAuth();
   const { societyId } = useSocietyId();
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const { data: society } = useQuery({
     enabled: !!societyId,
     queryKey: ["society-state", societyId],
-    refetchInterval: 15000,
+    refetchInterval: 2000,
     refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    staleTime: 0,
     queryFn: async () => {
       const [{ data: row }, { data: access }] = await Promise.all([
         supabase.from("societies").select("id,name,plan_status,trial_ends_at,plan_id").eq("id", societyId!).maybeSingle(),
@@ -40,8 +46,44 @@ function PlanRequired() {
   });
 
   useEffect(() => {
-    if (society?.has_access) navigate({ to: "/society/dashboard", replace: true });
-  }, [society, navigate]);
+    if (society?.has_access) {
+      try { localStorage.removeItem("user_subscription"); } catch {}
+      qc.invalidateQueries();
+      navigate({ to: "/society/dashboard", replace: true });
+    }
+  }, [society, navigate, qc]);
+
+  // Refetch instantly when tab/window regains focus or visibility flips.
+  useEffect(() => {
+    const refetch = () => qc.invalidateQueries({ queryKey: ["society-state", societyId] });
+    window.addEventListener("focus", refetch);
+    document.addEventListener("visibilitychange", refetch);
+    return () => {
+      window.removeEventListener("focus", refetch);
+      document.removeEventListener("visibilitychange", refetch);
+    };
+  }, [qc, societyId]);
+
+  async function handleBuy(plan: any) {
+    setBusyId(plan.id);
+    const opened = await openRazorpayCheckout({
+      plan: { id: plan.id, name: plan.name, price_monthly_inr: plan.price_monthly_inr },
+      prefill: {
+        email: profile?.email ?? user?.email ?? "",
+        contact: profile?.phone ?? "",
+        name: profile?.full_name ?? "",
+      },
+      onSuccess: async (resp) => {
+        toast.success(`Payment captured: ${resp.razorpay_payment_id}`);
+        try { localStorage.removeItem("user_subscription"); } catch {}
+        // Force every dependent query to re-fetch; trigger registered on backend will flip plan_status.
+        await qc.invalidateQueries();
+        setBusyId(null);
+      },
+      onDismiss: () => setBusyId(null),
+    });
+    if (!opened) setBusyId(null);
+  }
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -84,10 +126,13 @@ function PlanRequired() {
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                 {p.txn_fee_pct}% txn fee · {p.ads_enabled ? "ads on" : "no ads"}
               </p>
-              <Button asChild className={`mt-auto pt-4 min-h-[52px] rounded-xl ${p.is_recommended ? "" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}>
-                <Link to="/checkout/$planId" params={{ planId: p.id }}>
-                  Upgrade to {p.name} <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
+              <Button
+                onClick={() => handleBuy(p)}
+                disabled={busyId !== null}
+                className={`mt-auto pt-4 min-h-[52px] rounded-xl ${p.is_recommended ? "" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}
+              >
+                {busyId === p.id ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                Renew with {p.name} <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             </Card>
           ))}
