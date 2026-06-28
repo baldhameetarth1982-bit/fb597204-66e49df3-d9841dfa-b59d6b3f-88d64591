@@ -7,20 +7,22 @@ export const listSocietyMaintenance = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) => z.object({ societyId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
-    const { data: periods, error } = await context.supabase
-      .from("maintenance_periods")
-      .select("id, flat_id, period_label, period_start, amount_due, status, due_date, bill_id, paid_at")
-      .eq("society_id", data.societyId)
-      .order("period_start", { ascending: false })
-      .limit(2000);
-    if (error) throw new Error(error.message);
-
-    const { data: flats } = await context.supabase
-      .from("flats")
-      .select("id, flat_number, blocks(name)")
-      .eq("society_id", data.societyId);
-
-    return { periods: periods ?? [], flats: flats ?? [] };
+    // Parallel fetch for speed
+    const [periodsRes, flatsRes] = await Promise.all([
+      context.supabase
+        .from("maintenance_periods")
+        .select("id, flat_id, period_label, period_start, amount_due, status, due_date, bill_id, paid_at")
+        .eq("society_id", data.societyId)
+        .order("period_start", { ascending: false })
+        .limit(2000),
+      context.supabase
+        .from("flats")
+        .select("id, flat_number, blocks(name)")
+        .eq("society_id", data.societyId)
+        .order("flat_number"),
+    ]);
+    if (periodsRes.error) throw new Error(periodsRes.error.message);
+    return { periods: periodsRes.data ?? [], flats: flatsRes.data ?? [] };
   });
 
 /** Admin: ensure (upsert) a monthly maintenance row for a flat. */
