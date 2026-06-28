@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NeonThemePreview } from "@/components/shared/NeonThemePreview";
+import { useAuth } from "@/context/AuthContext";
+import { ROLES } from "@/config/roles";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -27,6 +29,9 @@ type Plan = {
 
 function PricingPage() {
   const [yearly, setYearly] = useState(false);
+  const { primaryRole, isAuthenticated } = useAuth();
+  const isResident = isAuthenticated && primaryRole === ROLES.RESIDENT;
+
   const { data: plans, isLoading } = useQuery({
     queryKey: ["plans"],
     queryFn: async () => {
@@ -36,8 +41,12 @@ function PricingPage() {
     },
   });
 
-  const paid = (plans ?? []).filter((p) => p.id !== "trial");
-  const trial = (plans ?? []).find((p) => p.id === "trial");
+  // Strict role-based catalogue: residents get the personal ₹50 plan only,
+  // society admins (and guests) see the 3 society plans.
+  const residentPlans = (plans ?? []).filter((p) => p.id === "resident" || p.id === "ad_free");
+  const adminPaid = (plans ?? []).filter((p) => !["trial", "resident", "ad_free"].includes(p.id));
+  const paid = isResident ? residentPlans : adminPaid;
+  const trial = !isResident ? (plans ?? []).find((p) => p.id === "trial") : undefined;
 
   return (
     <main className="min-h-screen bg-[#121212] text-foreground py-16 px-4">
