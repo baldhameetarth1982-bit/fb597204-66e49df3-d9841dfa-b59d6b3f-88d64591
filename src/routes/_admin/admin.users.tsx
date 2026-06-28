@@ -117,6 +117,12 @@ function UsersPage() {
         </div>
       </header>
 
+      {(usersError || societiesError) && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+          {(usersError as any)?.message || (societiesError as any)?.message}
+        </div>
+      )}
+
       {/* Societies — quick grant */}
       <Card className="rounded-2xl">
         <CardContent className="p-5">
