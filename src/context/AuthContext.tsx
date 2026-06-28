@@ -54,22 +54,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const loadSeq = useRef(0);
 
-  const loadUserContext = useCallback(async (uid: string | null) => {
-    if (!uid) {
-      setProfile(null);
-      setRoles([]);
-      return;
+  const loadUserContext = useCallback(async (nextUser: User | null) => {
+    if (!nextUser) {
+      return { profile: null, roles: [] as Role[] };
     }
-    const [{ data: profileData }, { data: roleData }] = await Promise.all([
+
+    const uid = nextUser.id;
+    const [profileResult, roleResult] = await Promise.all([
       (supabase as any)
         .from("profiles")
         .select("id, full_name, email, avatar_url, society_id, phone, aadhaar_verified, aadhaar_uploaded_at, theme")
         .eq("id", uid)
         .maybeSingle(),
-      supabase.from("user_roles").select("role").eq("user_id", uid),
+      supabase.from("user_roles").select("role, society_id").eq("user_id", uid),
     ]);
-    setProfile((profileData as AuthProfile) ?? null);
-    setRoles(Array.from(new Set(roleData?.map((r) => r.role as Role) ?? [])) as Role[]);
+
+    let profileData = profileResult.data as AuthProfile | null;
+
+    // Safety fallback: if Supabase's schema cache is briefly stale after a migration,
+    // never treat an existing user as society-less. Load only stable columns instead.
+    if (profileResult.error) {
+      console.error("Failed to load full profile", profileResult.error);
+      const { data: fallbackProfile, error: fallbackError } = await (supabase as any)
+        .from("profiles")
+        .select("id, full_name, email, avatar_url, society_id, phone")
+        .eq("id", uid)
+        .maybeSingle();
+      if (fallbackError) console.error("Failed to load fallback profile", fallbackError);
+      profileData = (fallbackProfile as AuthProfile | null) ?? null;
+    }
+
+    if (roleResult.error) {
+      console.error("Failed to load roles", roleResult.error);
+    }
+
+    const roleRows = roleResult.data ?? [];
+    const resolvedRoles = Array.from(new Set(roleRows.map((r) => r.role as Role).filter(Boolean))) as Role[];
+    const societyIdFromRole = (roleRows.find((r: any) => r.society_id)?.society_id as string | undefined) ?? null;
+    const resolvedProfile: AuthProfile = profileData
+      ? { ...profileData, society_id: profileData.society_id ?? societyIdFromRole }
+      : {
+          id: uid,
+          full_name: (nextUser.user_metadata?.full_name as string | undefined) ?? null,
+          email: nextUser.email ?? null,
+          avatar_url: (nextUser.user_metadata?.avatar_url as string | undefined) ?? null,
+          society_id: societyIdFromRole,
+          phone: nextUser.phone ?? null,
+          aadhaar_verified: null,
+          aadhaar_uploaded_at: null,
+          theme: null,
+        };
+
+    return { profile: resolvedProfile, roles: resolvedRoles };
   }, []);
 
   useEffect(() => {
@@ -78,10 +114,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async function applySession(nextSession: Session | null) {
       const seq = ++loadSeq.current;
       setIsLoading(true);
-      setSession(nextSession);
-      setUser(nextSession?.user ?? null);
       try {
-        await loadUserContext(nextSession?.user?.id ?? null);
+        const nextUser = nextSession?.user ?? null;
+        const nextContext = await loadUserContext(nextUser);
+        if (mounted && seq === loadSeq.current) {
+          setSession(nextSession);
+          setUser(nextUser);
+          setProfile(nextContext.profile);
+          setRoles(nextContext.roles);
+        }
       } finally {
         if (mounted && seq === loadSeq.current) setIsLoading(false);
       }
@@ -120,10 +161,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasRole: (r) => roles.includes(r),
       hasAnyRole: (rs) => rs.some((r) => roles.includes(r)),
       signOut: async () => {
+        loadSeq.current += 1;
+        setIsLoading(true);
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setRoles([]);
         await supabase.auth.signOut();
+        setIsLoading(false);
       },
       refresh: async () => {
-        await loadUserContext(user?.id ?? null);
+        const seq = ++loadSeq.current;
+        setIsLoading(true);
+        try {
+          const nextContext = await loadUserContext(user);
+          if (seq === loadSeq.current) {
+            setProfile(nextContext.profile);
+            setRoles(nextContext.roles);
+          }
+        } finally {
+          if (seq === loadSeq.current) setIsLoading(false);
+        }
       },
     };
   }, [isLoading, session, user, profile, roles, loadUserContext]);

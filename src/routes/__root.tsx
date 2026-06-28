@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import {
   Outlet,
   Link,
+  Navigate,
   createRootRouteWithContext,
   useRouter,
   useRouterState,
@@ -217,7 +218,7 @@ function ShellSwitcher() {
   }
 
   if (isProtectedPath && !isAuthenticated) {
-    return <Outlet />;
+    return <Navigate to="/login" />;
   }
 
   // Resident shell: native mobile app frame, fixed bottom nav
