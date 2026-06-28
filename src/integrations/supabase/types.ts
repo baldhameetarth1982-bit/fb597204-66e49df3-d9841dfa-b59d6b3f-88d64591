@@ -837,6 +837,57 @@ export type Database = {
           },
         ]
       }
+      offline_residents: {
+        Row: {
+          created_at: string
+          email: string | null
+          flat_id: string
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          society_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          flat_id: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          society_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          flat_id?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          society_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offline_residents_flat_id_fkey"
+            columns: ["flat_id"]
+            isOneToOne: false
+            referencedRelation: "flats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offline_residents_society_id_fkey"
+            columns: ["society_id"]
+            isOneToOne: false
+            referencedRelation: "societies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
