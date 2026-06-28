@@ -48,13 +48,14 @@ function UsersPage() {
     },
   });
 
-  const { data: societies } = useQuery({
+  const { data: societies, error: societiesError } = useQuery({
     queryKey: ["admin-societies-all"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("societies")
         .select("id, name, plan_id, plan_status, plan_expires_at")
         .order("name");
+      if (error) { toast.error(`Societies: ${error.message}`); throw error; }
       return (data ?? []) as Society[];
     },
   });
