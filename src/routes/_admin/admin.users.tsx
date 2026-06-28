@@ -35,7 +35,7 @@ function UsersPage() {
   const [planId, setPlanId] = useState("pro");
   const [months, setMonths] = useState(12);
 
-  const { data: users, isLoading: usersLoading } = useQuery({
+  const { data: users, isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ["admin-users-all"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -43,7 +43,7 @@ function UsersPage() {
         .select("id, full_name, email, phone, created_at, society_id, societies(id, name, plan_id, plan_status, plan_expires_at)")
         .order("created_at", { ascending: false })
         .limit(500);
-      if (error) throw error;
+      if (error) { toast.error(`Users: ${error.message}`); throw error; }
       return data ?? [];
     },
   });
