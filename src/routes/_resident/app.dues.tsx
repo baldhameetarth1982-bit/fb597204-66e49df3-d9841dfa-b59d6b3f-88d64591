@@ -44,10 +44,12 @@ function DuesPage() {
       if (!flatIds.length) {
         if (!cancelled) {
           setBills([]);
+          setNoFlat(true);
           setLoading(false);
         }
         return;
       }
+      if (!cancelled) setNoFlat(false);
       const { data } = await supabase
         .from("bills")
         .select("id, period_label, amount, due_date, status")
