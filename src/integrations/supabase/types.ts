@@ -2021,6 +2021,7 @@ export type Database = {
           is_occupied: boolean
         }[]
       }
+      mark_aadhaar_verified: { Args: { _last4: string }; Returns: undefined }
       request_join_flat: {
         Args: { _flat_id: string; _relationship: string }
         Returns: string

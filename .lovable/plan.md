@@ -1,82 +1,63 @@
+# Replace Phone OTP with Instant Aadhaar Photo Verification
 
-# SocioHub → Mobile-First Android-Style Restructure
+## Why this approach
+Firebase phone OTP is fragile (needs reCAPTCHA, billing-tier SMS quotas, breaks in iframes). There is no free official Aadhaar API — UIDAI eKYC requires a licensed AUA/KUA. Instead we use the same trick most early-stage Indian apps use: **OCR + Verhoeff checksum**. It's free, runs in 2–5 seconds, and blocks bots without claiming a government certification we don't have.
 
-This is a large change. To avoid breaking the working app (auth, plan gate, billing, RLS, multi-tenant isolation) I'll deliver it in **6 phases**, each independently shippable. You approve this plan, then I execute phase by phase, asking before destructive removals.
+## User flow on `/onboarding/create`
+1. Remove the entire "Verify your phone" section (phone input, Send OTP, OTP code, Verify button, Firebase recaptcha widget).
+2. Replace with a single card titled **"Verify your identity"** containing:
+   - A camera/file picker button: "Take photo of Aadhaar (front side)".
+   - Inline preview of the selected/captured image.
+   - "Verify instantly" button → uploads + runs AI verification.
+   - Status pill: idle → uploading → reading → verified ✓ / failed ✗.
+3. Once status = verified, the **Create society** submit button unlocks (same gate that `otpStage === "verified"` used).
 
----
+## Backend pieces
 
-## Guiding principles (apply to every phase)
-- Mobile-first. Design at 360–414px, scale up. No desktop-only tables.
-- Material 3 vibe: rounded-2xl cards, FAB, bottom sheets, top app bar, drawer (admin), bottom nav (resident).
-- Replace tables → card lists. Replace big modals → `Sheet` (bottom sheet) / expandable cards.
-- Preserve existing RLS, plan-gate, Razorpay checkout, KYC, audit log. Only swap UI + add new modules.
-- Every new public table: GRANT + RLS + policies in same migration.
+### Storage
+- New **private** bucket `kyc-admin`.
+- RLS on `storage.objects`:
+  - Users can INSERT/SELECT/DELETE only objects under `kyc-admin/<their auth.uid()>/...`.
+  - Service role full access.
 
----
+### Migration
+- Add columns to `profiles`:
+  - `aadhaar_verified boolean default false`
+  - `aadhaar_last4 text` (only last 4 digits stored — never the full 12)
+  - `aadhaar_verified_at timestamptz`
+- RPC `mark_aadhaar_verified(_last4 text)` — `SECURITY DEFINER`, can only flip its own row, validates `_last4` is 4 digits.
 
-## Phase 1 — Navigation & Shell (UI-only, zero data risk)
-- New `MobileTopBar` (title, back, profile avatar).
-- Resident: refined `ResidentBottomNav` — Home, Bills, Visitors, Community, Profile (5 max).
-- Society Admin: convert sidebar → **Drawer** (`Sheet` from left) + bottom FAB for "Generate Bill / Add Expense / Add Visitor".
-- Guard: single-screen layout (no nav chrome).
-- Super Admin: keep current desktop SaaS dashboard (per your earlier ask).
-- Global page wrapper `MobileScreen` enforcing safe-area, max-w-md on mobile, max-w-6xl on desktop.
+### Server function `verifyAadhaarPhoto` (TanStack `createServerFn` + `requireSupabaseAuth`)
+Input: `{ storagePath: string }`.
+Steps:
+1. Download the image via `supabaseAdmin` from `kyc-admin`.
+2. Send to Lovable AI Gateway (`google/gemini-2.5-flash`, vision) with prompt asking to return strict JSON: `{ aadhaar_number, name, dob, is_aadhaar_card }`.
+3. Reject if `is_aadhaar_card === false`.
+4. Strip spaces from `aadhaar_number`, ensure exactly 12 digits, then run **Verhoeff checksum** (the real UIDAI algorithm — implemented inline, ~30 lines).
+5. Compare extracted `name` to the user's `profiles.full_name` using a normalized fuzzy match (token-set ratio ≥ 0.6).
+6. If everything passes → call `mark_aadhaar_verified(last4)`, return `{ ok: true, last4 }`.
+7. Else return `{ ok: false, reason }` (e.g. "Couldn't read the Aadhaar number", "Name doesn't match your profile").
 
-## Phase 2 — Auth & Onboarding rewrite
-- Make **Phone OTP (Firebase) primary**. Google login still available but must complete phone verification before dashboard.
-- New `/onboarding` shows ONLY two big cards: **Create Society** / **Join Society**. Remove every other onboarding step.
-- Join flow: search → select → form (name, flat, owner/tenant) → submit → "Pending Approval" screen → admin approves in `society.verifications`.
-- Create flow: name, total flats, structure type, count, address, admin name (phone auto-filled) → straight to plan picker → Razorpay → Setup Wizard.
+The submit handler on the create-society form now requires `profile.aadhaar_verified === true` instead of `otpStage === "verified"`.
 
-## Phase 3 — Society Setup Wizard + Accounts opening balances
-- 5-step wizard: Society Info → Structure → Maintenance Policy → Accounts (opening cash + bank) → Finish.
-- New tables:
-  - `society_settings` (maintenance_type prepaid/current/postpaid, monthly_amount, due_day, late_fee, grace_days, opening_cash, opening_bank, opening_set_at).
-  - `custom_fields` + `custom_field_values` (per-society dynamic resident profile fields: text/number/dropdown/date/checkbox/file/image).
-- Opening balances locked after wizard (DB trigger blocks UPDATE).
+## Files touched
 
-## Phase 4 — Maintenance Engine + Billing rewrite
-- Remove auto-bill-generation cron behavior for societies that don't opt in. Replace with **"Pending Maintenance" notifications** to residents on due date.
-- New "Generate Bill" sheet for admin: pick resident → auto-loads pending months + outstanding → admin selects months + adds N additional charges (category/description/amount) → preview → generate.
-- Bills become immutable; expose Send WhatsApp / PNG / PDF / Print actions (PDF via `pdf-lib` client-side).
-- Keep existing `bills`/`payments` tables; add `bill_line_items` table for charges.
+```text
+supabase/migrations/<new>.sql        ── profiles columns + RPC + storage bucket policies
+src/lib/aadhaar.ts                   ── Verhoeff checksum + name fuzzy-match helpers
+src/lib/aadhaar.functions.ts         ── verifyAadhaarPhoto server function
+src/components/onboarding/
+    AadhaarVerifyCard.tsx            ── camera/upload UI + status states
+src/routes/onboarding.create.tsx     ── strip OTP block, drop in AadhaarVerifyCard,
+                                        switch submit gate to aadhaar_verified
+src/lib/firebase.ts                  ── leave file (still used elsewhere), remove
+                                        only the recaptcha import from create.tsx
+```
 
-## Phase 5 — Accounting module
-- New tables: `accounts` (cash/bank rows per society), `ledger_txns` (income/expense/adjustment), `financial_years`.
-- Every payment insert → auto income txn (DB trigger).
-- Expenses entered manually via bottom sheet.
-- Balances always derived (`SUM(opening + txns)`) — never stored.
-- Reports page: Income / Expense / Collection / Outstanding / Monthly / FY / Cash / Bank with PDF + Excel export (`xlsx` lib).
+## Honest disclaimers shown in UI
+- Tiny helper text under the card: *"We use AI to read your Aadhaar instantly. Your card image is stored privately and only the last 4 digits are saved."*
+- No claim of "UIDAI verified" anywhere.
 
-## Phase 6 — Visitors rewrite + Guard Access Links
-- New table `guard_links` (token, society_id, active_device_fingerprint, last_seen, revoked_at).
-- Admin generates link → guard opens `/g/$token` → device fingerprint stored on first open → second device triggers admin notification (FCM) + admin can revoke/reset.
-- Guard screen: only 4 actions (Entry / Exit / Today / Search).
-- Residents: Expected Visitor + Frequent Visitor (maid/cook/etc.) with validity (Today/Tomorrow/Date/Recurring).
-- Drop QR-heavy flows.
-
----
-
-## What I will NOT touch unless you ask
-- Existing Razorpay integration, plan-gate RPC (`society_has_access`), KYC RPCs, audit log, RLS helper functions, super-admin user grants — all kept as-is.
-- Welcome intro, splash screen, theme system (Neon premium), ad system — kept.
-- Family/Emergency screens — Phase 2 will hide them from resident nav (your request) but I'll keep the routes alive until you confirm deletion.
-
----
-
-## Technical notes (skip if non-technical)
-- All new tables get `GRANT` + RLS + `service_role` ALL + scoped `authenticated` policies in the same migration.
-- DB triggers enforce: opening-balance immutability, derived-balance protection, bill immutability after generation, single-device guard links.
-- Maintenance auto-bill cron will check `society_settings.auto_generate` flag before inserting; default false.
-- Custom fields rendered via a single `<DynamicField>` component reading `custom_fields` schema.
-- Mobile shell uses CSS `env(safe-area-inset-*)` and `dvh` units.
-
----
-
-## Execution order I propose
-1. You approve plan.
-2. I ship **Phase 1** (nav shell) — visible immediately, no DB change.
-3. Confirm look/feel, then Phase 2.
-4. Continue sequentially. Each phase ends with you testing on mobile preview before the next.
-
-**Reply "go phase 1"** (or specify a different starting phase) and I'll execute. If you want changes to the plan first — say so and I'll revise.
+## Out of scope
+- Phone field is removed from society creation. If you later want phone numbers for contact reasons, we add an unverified `contact_phone` field separately.
+- Existing resident KYC flow (`society.verifications.tsx`) keeps working as-is — this only touches the **society creation** gate.
