@@ -4,6 +4,7 @@ import {
   Building2, Car, DoorOpen, LayoutDashboard, Megaphone, Menu, Receipt,
   ShieldCheck, Trophy, UserCheck, Users, Vote, Wallet, Wand2, Sparkles,
   Calculator, BadgeCheck, LogOut, Settings, ListChecks, Wrench, CalendarRange,
+  BarChart3,
 } from "lucide-react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose,

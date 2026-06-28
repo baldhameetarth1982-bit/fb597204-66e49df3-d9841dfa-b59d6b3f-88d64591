@@ -39,6 +39,7 @@ import { Route as SocietySocietyVehiclesRouteImport } from './routes/_society/so
 import { Route as SocietySocietyTeamRouteImport } from './routes/_society/society.team'
 import { Route as SocietySocietySetupRouteImport } from './routes/_society/society.setup'
 import { Route as SocietySocietyResidentsRouteImport } from './routes/_society/society.residents'
+import { Route as SocietySocietyReportsRouteImport } from './routes/_society/society.reports'
 import { Route as SocietySocietyPollsRouteImport } from './routes/_society/society.polls'
 import { Route as SocietySocietyPlanRequiredRouteImport } from './routes/_society/society.plan-required'
 import { Route as SocietySocietyMaintenanceRouteImport } from './routes/_society/society.maintenance'
@@ -228,6 +229,11 @@ const SocietySocietySetupRoute = SocietySocietySetupRouteImport.update({
 const SocietySocietyResidentsRoute = SocietySocietyResidentsRouteImport.update({
   id: '/society/residents',
   path: '/society/residents',
+  getParentRoute: () => SocietyRoute,
+} as any)
+const SocietySocietyReportsRoute = SocietySocietyReportsRouteImport.update({
+  id: '/society/reports',
+  path: '/society/reports',
   getParentRoute: () => SocietyRoute,
 } as any)
 const SocietySocietyPollsRoute = SocietySocietyPollsRouteImport.update({
@@ -515,6 +521,7 @@ export interface FileRoutesByFullPath {
   '/society/maintenance': typeof SocietySocietyMaintenanceRoute
   '/society/plan-required': typeof SocietySocietyPlanRequiredRoute
   '/society/polls': typeof SocietySocietyPollsRoute
+  '/society/reports': typeof SocietySocietyReportsRoute
   '/society/residents': typeof SocietySocietyResidentsRoute
   '/society/setup': typeof SocietySocietySetupRoute
   '/society/team': typeof SocietySocietyTeamRoute
@@ -585,6 +592,7 @@ export interface FileRoutesByTo {
   '/society/maintenance': typeof SocietySocietyMaintenanceRoute
   '/society/plan-required': typeof SocietySocietyPlanRequiredRoute
   '/society/polls': typeof SocietySocietyPollsRoute
+  '/society/reports': typeof SocietySocietyReportsRoute
   '/society/residents': typeof SocietySocietyResidentsRoute
   '/society/setup': typeof SocietySocietySetupRoute
   '/society/team': typeof SocietySocietyTeamRoute
@@ -661,6 +669,7 @@ export interface FileRoutesById {
   '/_society/society/maintenance': typeof SocietySocietyMaintenanceRoute
   '/_society/society/plan-required': typeof SocietySocietyPlanRequiredRoute
   '/_society/society/polls': typeof SocietySocietyPollsRoute
+  '/_society/society/reports': typeof SocietySocietyReportsRoute
   '/_society/society/residents': typeof SocietySocietyResidentsRoute
   '/_society/society/setup': typeof SocietySocietySetupRoute
   '/_society/society/team': typeof SocietySocietyTeamRoute
@@ -734,6 +743,7 @@ export interface FileRouteTypes {
     | '/society/maintenance'
     | '/society/plan-required'
     | '/society/polls'
+    | '/society/reports'
     | '/society/residents'
     | '/society/setup'
     | '/society/team'
@@ -804,6 +814,7 @@ export interface FileRouteTypes {
     | '/society/maintenance'
     | '/society/plan-required'
     | '/society/polls'
+    | '/society/reports'
     | '/society/residents'
     | '/society/setup'
     | '/society/team'
@@ -879,6 +890,7 @@ export interface FileRouteTypes {
     | '/_society/society/maintenance'
     | '/_society/society/plan-required'
     | '/_society/society/polls'
+    | '/_society/society/reports'
     | '/_society/society/residents'
     | '/_society/society/setup'
     | '/_society/society/team'
@@ -1118,6 +1130,13 @@ declare module '@tanstack/react-router' {
       path: '/society/residents'
       fullPath: '/society/residents'
       preLoaderRoute: typeof SocietySocietyResidentsRouteImport
+      parentRoute: typeof SocietyRoute
+    }
+    '/_society/society/reports': {
+      id: '/_society/society/reports'
+      path: '/society/reports'
+      fullPath: '/society/reports'
+      preLoaderRoute: typeof SocietySocietyReportsRouteImport
       parentRoute: typeof SocietyRoute
     }
     '/_society/society/polls': {
@@ -1538,6 +1557,7 @@ interface SocietyRouteChildren {
   SocietySocietyMaintenanceRoute: typeof SocietySocietyMaintenanceRoute
   SocietySocietyPlanRequiredRoute: typeof SocietySocietyPlanRequiredRoute
   SocietySocietyPollsRoute: typeof SocietySocietyPollsRoute
+  SocietySocietyReportsRoute: typeof SocietySocietyReportsRoute
   SocietySocietyResidentsRoute: typeof SocietySocietyResidentsRoute
   SocietySocietySetupRoute: typeof SocietySocietySetupRoute
   SocietySocietyTeamRoute: typeof SocietySocietyTeamRoute
@@ -1562,6 +1582,7 @@ const SocietyRouteChildren: SocietyRouteChildren = {
   SocietySocietyMaintenanceRoute: SocietySocietyMaintenanceRoute,
   SocietySocietyPlanRequiredRoute: SocietySocietyPlanRequiredRoute,
   SocietySocietyPollsRoute: SocietySocietyPollsRoute,
+  SocietySocietyReportsRoute: SocietySocietyReportsRoute,
   SocietySocietyResidentsRoute: SocietySocietyResidentsRoute,
   SocietySocietySetupRoute: SocietySocietySetupRoute,
   SocietySocietyTeamRoute: SocietySocietyTeamRoute,
