@@ -56,8 +56,8 @@ function ContactsPage() {
 
   return (
     <PageShell>
-      <PageHeader icon={ShieldCheck} title="Contacts" subtitle="Committee members & service providers — visible to all residents"
-        action={
+      <PageHeader title="Contacts" description="Committee members & service providers — visible to all residents"
+        actions={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1" /> Add</Button></DialogTrigger>
             <DialogContent>

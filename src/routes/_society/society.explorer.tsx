@@ -54,9 +54,9 @@ function ExplorerPage() {
       setLoading(true);
       const [b, f, bi, fr] = await Promise.all([
         supabase.from("blocks").select("id,name").eq("society_id", societyId).order("name"),
-        supabase.from("flats").select("id,flat_number,block_id").eq("society_id", societyId),
-        supabase.from("bills").select("id,flat_id,period_label,period_start,amount,status,due_date").eq("society_id", societyId),
-        supabase.from("flat_residents").select("flat_id,user_id,relationship,profiles!flat_residents_user_id_fkey(full_name,phone,email)").eq("society_id", societyId),
+        supabase.from("flats").select("id,flat_number,block_id"),
+        supabase.from("bills").select("id,flat_id,period_label,period_start,amount,status,due_date"),
+        supabase.from("flat_residents").select("flat_id,user_id,relationship,profiles!flat_residents_user_id_fkey(full_name,phone,email)"),
       ]);
       if (cancel) return;
       if (b.error || f.error || bi.error) toast.error(b.error?.message || f.error?.message || bi.error?.message || "Load failed");
@@ -131,10 +131,9 @@ function ExplorerPage() {
     return (
       <PageShell>
         <PageHeader
-          icon={DoorOpen}
           title={`${block?.name ?? ""} — ${flat.flat_number}`}
-          subtitle="Resident details, payment history & month grid"
-          action={<Button variant="ghost" onClick={() => navigate({ to: "/society/explorer", search: { block: flat.block_id } })}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>}
+          description="Resident details, payment history & month grid"
+          actions={<Button variant="ghost" onClick={() => navigate({ to: "/society/explorer", search: { block: flat.block_id } })}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>}
         />
         <Card className="rounded-2xl">
           <CardContent className="p-4 space-y-3">
@@ -219,10 +218,9 @@ function ExplorerPage() {
     return (
       <PageShell>
         <PageHeader
-          icon={Building2}
           title={block.name}
-          subtitle={`${k.total} units · ${k.clear} clear · ${k.pending} pending · ${k.overdue} overdue`}
-          action={<Button variant="ghost" onClick={() => navigate({ to: "/society/explorer", search: {} })}><ArrowLeft className="h-4 w-4 mr-1" /> Blocks</Button>}
+          description={`${k.total} units · ${k.clear} clear · ${k.pending} pending · ${k.overdue} overdue`}
+          actions={<Button variant="ghost" onClick={() => navigate({ to: "/society/explorer", search: {} })}><ArrowLeft className="h-4 w-4 mr-1" /> Blocks</Button>}
         />
         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-3">
           {items.map((f) => {
@@ -254,7 +252,7 @@ function ExplorerPage() {
 
   return (
     <PageShell>
-      <PageHeader icon={Building2} title="Society Explorer" subtitle="Browse blocks, units, and account status at a glance" />
+      <PageHeader title="Society Explorer" description="Browse blocks, units, and account status at a glance" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard label="Total units" value={String(totals.total)} />
         <KpiCard label="Clear" value={String(totals.clear)} tone="emerald" />

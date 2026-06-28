@@ -114,7 +114,7 @@ function ImportPage() {
 
   return (
     <PageShell>
-      <PageHeader icon={Upload} title="Bulk Import Residents" subtitle="Upload an Excel sheet to add blocks, units, and offline residents in one shot" />
+      <PageHeader title="Bulk Import Residents" description="Upload an Excel sheet to add blocks, units, and offline residents in one shot" />
       <Card className="rounded-2xl">
         <CardContent className="p-5 space-y-4">
           <div className="flex flex-wrap gap-3 items-center">

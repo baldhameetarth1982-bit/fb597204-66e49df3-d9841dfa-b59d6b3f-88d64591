@@ -137,7 +137,7 @@ function AccountsPage() {
 
   return (
     <PageShell>
-      <PageHeader icon={Calculator} title="Income & Expense Accounts" subtitle="Society finances with opening balances, FY filter & exports" />
+      <PageHeader title="Income & Expense Accounts" description="Society finances with opening balances, FY filter & exports" />
 
       {/* Opening balances */}
       <Card className="rounded-2xl">

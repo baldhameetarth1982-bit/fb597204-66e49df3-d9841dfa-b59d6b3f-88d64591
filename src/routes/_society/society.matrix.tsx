@@ -79,7 +79,7 @@ function MatrixPage() {
 
   return (
     <PageShell>
-      <PageHeader icon={Grid3x3} title="Maintenance Matrix" subtitle="Every unit, every month — at one glance" action={
+      <PageHeader title="Maintenance Matrix" description="Every unit, every month — at one glance" actions={
         <div className="flex items-center gap-2">
           <Input type="number" value={year} onChange={(e) => setYear(Number(e.target.value) || year)} className="w-24" />
           <Button variant="outline" onClick={exportExcel}><Download className="h-4 w-4 mr-1" /> Excel</Button>

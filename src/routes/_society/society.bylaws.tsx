@@ -41,7 +41,7 @@ function BylawsAdmin() {
 
   return (
     <PageShell>
-      <PageHeader icon={BookOpen} title="Society By-Laws" subtitle="Write the rules and house policies your residents should follow" />
+      <PageHeader title="Society By-Laws" description="Write the rules and house policies your residents should follow" />
       {loading ? <div className="grid place-items-center h-40"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> : (
         <Card className="rounded-2xl">
           <CardContent className="p-5 space-y-3">
