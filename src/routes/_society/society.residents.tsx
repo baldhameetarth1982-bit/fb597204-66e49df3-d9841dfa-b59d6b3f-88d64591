@@ -1,15 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Users, Loader2, Search } from "lucide-react";
+import { Users, Loader2, Search, AlertTriangle, Link2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSocietyId } from "@/hooks/useSocietyId";
 import { PageHeader, PageShell, EmptyState } from "@/components/shared/PageHeader";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import { AssignFlatDialog } from "@/components/society/AssignFlatDialog";
 
 export const Route = createFileRoute("/_society/society/residents")({
   head: () => ({ meta: [{ title: "Residents — SocioHub" }] }),
