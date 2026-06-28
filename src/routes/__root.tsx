@@ -21,6 +21,7 @@ import { SocietyBottomNav } from "@/components/shared/SocietyBottomNav";
 import { Toaster } from "@/components/ui/sonner";
 import { SplashScreen } from "@/components/shared/SplashScreen";
 import { RootErrorBoundary, installGlobalErrorLogger } from "@/components/shared/RootErrorBoundary";
+import { ROLE_HOME, ROLES } from "@/config/roles";
 
 function NotFoundComponent() {
   return (
@@ -199,10 +200,11 @@ function MarketingAnalytics() {
 
 function ShellSwitcher() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { isLoading, isAuthenticated } = useAuth();
+  const { queryClient } = Route.useRouteContext();
+  const { isLoading, isAuthenticated, primaryRole, profile } = useAuth();
   const isProtectedPath = ["/app", "/society", "/admin", "/settings", "/onboarding"].some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
-  );
+  ) || pathname === "/dashboard" || pathname.startsWith("/dashboard/");
 
   // Bare shell: auth pages
   if (AUTH_PATHS.some((p) => pathname.startsWith(p))) {
@@ -210,15 +212,34 @@ function ShellSwitcher() {
   }
 
   if (isProtectedPath && isLoading) {
-    return (
-      <div className="min-h-screen grid place-items-center bg-background text-muted-foreground">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
+    return <FullScreenLoader />;
   }
 
   if (isProtectedPath && !isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <HardRedirectToLogin queryClient={queryClient} />;
+  }
+
+  if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
+    return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/onboarding"} replace />;
+  }
+
+  if (pathname.startsWith("/admin") && primaryRole !== ROLES.SUPER_ADMIN) {
+    return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/login"} replace />;
+  }
+
+  if (pathname.startsWith("/society") && primaryRole !== ROLES.SOCIETY_ADMIN) {
+    return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/login"} replace />;
+  }
+
+  if (pathname.startsWith("/app") && primaryRole !== ROLES.RESIDENT) {
+    return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/login"} replace />;
+  }
+
+  if (pathname.startsWith("/onboarding")) {
+    if (primaryRole === ROLES.SUPER_ADMIN) return <Navigate to={ROLE_HOME[ROLES.SUPER_ADMIN]} replace />;
+    if (profile?.society_id && primaryRole && pathname !== "/onboarding/plan") {
+      return <Navigate to={ROLE_HOME[primaryRole]} replace />;
+    }
   }
 
   // Resident shell: native mobile app frame, fixed bottom nav
@@ -269,4 +290,21 @@ function ShellSwitcher() {
       </div>
     </SidebarProvider>
   );
+}
+
+function FullScreenLoader() {
+  return (
+    <div className="min-h-screen grid place-items-center bg-background text-muted-foreground">
+      <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    </div>
+  );
+}
+
+function HardRedirectToLogin({ queryClient }: { queryClient: QueryClient }) {
+  useEffect(() => {
+    queryClient.cancelQueries();
+    queryClient.clear();
+    window.location.replace("/login");
+  }, [queryClient]);
+  return <FullScreenLoader />;
 }

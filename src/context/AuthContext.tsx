@@ -46,6 +46,10 @@ const ROLE_PRIORITY: Role[] = [
   ROLES.RESIDENT,
 ];
 
+function isKnownRole(role: unknown): role is Role {
+  return role === ROLES.SUPER_ADMIN || role === ROLES.SOCIETY_ADMIN || role === ROLES.RESIDENT;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -60,6 +64,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const uid = nextUser.id;
+
+    const { data: rpcContext, error: rpcError } = await (supabase as any)
+      .rpc("get_current_auth_context")
+      .maybeSingle();
+
+    if (!rpcError && rpcContext) {
+      const roleRows = Array.isArray(rpcContext.roles) ? rpcContext.roles : [];
+      const resolvedRoles = Array.from(
+        new Set(roleRows.map((r: any) => r.role).filter(isKnownRole)),
+      ) as Role[];
+      const profileData = (rpcContext.profile as AuthProfile | null) ?? null;
+      const resolvedProfile: AuthProfile = profileData
+        ? { ...profileData, society_id: (rpcContext.society_id as string | null) ?? profileData.society_id ?? null }
+        : {
+            id: uid,
+            full_name: (nextUser.user_metadata?.full_name as string | undefined) ?? null,
+            email: nextUser.email ?? null,
+            avatar_url: (nextUser.user_metadata?.avatar_url as string | undefined) ?? null,
+            society_id: (rpcContext.society_id as string | null) ?? null,
+            phone: nextUser.phone ?? null,
+            aadhaar_verified: null,
+            aadhaar_uploaded_at: null,
+            theme: null,
+          };
+      return { profile: resolvedProfile, roles: resolvedRoles };
+    }
+
+    if (rpcError) {
+      console.error("Failed to load auth context", rpcError);
+    }
+
     const [profileResult, roleResult] = await Promise.all([
       (supabase as any)
         .from("profiles")
@@ -89,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const roleRows = roleResult.data ?? [];
-    const resolvedRoles = Array.from(new Set(roleRows.map((r) => r.role as Role).filter(Boolean))) as Role[];
+    const resolvedRoles = Array.from(new Set(roleRows.map((r) => r.role).filter(isKnownRole))) as Role[];
     const societyIdFromRole = (roleRows.find((r: any) => r.society_id)?.society_id as string | undefined) ?? null;
     const resolvedProfile: AuthProfile = profileData
       ? { ...profileData, society_id: profileData.society_id ?? societyIdFromRole }

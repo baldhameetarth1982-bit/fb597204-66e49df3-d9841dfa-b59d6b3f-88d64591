@@ -34,13 +34,13 @@ function ResidentGuard() {
       </div>
     );
   }
-  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (primaryRole !== ROLES.RESIDENT) {
-    return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/onboarding"} />;
+    return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/onboarding"} replace />;
   }
-  if (!societyId) return <Navigate to="/onboarding" />;
+  if (!societyId) return <Navigate to="/onboarding" replace />;
   if (!isSuper && societyId && access === false && !pathname.endsWith("/plan-required")) {
-    return <Navigate to="/app/plan-required" />;
+    return <Navigate to="/app/plan-required" replace />;
   }
   return <Outlet />;
 }

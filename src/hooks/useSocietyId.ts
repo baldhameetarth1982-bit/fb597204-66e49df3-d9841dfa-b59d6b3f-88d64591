@@ -10,7 +10,7 @@ import { ROLES } from "@/config/roles";
  * - super_admin: returns null (must pick a society explicitly)
  */
 export function useSocietyId() {
-  const { user, profile, hasRole, isLoading: authLoading } = useAuth();
+  const { user, profile, roles, hasRole, isLoading: authLoading } = useAuth();
   const [societyId, setSocietyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -18,26 +18,32 @@ export function useSocietyId() {
     let cancelled = false;
     async function load() {
       if (authLoading) {
-        setLoading(true);
+        if (!cancelled) setLoading(true);
         return;
       }
-      setLoading(true);
+      if (!cancelled) setLoading(true);
       if (!user) {
-        setSocietyId(null);
-        setLoading(false);
+        if (!cancelled) {
+          setSocietyId(null);
+          setLoading(false);
+        }
         return;
       }
       if (hasRole(ROLES.SUPER_ADMIN)) {
-        setSocietyId(null);
-        setLoading(false);
+        if (!cancelled) {
+          setSocietyId(null);
+          setLoading(false);
+        }
         return;
       }
 
       // Most users already have the tenant on their profile. Return it immediately
       // so established residents/admins never see the create/join onboarding screen.
       if (profile?.society_id) {
-        setSocietyId(profile.society_id);
-        setLoading(false);
+        if (!cancelled) {
+          setSocietyId(profile.society_id);
+          setLoading(false);
+        }
         return;
       }
 
@@ -60,7 +66,7 @@ export function useSocietyId() {
     return () => {
       cancelled = true;
     };
-  }, [user, profile?.society_id, hasRole, authLoading]);
+  }, [user?.id, profile?.society_id, roles.join("|"), hasRole, authLoading]);
 
   return { societyId, loading };
 }

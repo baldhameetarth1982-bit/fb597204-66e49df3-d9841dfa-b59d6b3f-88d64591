@@ -30,26 +30,26 @@ function IndexRedirect() {
 
   if (!isAuthenticated) {
     const seen = typeof window !== "undefined" && localStorage.getItem("sociohub:welcomed");
-    return <Navigate to={seen ? "/login" : "/welcome"} />;
+    return <Navigate to={seen ? "/login" : "/welcome"} replace />;
   }
 
   if (primaryRole === ROLES.SUPER_ADMIN) {
-    return <Navigate to={ROLE_HOME[ROLES.SUPER_ADMIN]} />;
+    return <Navigate to={ROLE_HOME[ROLES.SUPER_ADMIN]} replace />;
   }
 
   // Existing society admins/residents must never land on the create/join chooser.
   if (profile?.society_id && primaryRole) {
-    return <Navigate to={ROLE_HOME[primaryRole]} />;
+    return <Navigate to={ROLE_HOME[primaryRole]} replace />;
   }
 
   // Brand-new users without any society still land on onboarding.
   if (!profile?.society_id) {
-    return <Navigate to="/onboarding" />;
+    return <Navigate to="/onboarding" replace />;
   }
 
   if (primaryRole) {
-    return <Navigate to={ROLE_HOME[primaryRole]} />;
+    return <Navigate to={ROLE_HOME[primaryRole]} replace />;
   }
 
-  return <Navigate to="/onboarding" />;
+  return <Navigate to="/onboarding" replace />;
 }

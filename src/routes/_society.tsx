@@ -34,13 +34,13 @@ function SocietyGuard() {
       </div>
     );
   }
-  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (primaryRole !== ROLES.SOCIETY_ADMIN) {
-    return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/login"} />;
+    return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/login"} replace />;
   }
-  if (!societyId) return <Navigate to="/onboarding" />;
+  if (!societyId) return <Navigate to="/onboarding" replace />;
   if (!isSuper && societyId && access === false && !pathname.endsWith("/plan-required")) {
-    return <Navigate to="/society/plan-required" />;
+    return <Navigate to="/society/plan-required" replace />;
   }
   return <Outlet />;
 }
