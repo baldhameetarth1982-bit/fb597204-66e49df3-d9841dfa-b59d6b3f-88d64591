@@ -1425,6 +1425,15 @@ export type Database = {
         Args: { _months?: number; _plan_id: string; _society_id: string }
         Returns: undefined
       }
+      admin_grant_society_plan: {
+        Args: {
+          _extend?: boolean
+          _months?: number
+          _plan_id: string
+          _society_id: string
+        }
+        Returns: undefined
+      }
       apply_referral_for_current_user: {
         Args: { _code: string }
         Returns: boolean
