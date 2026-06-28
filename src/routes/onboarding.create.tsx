@@ -237,7 +237,7 @@ function CreateSociety() {
               </span>
             </label>
 
-            <Button type="submit" disabled={saving || !agreed || otpStage !== "verified"} className="w-full h-12 rounded-xl">
+            <Button type="submit" disabled={saving || !agreed || !aadhaarVerified} className="w-full h-12 rounded-xl">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Create society
             </Button>
