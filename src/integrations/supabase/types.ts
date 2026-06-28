@@ -893,8 +893,12 @@ export type Database = {
       }
       profiles: {
         Row: {
+          aadhaar_last4: string | null
           aadhaar_rejected_at: string | null
           aadhaar_rejected_reason: string | null
+          aadhaar_uploaded_at: string | null
+          aadhaar_url: string | null
+          aadhaar_verified: boolean
           aadhaar_verified_at: string | null
           aadhaar_verified_by: string | null
           accepted_terms_at: string | null
@@ -911,8 +915,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          aadhaar_last4?: string | null
           aadhaar_rejected_at?: string | null
           aadhaar_rejected_reason?: string | null
+          aadhaar_uploaded_at?: string | null
+          aadhaar_url?: string | null
+          aadhaar_verified?: boolean
           aadhaar_verified_at?: string | null
           aadhaar_verified_by?: string | null
           accepted_terms_at?: string | null
@@ -929,8 +937,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          aadhaar_last4?: string | null
           aadhaar_rejected_at?: string | null
           aadhaar_rejected_reason?: string | null
+          aadhaar_uploaded_at?: string | null
+          aadhaar_url?: string | null
+          aadhaar_verified?: boolean
           aadhaar_verified_at?: string | null
           aadhaar_verified_by?: string | null
           accepted_terms_at?: string | null
