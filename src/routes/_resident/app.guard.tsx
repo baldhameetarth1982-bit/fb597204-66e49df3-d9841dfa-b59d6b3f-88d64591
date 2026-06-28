@@ -1,7 +1,7 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { LogOut, Plus, Loader2 } from "lucide-react";
+import { LogOut, Plus, Loader2, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +41,20 @@ function GuardDashboard() {
     vehicle_number: "",
     purpose: "",
   });
+  const [code, setCode] = useState("");
+  const [codeBusy, setCodeBusy] = useState(false);
+
+  async function checkinByCode() {
+    if (!societyId) return;
+    if (!/^\d{6}$/.test(code)) return toast.error("Enter the 6-digit code");
+    setCodeBusy(true);
+    const { error } = await supabase.rpc("guard_checkin_by_code", { _society_id: societyId, _code: code });
+    setCodeBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Visitor checked in");
+    setCode("");
+    void load();
+  }
 
   const allowed =
     roles.includes("security" as never) ||
@@ -178,6 +192,28 @@ function GuardDashboard() {
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4 mr-2" />Approve visitor</>}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-2xl border-primary/30 bg-primary/5">
+        <CardContent className="p-5 space-y-3">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <KeyRound className="h-4 w-4 text-primary" /> Pre-approved visitor code
+          </div>
+          <div className="flex gap-2">
+            <Input
+              inputMode="numeric"
+              maxLength={6}
+              placeholder="6-digit code"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              className="text-lg font-mono tracking-widest text-center"
+            />
+            <Button onClick={checkinByCode} disabled={codeBusy || code.length !== 6} className="rounded-xl">
+              {codeBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Check in"}
+            </Button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">Resident generates this from the app and shares it with the visitor.</p>
         </CardContent>
       </Card>
 
