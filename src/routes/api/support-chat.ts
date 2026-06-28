@@ -32,6 +32,23 @@ export const Route = createFileRoute("/api/support-chat")({
         if (!Array.isArray(messages)) {
           return new Response("Messages are required", { status: 400 });
         }
+        const MAX_MESSAGES = 50;
+        const MAX_TOTAL_CHARS = 40_000;
+        const MAX_MESSAGE_CHARS = 8_000;
+        if (messages.length > MAX_MESSAGES) {
+          return new Response("Too many messages", { status: 400 });
+        }
+        let totalChars = 0;
+        for (const m of messages) {
+          const len = JSON.stringify(m ?? "").length;
+          if (len > MAX_MESSAGE_CHARS) {
+            return new Response("Message too long", { status: 413 });
+          }
+          totalChars += len;
+        }
+        if (totalChars > MAX_TOTAL_CHARS) {
+          return new Response("Payload too large", { status: 413 });
+        }
 
         const lovableApiKey = process.env.LOVABLE_API_KEY;
         if (!lovableApiKey) {

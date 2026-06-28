@@ -108,11 +108,29 @@ function FeedScreen() {
       cmtCount.set(c.post_id, (cmtCount.get(c.post_id) ?? 0) + 1),
     );
 
+    // Resolve signed URLs for private post images (paths) while keeping legacy http(s) URLs as-is.
+    const pathsToSign = postRows
+      .map((p) => p.image_url)
+      .filter((u): u is string => !!u && !/^https?:\/\//i.test(u));
+    const signedMap = new Map<string, string>();
+    if (pathsToSign.length > 0) {
+      const { data: signed } = await supabase.storage
+        .from("posts")
+        .createSignedUrls(pathsToSign, 3600);
+      (signed ?? []).forEach((s) => {
+        if (s.path && s.signedUrl) signedMap.set(s.path, s.signedUrl);
+      });
+    }
+
     setPosts(
       postRows.map((p) => {
         const author = profMap.get(p.author_id);
+        const resolvedImage = p.image_url
+          ? (/^https?:\/\//i.test(p.image_url) ? p.image_url : signedMap.get(p.image_url) ?? null)
+          : null;
         return {
           ...p,
+          image_url: resolvedImage,
           author_name: author?.full_name ?? null,
           author_avatar: author?.avatar_url ?? null,
           reactions: rxnCount.get(p.id) ?? 0,
@@ -169,7 +187,8 @@ function FeedScreen() {
           upsert: false,
         });
         if (upErr) throw upErr;
-        imageUrl = supabase.storage.from("posts").getPublicUrl(path).data.publicUrl;
+        // Store the storage path; we sign URLs on read so the bucket can stay private.
+        imageUrl = path;
       }
       const { error } = await supabase.from("posts").insert({
         society_id: societyId, author_id: user.id, body: body.trim(), image_url: imageUrl,
