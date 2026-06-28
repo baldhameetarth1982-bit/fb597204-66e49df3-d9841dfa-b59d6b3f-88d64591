@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NeonThemePreview } from "@/components/shared/NeonThemePreview";
+import { useAuth } from "@/context/AuthContext";
+import { ROLES } from "@/config/roles";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
