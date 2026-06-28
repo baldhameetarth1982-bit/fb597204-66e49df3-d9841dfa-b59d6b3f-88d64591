@@ -78,11 +78,11 @@ function MyVisitors() {
       _society_id: societyId,
       _flat_id: flatId,
       _visitor_name: form.visitor_name.trim(),
-      _phone: form.phone.trim() || null,
-      _vehicle_number: form.vehicle_number.trim() || null,
-      _purpose: form.purpose.trim() || null,
-      _expected_at: form.expected_at ? new Date(form.expected_at).toISOString() : null,
-    });
+      _phone: form.phone.trim() || "",
+      _vehicle_number: form.vehicle_number.trim() || "",
+      _purpose: form.purpose.trim() || "",
+      _expected_at: form.expected_at ? new Date(form.expected_at).toISOString() : new Date().toISOString(),
+    } as never);
     setSaving(false);
     if (error) return toast.error(error.message);
     const row = Array.isArray(data) ? data[0] : data;
