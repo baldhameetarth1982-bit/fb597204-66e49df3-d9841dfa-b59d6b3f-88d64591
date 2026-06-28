@@ -109,15 +109,16 @@ function BillingPage() {
     setGenerating(true);
     const { data: flats, error: fErr } = await supabase
       .from("flats")
-      .select("id")
-      .eq("society_id", societyId);
+      .select("id, block_id")
+      .eq("society_id", societyId)
+      .not("block_id", "is", null);
     if (fErr) {
       setGenerating(false);
       return toast.error(fErr.message);
     }
     if (!flats?.length) {
       setGenerating(false);
-      return toast.error("No flats found. Add blocks and flats first.");
+      return toast.error("Add blocks and assigned flats before generating bills.");
     }
     const due = new Date(dueDate);
     const start = new Date(due.getFullYear(), due.getMonth(), 1)

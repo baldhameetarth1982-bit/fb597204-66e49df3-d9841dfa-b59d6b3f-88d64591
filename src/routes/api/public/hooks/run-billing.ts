@@ -126,8 +126,9 @@ export const Route = createFileRoute("/api/public/hooks/run-billing")({
 
           const { data: flats } = await supabaseAdmin
             .from("flats")
-            .select("id, area_sqft, type")
-            .eq("society_id", sch.society_id);
+            .select("id, area_sqft, type, block_id")
+            .eq("society_id", sch.society_id)
+            .not("block_id", "is", null);
           if (!flats?.length) {
             societiesSkipped++;
             continue;

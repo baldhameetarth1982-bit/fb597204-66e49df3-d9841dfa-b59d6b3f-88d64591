@@ -84,10 +84,11 @@ export const runBillingNow = createServerFn({ method: "POST" })
 
     const { data: flats, error: fErr } = await supabase
       .from("flats")
-      .select("id, area_sqft, type")
-      .eq("society_id", data.societyId);
+      .select("id, area_sqft, type, block_id")
+      .eq("society_id", data.societyId)
+      .not("block_id", "is", null);
     if (fErr) throw new Error(fErr.message);
-    if (!flats?.length) throw new Error("Add at least one unit before generating bills.");
+    if (!flats?.length) throw new Error("Add blocks and assigned units before generating bills.");
 
     const { data: overrides } = await supabase
       .from("unit_billing_overrides")
