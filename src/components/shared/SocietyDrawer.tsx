@@ -45,6 +45,7 @@ const GROUPS: Group[] = [
       { label: "Billing", to: "/society/billing", icon: Receipt },
       { label: "Expenses", to: "/society/expenses", icon: Wallet },
       { label: "Ledger", to: "/society/ledger", icon: Calculator },
+      { label: "Reports", to: "/society/reports", icon: BarChart3 },
     ],
   },
   {
