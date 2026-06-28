@@ -38,6 +38,8 @@ function ResidentsPage() {
   const [rows, setRows] = useState<ResidentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+  const [assignTarget, setAssignTarget] = useState<ResidentRow | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     async function load() {
