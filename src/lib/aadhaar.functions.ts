@@ -1,0 +1,107 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { isValidAadhaar, nameSimilarity } from "./aadhaar";
+
+const Input = z.object({ storagePath: z.string().min(1).max(512) });
+
+export const verifyAadhaarPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => Input.parse(d))
+  .handler(async ({ data, context }) => {
+    const { storagePath } = data;
+    const { userId, supabase } = context as any;
+
+    // Storage path must live in the user's own folder
+    if (!storagePath.startsWith(`${userId}/`)) {
+      return { ok: false, reason: "Invalid file path." } as const;
+    }
+
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) {
+      return { ok: false, reason: "AI verification is temporarily unavailable." } as const;
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Download image bytes
+    const { data: file, error: dlErr } = await supabaseAdmin
+      .storage.from("kyc-admin").download(storagePath);
+    if (dlErr || !file) {
+      return { ok: false, reason: "Could not read uploaded image." } as const;
+    }
+    const buf = Buffer.from(await file.arrayBuffer());
+    const mime = file.type || "image/jpeg";
+    if (buf.byteLength > 8 * 1024 * 1024) {
+      return { ok: false, reason: "Image too large. Use a photo under 8 MB." } as const;
+    }
+    const dataUrl = `data:${mime};base64,${buf.toString("base64")}`;
+
+    // Call Lovable AI Gateway (Gemini Vision) for OCR
+    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Lovable-API-Key": apiKey,
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You read Indian Aadhaar identity cards. Reply with ONLY a single JSON object, no prose, no code fences. Schema: {\"is_aadhaar_card\": boolean, \"aadhaar_number\": string|null, \"name\": string|null, \"dob\": string|null}. aadhaar_number must be the 12 digits as printed (spaces allowed). Set is_aadhaar_card=false if the image is not an Aadhaar card.",
+          },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Extract the Aadhaar fields from this image." },
+              { type: "image_url", image_url: { url: dataUrl } },
+            ],
+          },
+        ],
+        response_format: { type: "json_object" },
+      }),
+    });
+
+    if (aiResp.status === 429) return { ok: false, reason: "Too many attempts. Try again in a minute." } as const;
+    if (aiResp.status === 402) return { ok: false, reason: "Verification quota exhausted. Please try later." } as const;
+    if (!aiResp.ok) return { ok: false, reason: "Verification service error. Try again." } as const;
+
+    const payload = await aiResp.json();
+    const raw = payload?.choices?.[0]?.message?.content ?? "{}";
+    let parsed: { is_aadhaar_card?: boolean; aadhaar_number?: string | null; name?: string | null };
+    try { parsed = JSON.parse(raw); } catch { return { ok: false, reason: "Could not read the card. Try a clearer photo." } as const; }
+
+    if (!parsed.is_aadhaar_card) {
+      return { ok: false, reason: "That doesn't look like an Aadhaar card." } as const;
+    }
+    const digits = (parsed.aadhaar_number ?? "").replace(/\D/g, "");
+    if (!isValidAadhaar(digits)) {
+      return { ok: false, reason: "Couldn't read a valid Aadhaar number. Retake the photo in good light." } as const;
+    }
+
+    // Match name against profile
+    const { data: profile } = await supabase
+      .from("profiles").select("full_name").eq("id", userId).maybeSingle();
+    const profileName = (profile?.full_name ?? "").trim();
+    const cardName = (parsed.name ?? "").trim();
+    if (profileName && cardName) {
+      const sim = nameSimilarity(profileName, cardName);
+      if (sim < 0.6) {
+        return {
+          ok: false,
+          reason: `Name on card ("${cardName}") doesn't match your profile name ("${profileName}").`,
+        } as const;
+      }
+    }
+
+    const last4 = digits.slice(-4);
+    const { error: rpcErr } = await supabase.rpc("mark_aadhaar_verified", { _last4: last4 });
+    if (rpcErr) return { ok: false, reason: rpcErr.message } as const;
+
+    // Best-effort cleanup — keep only verification metadata, not the photo.
+    void supabaseAdmin.storage.from("kyc-admin").remove([storagePath]);
+
+    return { ok: true, last4 } as const;
+  });
