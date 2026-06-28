@@ -302,25 +302,33 @@ GRANT EXECUTE ON FUNCTION public.admin_income_summary() TO authenticated;
 
 -- Repair historical members whose profile.society_id is blank even though their role row is scoped.
 -- This prevents existing residents/admins from ever falling back into onboarding after refresh/login.
-WITH chosen AS (
-  SELECT DISTINCT ON (ur.user_id)
-    ur.user_id,
-    ur.society_id
-  FROM public.user_roles ur
-  WHERE ur.society_id IS NOT NULL
-  ORDER BY ur.user_id,
-    CASE ur.role
-      WHEN 'society_admin'::public.app_role THEN 1
-      WHEN 'resident'::public.app_role THEN 2
-      WHEN 'block_admin'::public.app_role THEN 3
-      WHEN 'security'::public.app_role THEN 4
-      ELSE 9
-    END,
-    ur.created_at
-)
-UPDATE public.profiles p
-SET society_id = chosen.society_id,
-    updated_at = COALESCE(p.updated_at, now())
-FROM chosen
-WHERE p.id = chosen.user_id
-  AND p.society_id IS NULL;
+DO $$
+BEGIN
+  PERFORM set_config('app.allow_society_change', 'on', true);
+
+  WITH chosen AS (
+    SELECT DISTINCT ON (ur.user_id)
+      ur.user_id,
+      ur.society_id
+    FROM public.user_roles ur
+    WHERE ur.society_id IS NOT NULL
+    ORDER BY ur.user_id,
+      CASE ur.role
+        WHEN 'society_admin'::public.app_role THEN 1
+        WHEN 'resident'::public.app_role THEN 2
+        WHEN 'block_admin'::public.app_role THEN 3
+        WHEN 'security'::public.app_role THEN 4
+        ELSE 9
+      END,
+      ur.created_at
+  )
+  UPDATE public.profiles p
+  SET society_id = chosen.society_id,
+      updated_at = COALESCE(p.updated_at, now())
+  FROM chosen
+  WHERE p.id = chosen.user_id
+    AND p.society_id IS NULL;
+
+  PERFORM set_config('app.allow_society_change', 'off', true);
+END;
+$$;
