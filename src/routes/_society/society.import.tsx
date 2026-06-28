@@ -96,12 +96,12 @@ function ImportPage() {
       if (!r.resident_name || !(offline === "yes" || offline === "true" || offline === "1")) continue;
       const flatId = flatMap.get(flatKey(r.block, r.flat_number));
       if (!flatId) continue;
-      const { error } = await supabase.rpc("admin_create_offline_resident" as any, {
-        p_society_id: societyId,
-        p_flat_id: flatId,
-        p_name: r.resident_name,
-        p_phone: r.phone || null,
-        p_email: r.email || null,
+      const { error } = await supabase.from("offline_residents").insert({
+        society_id: societyId,
+        flat_id: flatId,
+        full_name: r.resident_name,
+        phone: r.phone || null,
+        email: r.email || null,
       });
       if (error) errors.push(`Offline ${r.resident_name}: ${error.message}`);
       else resCount++;
