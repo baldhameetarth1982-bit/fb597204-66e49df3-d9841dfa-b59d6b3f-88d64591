@@ -4,6 +4,7 @@ import {
   Building2, Car, DoorOpen, LayoutDashboard, Megaphone, Menu, Receipt,
   ShieldCheck, Trophy, UserCheck, Users, Vote, Wallet, Wand2, Sparkles,
   Calculator, BadgeCheck, LogOut, Settings, ListChecks, Wrench, CalendarRange,
+  BarChart3,
 } from "lucide-react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose,
@@ -44,6 +45,7 @@ const GROUPS: Group[] = [
       { label: "Billing", to: "/society/billing", icon: Receipt },
       { label: "Expenses", to: "/society/expenses", icon: Wallet },
       { label: "Ledger", to: "/society/ledger", icon: Calculator },
+      { label: "Reports", to: "/society/reports", icon: BarChart3 },
     ],
   },
   {

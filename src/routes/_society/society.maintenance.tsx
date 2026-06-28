@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, CalendarRange, Plus, Trash2, IndianRupee, FileText } from "lucide-react";
 import { toast } from "sonner";
@@ -45,12 +46,21 @@ function MaintenancePage() {
   const list = useServerFn(listSocietyMaintenance);
   const seed = useServerFn(seedCurrentMonthMaintenance);
   const genBill = useServerFn(generateFlatBill);
+  const qc = useQueryClient();
 
-  const [loading, setLoading] = useState(true);
-  const [periods, setPeriods] = useState<Period[]>([]);
-  const [flats, setFlats] = useState<Flat[]>([]);
   const [seedAmount, setSeedAmount] = useState("2500");
   const [seeding, setSeeding] = useState(false);
+  const [visible, setVisible] = useState(20);
+
+  const { data, isLoading } = useQuery({
+    enabled: !!societyId,
+    queryKey: ["society-maintenance", societyId],
+    queryFn: async () => list({ data: { societyId: societyId! } }),
+    staleTime: 60_000,
+  });
+  const periods = (data?.periods ?? []) as Period[];
+  const flats = (data?.flats ?? []) as Flat[];
+  const reload = () => qc.invalidateQueries({ queryKey: ["society-maintenance", societyId] });
 
   // bill dialog
   const [billFlat, setBillFlat] = useState<Flat | null>(null);
@@ -59,18 +69,6 @@ function MaintenancePage() {
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [creating, setCreating] = useState(false);
-
-  async function load() {
-    if (!societyId) return;
-    setLoading(true);
-    try {
-      const r = await list({ data: { societyId } });
-      setPeriods(r.periods as Period[]);
-      setFlats(r.flats as Flat[]);
-    } catch (e: any) { toast.error(e.message); }
-    setLoading(false);
-  }
-  useEffect(() => { if (societyId) load(); /* eslint-disable-next-line */ }, [societyId]);
 
   const byFlat = useMemo(() => {
     const m = new Map<string, Period[]>();
@@ -102,7 +100,7 @@ function MaintenancePage() {
     try {
       const { created } = await seed({ data: { societyId: societyId!, amount: amt } });
       toast.success(`Seeded ${created} flat(s) for this month`);
-      load();
+      reload();
     } catch (e: any) { toast.error(e.message); } finally { setSeeding(false); }
   }
 
@@ -124,12 +122,12 @@ function MaintenancePage() {
       });
       toast.success("Bill generated");
       setBillFlat(null);
-      load();
+      reload();
       if (billId) window.location.href = `/society/billing#${billId}`;
     } catch (e: any) { toast.error(e.message); } finally { setCreating(false); }
   }
 
-  if (sidLoading || loading) {
+  if (sidLoading || isLoading) {
     return (
       <div className="min-h-[40vh] grid place-items-center text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin" />
@@ -166,7 +164,7 @@ function MaintenancePage() {
           description="Add blocks and flats to start tracking maintenance." />
       ) : (
         <div className="grid gap-3">
-          {flats.map((f) => {
+          {flats.slice(0, visible).map((f) => {
             const fp = byFlat.get(f.id) ?? [];
             const openCount = fp.filter((p) => p.status !== "paid" && !p.bill_id).length;
             const openAmt = fp
@@ -199,6 +197,11 @@ function MaintenancePage() {
               </Card>
             );
           })}
+          {visible < flats.length && (
+            <Button variant="outline" className="rounded-2xl" onClick={() => setVisible((v) => v + 20)}>
+              Show more ({flats.length - visible} remaining)
+            </Button>
+          )}
         </div>
       )}
 
