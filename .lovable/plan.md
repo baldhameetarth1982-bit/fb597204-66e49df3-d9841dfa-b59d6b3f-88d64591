@@ -1,83 +1,82 @@
-## Goal
-Lock the entire society behind a paid plan after the 14-day trial, force plan selection right after society creation, isolate societies cryptographically via RLS, and harden the app with rate limiting everywhere.
 
-## 1. Plan-gate flow (society admin)
+# SocioHub → Mobile-First Android-Style Restructure
 
-**New route: `/onboarding/plan`** (mandatory step, cannot be skipped)
-- Shown immediately after `create_society_for_current_user` succeeds.
-- Beautiful Material 3 dark "Executive" card layout, 4 cards (Free Trial / Basic / Pro / Premium), hero gradient, plan comparison, social proof, "What you lose if you don't subscribe" section.
-- Trial CTA: starts 14-day trial (sets `societies.trial_ends_at = now()+14d`, `plan_id='trial'`, `plan_status='trialing'`).
-- Paid CTA: routes to `/checkout/$planId` (already exists, Razorpay-gated).
-- Back button + sign-out are the only escapes. No `/app` or `/society` route is reachable until a plan choice exists.
+This is a large change. To avoid breaking the working app (auth, plan gate, billing, RLS, multi-tenant isolation) I'll deliver it in **6 phases**, each independently shippable. You approve this plan, then I execute phase by phase, asking before destructive removals.
 
-**Schema additions (`societies`):**
-- `plan_status text` — `none | trialing | active | expired | cancelled`
-- `trial_ends_at timestamptz`
-- `plan_expires_at timestamptz`
-- `plan_selected_at timestamptz`
+---
 
-**Server fn `start_trial_for_society`** (RPC): only callable by that society's admin, only if `plan_status='none'`, sets trial fields. Idempotent. Rate-limited (1/min/user).
+## Guiding principles (apply to every phase)
+- Mobile-first. Design at 360–414px, scale up. No desktop-only tables.
+- Material 3 vibe: rounded-2xl cards, FAB, bottom sheets, top app bar, drawer (admin), bottom nav (resident).
+- Replace tables → card lists. Replace big modals → `Sheet` (bottom sheet) / expandable cards.
+- Preserve existing RLS, plan-gate, Razorpay checkout, KYC, audit log. Only swap UI + add new modules.
+- Every new public table: GRANT + RLS + policies in same migration.
 
-## 2. Hard gate everywhere
+---
 
-**New helper: `society_has_access(_society_id uuid) returns boolean`** (SECURITY DEFINER)
-- Returns true if `plan_status='active'` OR (`plan_status='trialing'` AND `trial_ends_at > now()`).
-- Super admin always true.
+## Phase 1 — Navigation & Shell (UI-only, zero data risk)
+- New `MobileTopBar` (title, back, profile avatar).
+- Resident: refined `ResidentBottomNav` — Home, Bills, Visitors, Community, Profile (5 max).
+- Society Admin: convert sidebar → **Drawer** (`Sheet` from left) + bottom FAB for "Generate Bill / Add Expense / Add Visitor".
+- Guard: single-screen layout (no nav chrome).
+- Super Admin: keep current desktop SaaS dashboard (per your earlier ask).
+- Global page wrapper `MobileScreen` enforcing safe-area, max-w-md on mobile, max-w-6xl on desktop.
 
-**Layout guards:**
-- `_society.tsx` and `_resident.tsx` query `society_has_access(societyId)`. If false → redirect to:
-  - Society admin → `/society/plan-required` (full-screen "Your plan expired" page with renew CTA, beautiful design, lists features they're losing).
-  - Resident → `/app/plan-required` ("Your society's subscription has ended. Please ask your society admin to renew.").
-- Super admin bypasses.
+## Phase 2 — Auth & Onboarding rewrite
+- Make **Phone OTP (Firebase) primary**. Google login still available but must complete phone verification before dashboard.
+- New `/onboarding` shows ONLY two big cards: **Create Society** / **Join Society**. Remove every other onboarding step.
+- Join flow: search → select → form (name, flat, owner/tenant) → submit → "Pending Approval" screen → admin approves in `society.verifications`.
+- Create flow: name, total flats, structure type, count, address, admin name (phone auto-filled) → straight to plan picker → Razorpay → Setup Wizard.
 
-**Checkout hardening:** `/checkout/$planId` already checks `is_razorpay_live()`. Add server-side verification of Razorpay payment signature (HMAC) on the success webhook before flipping `plan_status='active'`. No client-side trust.
+## Phase 3 — Society Setup Wizard + Accounts opening balances
+- 5-step wizard: Society Info → Structure → Maintenance Policy → Accounts (opening cash + bank) → Finish.
+- New tables:
+  - `society_settings` (maintenance_type prepaid/current/postpaid, monthly_amount, due_day, late_fee, grace_days, opening_cash, opening_bank, opening_set_at).
+  - `custom_fields` + `custom_field_values` (per-society dynamic resident profile fields: text/number/dropdown/date/checkbox/file/image).
+- Opening balances locked after wizard (DB trigger blocks UPDATE).
 
-## 3. Cross-society isolation (RLS audit)
+## Phase 4 — Maintenance Engine + Billing rewrite
+- Remove auto-bill-generation cron behavior for societies that don't opt in. Replace with **"Pending Maintenance" notifications** to residents on due date.
+- New "Generate Bill" sheet for admin: pick resident → auto-loads pending months + outstanding → admin selects months + adds N additional charges (category/description/amount) → preview → generate.
+- Bills become immutable; expose Send WhatsApp / PNG / PDF / Print actions (PDF via `pdf-lib` client-side).
+- Keep existing `bills`/`payments` tables; add `bill_line_items` table for charges.
 
-Run a systematic RLS audit. For every table with `society_id`:
-- Drop any policy using bare `auth.uid()` membership without `society_id` scoping.
-- Replace with `using (authorize_membership(auth.uid(), society_id))` (already exists).
-- Admin write policies must use `is_society_admin_for(auth.uid(), society_id)` strictly equal to the row's society_id.
+## Phase 5 — Accounting module
+- New tables: `accounts` (cash/bank rows per society), `ledger_txns` (income/expense/adjustment), `financial_years`.
+- Every payment insert → auto income txn (DB trigger).
+- Expenses entered manually via bottom sheet.
+- Balances always derived (`SUM(opening + txns)`) — never stored.
+- Reports page: Income / Expense / Collection / Outstanding / Monthly / FY / Cash / Bank with PDF + Excel export (`xlsx` lib).
 
-**Cross-society profile leak fix:** `profiles.society_id` updates restricted — residents can only update their own profile, but cannot change `society_id` arbitrarily (only via `join_society_with_code`).
+## Phase 6 — Visitors rewrite + Guard Access Links
+- New table `guard_links` (token, society_id, active_device_fingerprint, last_seen, revoked_at).
+- Admin generates link → guard opens `/g/$token` → device fingerprint stored on first open → second device triggers admin notification (FCM) + admin can revoke/reset.
+- Guard screen: only 4 actions (Entry / Exit / Today / Search).
+- Residents: Expected Visitor + Frequent Visitor (maid/cook/etc.) with validity (Today/Tomorrow/Date/Recurring).
+- Drop QR-heavy flows.
 
-**Add test migration** asserting no policy uses `true` or unbounded membership on multi-tenant tables.
+---
 
-## 4. Resident ad-removal plan (₹50/mo)
+## What I will NOT touch unless you ask
+- Existing Razorpay integration, plan-gate RPC (`society_has_access`), KYC RPCs, audit log, RLS helper functions, super-admin user grants — all kept as-is.
+- Welcome intro, splash screen, theme system (Neon premium), ad system — kept.
+- Family/Emergency screens — Phase 2 will hide them from resident nav (your request) but I'll keep the routes alive until you confirm deletion.
 
-- New plan row `id='ad_free'`, individual scope (`scope='resident'` column added to `plans`).
-- Only shown to residents whose society's plan has `ads_enabled=true`.
-- New table `resident_subscriptions(user_id, plan_id, status, expires_at)`.
-- `AdBanner` component checks: society plan has ads + resident has no active `ad_free` sub → show.
+---
 
-## 5. Rate limiting everywhere
+## Technical notes (skip if non-technical)
+- All new tables get `GRANT` + RLS + `service_role` ALL + scoped `authenticated` policies in the same migration.
+- DB triggers enforce: opening-balance immutability, derived-balance protection, bill immutability after generation, single-device guard links.
+- Maintenance auto-bill cron will check `society_settings.auto_generate` flag before inserting; default false.
+- Custom fields rendered via a single `<DynamicField>` component reading `custom_fields` schema.
+- Mobile shell uses CSS `env(safe-area-inset-*)` and `dvh` units.
 
-Wrap every sensitive server fn / public route with `checkRateLimit`:
-- Auth: login (5/15min — already), signup (3/hr/IP), OTP (3/10min/phone), password reset (3/hr/email).
-- Writes: bills create (30/min/society), payments (10/min/user), posts (10/min/user), comments (30/min/user), reactions (60/min/user), polls vote (per poll 1/user).
-- Reads heavy: AI block generator (5/hr/user), referrals (10/min/user).
-- Public APIs (`/api/public/*`): per-IP 60/min default.
+---
 
-Centralize in `rate-limit.server.ts`; add `withRateLimit(bucket, limit, windowSec)` middleware helper for `createServerFn`.
+## Execution order I propose
+1. You approve plan.
+2. I ship **Phase 1** (nav shell) — visible immediately, no DB change.
+3. Confirm look/feel, then Phase 2.
+4. Continue sequentially. Each phase ends with you testing on mobile preview before the next.
 
-## 6. Plan-required pages (design)
-
-Full-screen, executive dark, gradient hero (deep red → black), hero illustration (generated), countdown if trialing, big "Renew now" CTA, plan grid below, testimonials carousel, FAQ accordion. Mobile-first.
-
-## 7. Acceptance checks
-- New society → cannot reach `/society/dashboard` without picking trial/plan.
-- Trial expired → admin sees plan-required, residents see read-only "subscription ended" screen.
-- Tampering `society_id` in client request → RLS blocks; verified by SQL test queries.
-- Razorpay success without valid signature → server rejects, plan stays unchanged.
-- 100 rapid requests to any rate-limited fn → 429-equivalent after limit.
-
-## Technical notes
-- Migrations: 1 big migration for schema + RLS audit + `society_has_access` + `start_trial_for_society` + ad_free plan + resident_subscriptions.
-- Files: `src/routes/onboarding.plan.tsx`, `src/routes/_society/society.plan-required.tsx`, `src/routes/_resident/app.plan-required.tsx`, `src/lib/plan-gate.functions.ts`, `src/lib/rate-limit-middleware.server.ts`, edits to `_society.tsx`, `_resident.tsx`, `onboarding.create.tsx`, `checkout.$planId.tsx`, `AdBanner.tsx`, `pricing.tsx`.
-- Razorpay signature verification needs `RAZORPAY_KEY_SECRET` (already documented as server-side secret).
-
-## Scope NOT included
-- Updating vulnerable npm deps (separate concern, can do after if you want).
-- Building admin UI to manually extend a society's plan (super-admin can do via DB for now).
-
-Ready to ship this in one go after approval.
+**Reply "go phase 1"** (or specify a different starting phase) and I'll execute. If you want changes to the plan first — say so and I'll revise.

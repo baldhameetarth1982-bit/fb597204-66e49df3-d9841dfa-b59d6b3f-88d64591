@@ -26,7 +26,13 @@ function initials(name?: string | null, email?: string | null) {
     .toUpperCase();
 }
 
-export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: boolean } = {}) {
+export function AppHeader({
+  withSidebarTrigger = true,
+  leading,
+}: {
+  withSidebarTrigger?: boolean;
+  leading?: React.ReactNode;
+} = {}) {
   const { user, profile, signOut, hasRole } = useAuth() as any;
   const navigate = useNavigate();
   const isSocietyAdmin = typeof hasRole === "function" && (hasRole("society_admin") || hasRole("super_admin"));
@@ -42,6 +48,7 @@ export function AppHeader({ withSidebarTrigger = true }: { withSidebarTrigger?: 
   return (
     <header className="sticky top-0 z-30 h-16 border-b border-border bg-background">
       <div className="h-full flex items-center gap-2 px-3 md:px-6">
+        {leading}
         {withSidebarTrigger && <SidebarTrigger className="hidden md:inline-flex rounded-xl h-10 w-10" />}
 
         <Link to="/" className="md:hidden flex items-center gap-2 ml-1">

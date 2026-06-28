@@ -4,30 +4,30 @@ import logoAsset from "@/assets/sociohub-logo.jpeg.asset.json";
 const SESSION_KEY = "sociohub:splashed";
 
 /**
- * Native-app style splash: full white screen with centered logo for ~3s
- * on the very first load of a session. Subsequent navigations skip it.
+ * Native-app style splash: full white screen with centered logo on the very
+ * first load of a session. Renders nothing during SSR/first paint to avoid
+ * hydration mismatch (sessionStorage is unavailable on the server).
  */
 export function SplashScreen() {
-  const [visible, setVisible] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return !sessionStorage.getItem(SESSION_KEY);
-  });
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!visible) return;
+    if (typeof window === "undefined") return;
+    if (sessionStorage.getItem(SESSION_KEY)) return;
+    setVisible(true);
     const t = setTimeout(() => {
       sessionStorage.setItem(SESSION_KEY, "1");
       setVisible(false);
     }, 2200);
     return () => clearTimeout(t);
-  }, [visible]);
+  }, []);
 
   if (!visible) return null;
 
   return (
     <div
       className="fixed inset-0 z-[9999] grid place-items-center bg-white animate-in fade-in duration-200"
-      aria-hidden
+      aria-hidden="true"
     >
       <div className="flex flex-col items-center gap-5">
         <img
