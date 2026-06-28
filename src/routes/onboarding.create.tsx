@@ -65,7 +65,7 @@ function CreateSociety() {
       </div>
     );
   }
-  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   async function sendOtp() {
     if (!/^\+\d{8,15}$/.test(phone)) {
