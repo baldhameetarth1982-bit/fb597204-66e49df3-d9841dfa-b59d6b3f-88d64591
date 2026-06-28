@@ -37,6 +37,7 @@ import { Route as SocietySocietyVisitorsRouteImport } from './routes/_society/so
 import { Route as SocietySocietyVerificationsRouteImport } from './routes/_society/society.verifications'
 import { Route as SocietySocietyVehiclesRouteImport } from './routes/_society/society.vehicles'
 import { Route as SocietySocietyTeamRouteImport } from './routes/_society/society.team'
+import { Route as SocietySocietySetupRouteImport } from './routes/_society/society.setup'
 import { Route as SocietySocietyResidentsRouteImport } from './routes/_society/society.residents'
 import { Route as SocietySocietyPollsRouteImport } from './routes/_society/society.polls'
 import { Route as SocietySocietyPlanRequiredRouteImport } from './routes/_society/society.plan-required'
@@ -46,6 +47,7 @@ import { Route as SocietySocietyFlatsRouteImport } from './routes/_society/socie
 import { Route as SocietySocietyExpensesRouteImport } from './routes/_society/society.expenses'
 import { Route as SocietySocietyDigestRouteImport } from './routes/_society/society.digest'
 import { Route as SocietySocietyDashboardRouteImport } from './routes/_society/society.dashboard'
+import { Route as SocietySocietyCustomFieldsRouteImport } from './routes/_society/society.custom-fields'
 import { Route as SocietySocietyBlocksRouteImport } from './routes/_society/society.blocks'
 import { Route as SocietySocietyBillingRouteImport } from './routes/_society/society.billing'
 import { Route as SocietySocietyBillStudioRouteImport } from './routes/_society/society.bill-studio'
@@ -217,6 +219,11 @@ const SocietySocietyTeamRoute = SocietySocietyTeamRouteImport.update({
   path: '/society/team',
   getParentRoute: () => SocietyRoute,
 } as any)
+const SocietySocietySetupRoute = SocietySocietySetupRouteImport.update({
+  id: '/society/setup',
+  path: '/society/setup',
+  getParentRoute: () => SocietyRoute,
+} as any)
 const SocietySocietyResidentsRoute = SocietySocietyResidentsRouteImport.update({
   id: '/society/residents',
   path: '/society/residents',
@@ -264,6 +271,12 @@ const SocietySocietyDashboardRoute = SocietySocietyDashboardRouteImport.update({
   path: '/society/dashboard',
   getParentRoute: () => SocietyRoute,
 } as any)
+const SocietySocietyCustomFieldsRoute =
+  SocietySocietyCustomFieldsRouteImport.update({
+    id: '/society/custom-fields',
+    path: '/society/custom-fields',
+    getParentRoute: () => SocietyRoute,
+  } as any)
 const SocietySocietyBlocksRoute = SocietySocietyBlocksRouteImport.update({
   id: '/society/blocks',
   path: '/society/blocks',
@@ -485,6 +498,7 @@ export interface FileRoutesByFullPath {
   '/society/bill-studio': typeof SocietySocietyBillStudioRoute
   '/society/billing': typeof SocietySocietyBillingRoute
   '/society/blocks': typeof SocietySocietyBlocksRoute
+  '/society/custom-fields': typeof SocietySocietyCustomFieldsRoute
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/digest': typeof SocietySocietyDigestRoute
   '/society/expenses': typeof SocietySocietyExpensesRoute
@@ -494,6 +508,7 @@ export interface FileRoutesByFullPath {
   '/society/plan-required': typeof SocietySocietyPlanRequiredRoute
   '/society/polls': typeof SocietySocietyPollsRoute
   '/society/residents': typeof SocietySocietyResidentsRoute
+  '/society/setup': typeof SocietySocietySetupRoute
   '/society/team': typeof SocietySocietyTeamRoute
   '/society/vehicles': typeof SocietySocietyVehiclesRoute
   '/society/verifications': typeof SocietySocietyVerificationsRoute
@@ -552,6 +567,7 @@ export interface FileRoutesByTo {
   '/society/bill-studio': typeof SocietySocietyBillStudioRoute
   '/society/billing': typeof SocietySocietyBillingRoute
   '/society/blocks': typeof SocietySocietyBlocksRoute
+  '/society/custom-fields': typeof SocietySocietyCustomFieldsRoute
   '/society/dashboard': typeof SocietySocietyDashboardRoute
   '/society/digest': typeof SocietySocietyDigestRoute
   '/society/expenses': typeof SocietySocietyExpensesRoute
@@ -561,6 +577,7 @@ export interface FileRoutesByTo {
   '/society/plan-required': typeof SocietySocietyPlanRequiredRoute
   '/society/polls': typeof SocietySocietyPollsRoute
   '/society/residents': typeof SocietySocietyResidentsRoute
+  '/society/setup': typeof SocietySocietySetupRoute
   '/society/team': typeof SocietySocietyTeamRoute
   '/society/vehicles': typeof SocietySocietyVehiclesRoute
   '/society/verifications': typeof SocietySocietyVerificationsRoute
@@ -625,6 +642,7 @@ export interface FileRoutesById {
   '/_society/society/bill-studio': typeof SocietySocietyBillStudioRoute
   '/_society/society/billing': typeof SocietySocietyBillingRoute
   '/_society/society/blocks': typeof SocietySocietyBlocksRoute
+  '/_society/society/custom-fields': typeof SocietySocietyCustomFieldsRoute
   '/_society/society/dashboard': typeof SocietySocietyDashboardRoute
   '/_society/society/digest': typeof SocietySocietyDigestRoute
   '/_society/society/expenses': typeof SocietySocietyExpensesRoute
@@ -634,6 +652,7 @@ export interface FileRoutesById {
   '/_society/society/plan-required': typeof SocietySocietyPlanRequiredRoute
   '/_society/society/polls': typeof SocietySocietyPollsRoute
   '/_society/society/residents': typeof SocietySocietyResidentsRoute
+  '/_society/society/setup': typeof SocietySocietySetupRoute
   '/_society/society/team': typeof SocietySocietyTeamRoute
   '/_society/society/vehicles': typeof SocietySocietyVehiclesRoute
   '/_society/society/verifications': typeof SocietySocietyVerificationsRoute
@@ -695,6 +714,7 @@ export interface FileRouteTypes {
     | '/society/bill-studio'
     | '/society/billing'
     | '/society/blocks'
+    | '/society/custom-fields'
     | '/society/dashboard'
     | '/society/digest'
     | '/society/expenses'
@@ -704,6 +724,7 @@ export interface FileRouteTypes {
     | '/society/plan-required'
     | '/society/polls'
     | '/society/residents'
+    | '/society/setup'
     | '/society/team'
     | '/society/vehicles'
     | '/society/verifications'
@@ -762,6 +783,7 @@ export interface FileRouteTypes {
     | '/society/bill-studio'
     | '/society/billing'
     | '/society/blocks'
+    | '/society/custom-fields'
     | '/society/dashboard'
     | '/society/digest'
     | '/society/expenses'
@@ -771,6 +793,7 @@ export interface FileRouteTypes {
     | '/society/plan-required'
     | '/society/polls'
     | '/society/residents'
+    | '/society/setup'
     | '/society/team'
     | '/society/vehicles'
     | '/society/verifications'
@@ -834,6 +857,7 @@ export interface FileRouteTypes {
     | '/_society/society/bill-studio'
     | '/_society/society/billing'
     | '/_society/society/blocks'
+    | '/_society/society/custom-fields'
     | '/_society/society/dashboard'
     | '/_society/society/digest'
     | '/_society/society/expenses'
@@ -843,6 +867,7 @@ export interface FileRouteTypes {
     | '/_society/society/plan-required'
     | '/_society/society/polls'
     | '/_society/society/residents'
+    | '/_society/society/setup'
     | '/_society/society/team'
     | '/_society/society/vehicles'
     | '/_society/society/verifications'
@@ -1068,6 +1093,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SocietySocietyTeamRouteImport
       parentRoute: typeof SocietyRoute
     }
+    '/_society/society/setup': {
+      id: '/_society/society/setup'
+      path: '/society/setup'
+      fullPath: '/society/setup'
+      preLoaderRoute: typeof SocietySocietySetupRouteImport
+      parentRoute: typeof SocietyRoute
+    }
     '/_society/society/residents': {
       id: '/_society/society/residents'
       path: '/society/residents'
@@ -1129,6 +1161,13 @@ declare module '@tanstack/react-router' {
       path: '/society/dashboard'
       fullPath: '/society/dashboard'
       preLoaderRoute: typeof SocietySocietyDashboardRouteImport
+      parentRoute: typeof SocietyRoute
+    }
+    '/_society/society/custom-fields': {
+      id: '/_society/society/custom-fields'
+      path: '/society/custom-fields'
+      fullPath: '/society/custom-fields'
+      preLoaderRoute: typeof SocietySocietyCustomFieldsRouteImport
       parentRoute: typeof SocietyRoute
     }
     '/_society/society/blocks': {
@@ -1469,6 +1508,7 @@ interface SocietyRouteChildren {
   SocietySocietyBillStudioRoute: typeof SocietySocietyBillStudioRoute
   SocietySocietyBillingRoute: typeof SocietySocietyBillingRoute
   SocietySocietyBlocksRoute: typeof SocietySocietyBlocksRoute
+  SocietySocietyCustomFieldsRoute: typeof SocietySocietyCustomFieldsRoute
   SocietySocietyDashboardRoute: typeof SocietySocietyDashboardRoute
   SocietySocietyDigestRoute: typeof SocietySocietyDigestRoute
   SocietySocietyExpensesRoute: typeof SocietySocietyExpensesRoute
@@ -1478,6 +1518,7 @@ interface SocietyRouteChildren {
   SocietySocietyPlanRequiredRoute: typeof SocietySocietyPlanRequiredRoute
   SocietySocietyPollsRoute: typeof SocietySocietyPollsRoute
   SocietySocietyResidentsRoute: typeof SocietySocietyResidentsRoute
+  SocietySocietySetupRoute: typeof SocietySocietySetupRoute
   SocietySocietyTeamRoute: typeof SocietySocietyTeamRoute
   SocietySocietyVehiclesRoute: typeof SocietySocietyVehiclesRoute
   SocietySocietyVerificationsRoute: typeof SocietySocietyVerificationsRoute
@@ -1490,6 +1531,7 @@ const SocietyRouteChildren: SocietyRouteChildren = {
   SocietySocietyBillStudioRoute: SocietySocietyBillStudioRoute,
   SocietySocietyBillingRoute: SocietySocietyBillingRoute,
   SocietySocietyBlocksRoute: SocietySocietyBlocksRoute,
+  SocietySocietyCustomFieldsRoute: SocietySocietyCustomFieldsRoute,
   SocietySocietyDashboardRoute: SocietySocietyDashboardRoute,
   SocietySocietyDigestRoute: SocietySocietyDigestRoute,
   SocietySocietyExpensesRoute: SocietySocietyExpensesRoute,
@@ -1499,6 +1541,7 @@ const SocietyRouteChildren: SocietyRouteChildren = {
   SocietySocietyPlanRequiredRoute: SocietySocietyPlanRequiredRoute,
   SocietySocietyPollsRoute: SocietySocietyPollsRoute,
   SocietySocietyResidentsRoute: SocietySocietyResidentsRoute,
+  SocietySocietySetupRoute: SocietySocietySetupRoute,
   SocietySocietyTeamRoute: SocietySocietyTeamRoute,
   SocietySocietyVehiclesRoute: SocietySocietyVehiclesRoute,
   SocietySocietyVerificationsRoute: SocietySocietyVerificationsRoute,
