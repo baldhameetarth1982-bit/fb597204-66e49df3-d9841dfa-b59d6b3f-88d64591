@@ -180,6 +180,14 @@ function DuesPage() {
           <Link to="/app/ledger">View full ledger →</Link>
         </Button>
       </div>
+
+      {profile?.society_id && (
+        <ClaimFlatSheet
+          open={claimOpen}
+          onOpenChange={setClaimOpen}
+          societyId={profile.society_id}
+        />
+      )}
     </div>
   );
 }
