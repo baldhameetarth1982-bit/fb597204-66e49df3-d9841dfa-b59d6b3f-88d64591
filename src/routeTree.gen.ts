@@ -69,6 +69,7 @@ import { Route as ResidentAppBillsRouteImport } from './routes/_resident/app.bil
 import { Route as ResidentAppActivityRouteImport } from './routes/_resident/app.activity'
 import { Route as ResidentAppAchievementsRouteImport } from './routes/_resident/app.achievements'
 import { Route as AdminAdminWithdrawalsRouteImport } from './routes/_admin/admin.withdrawals'
+import { Route as AdminAdminUsersRouteImport } from './routes/_admin/admin.users'
 import { Route as AdminAdminRazorpayRouteImport } from './routes/_admin/admin.razorpay'
 import { Route as AdminAdminPlansRouteImport } from './routes/_admin/admin.plans'
 import { Route as AdminAdminIncomeRouteImport } from './routes/_admin/admin.income'
@@ -378,6 +379,11 @@ const AdminAdminWithdrawalsRoute = AdminAdminWithdrawalsRouteImport.update({
   path: '/admin/withdrawals',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAdminUsersRoute = AdminAdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAdminRazorpayRoute = AdminAdminRazorpayRouteImport.update({
   id: '/admin/razorpay',
   path: '/admin/razorpay',
@@ -440,6 +446,7 @@ export interface FileRoutesByFullPath {
   '/admin/income': typeof AdminAdminIncomeRoute
   '/admin/plans': typeof AdminAdminPlansRoute
   '/admin/razorpay': typeof AdminAdminRazorpayRoute
+  '/admin/users': typeof AdminAdminUsersRoute
   '/admin/withdrawals': typeof AdminAdminWithdrawalsRoute
   '/app/achievements': typeof ResidentAppAchievementsRoute
   '/app/activity': typeof ResidentAppActivityRoute
@@ -504,6 +511,7 @@ export interface FileRoutesByTo {
   '/admin/income': typeof AdminAdminIncomeRoute
   '/admin/plans': typeof AdminAdminPlansRoute
   '/admin/razorpay': typeof AdminAdminRazorpayRoute
+  '/admin/users': typeof AdminAdminUsersRoute
   '/admin/withdrawals': typeof AdminAdminWithdrawalsRoute
   '/app/achievements': typeof ResidentAppAchievementsRoute
   '/app/activity': typeof ResidentAppActivityRoute
@@ -574,6 +582,7 @@ export interface FileRoutesById {
   '/_admin/admin/income': typeof AdminAdminIncomeRoute
   '/_admin/admin/plans': typeof AdminAdminPlansRoute
   '/_admin/admin/razorpay': typeof AdminAdminRazorpayRoute
+  '/_admin/admin/users': typeof AdminAdminUsersRoute
   '/_admin/admin/withdrawals': typeof AdminAdminWithdrawalsRoute
   '/_resident/app/achievements': typeof ResidentAppAchievementsRoute
   '/_resident/app/activity': typeof ResidentAppActivityRoute
@@ -641,6 +650,7 @@ export interface FileRouteTypes {
     | '/admin/income'
     | '/admin/plans'
     | '/admin/razorpay'
+    | '/admin/users'
     | '/admin/withdrawals'
     | '/app/achievements'
     | '/app/activity'
@@ -705,6 +715,7 @@ export interface FileRouteTypes {
     | '/admin/income'
     | '/admin/plans'
     | '/admin/razorpay'
+    | '/admin/users'
     | '/admin/withdrawals'
     | '/app/achievements'
     | '/app/activity'
@@ -774,6 +785,7 @@ export interface FileRouteTypes {
     | '/_admin/admin/income'
     | '/_admin/admin/plans'
     | '/_admin/admin/razorpay'
+    | '/_admin/admin/users'
     | '/_admin/admin/withdrawals'
     | '/_resident/app/achievements'
     | '/_resident/app/activity'
@@ -1256,6 +1268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminWithdrawalsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/admin/users': {
+      id: '/_admin/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminAdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/admin/razorpay': {
       id: '/_admin/admin/razorpay'
       path: '/admin/razorpay'
@@ -1314,6 +1333,7 @@ interface AdminRouteChildren {
   AdminAdminIncomeRoute: typeof AdminAdminIncomeRoute
   AdminAdminPlansRoute: typeof AdminAdminPlansRoute
   AdminAdminRazorpayRoute: typeof AdminAdminRazorpayRoute
+  AdminAdminUsersRoute: typeof AdminAdminUsersRoute
   AdminAdminWithdrawalsRoute: typeof AdminAdminWithdrawalsRoute
 }
 
@@ -1323,6 +1343,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminIncomeRoute: AdminAdminIncomeRoute,
   AdminAdminPlansRoute: AdminAdminPlansRoute,
   AdminAdminRazorpayRoute: AdminAdminRazorpayRoute,
+  AdminAdminUsersRoute: AdminAdminUsersRoute,
   AdminAdminWithdrawalsRoute: AdminAdminWithdrawalsRoute,
 }
 
