@@ -95,6 +95,25 @@ function DuesPage() {
         </div>
       </div>
 
+      {noFlat && (
+        <Card className="rounded-2xl border-amber-500/30 bg-amber-500/10">
+          <CardContent className="p-4 flex items-start gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-500/20 grid place-items-center shrink-0">
+              <Home className="h-5 w-5 text-amber-700 dark:text-amber-200" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-sm">You're not linked to a flat yet</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Pick your flat so bills can reach you.
+              </p>
+              <Button size="sm" className="mt-3 rounded-lg" onClick={() => setClaimOpen(true)}>
+                Pick my flat
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Current bill */}
       <Card className="rounded-2xl border-0 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg">
         <CardContent className="p-5 space-y-4">
