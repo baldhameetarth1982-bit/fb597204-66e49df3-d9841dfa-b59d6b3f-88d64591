@@ -46,12 +46,21 @@ function MaintenancePage() {
   const list = useServerFn(listSocietyMaintenance);
   const seed = useServerFn(seedCurrentMonthMaintenance);
   const genBill = useServerFn(generateFlatBill);
+  const qc = useQueryClient();
 
-  const [loading, setLoading] = useState(true);
-  const [periods, setPeriods] = useState<Period[]>([]);
-  const [flats, setFlats] = useState<Flat[]>([]);
   const [seedAmount, setSeedAmount] = useState("2500");
   const [seeding, setSeeding] = useState(false);
+  const [visible, setVisible] = useState(20);
+
+  const { data, isLoading } = useQuery({
+    enabled: !!societyId,
+    queryKey: ["society-maintenance", societyId],
+    queryFn: async () => list({ data: { societyId: societyId! } }),
+    staleTime: 60_000,
+  });
+  const periods = (data?.periods ?? []) as Period[];
+  const flats = (data?.flats ?? []) as Flat[];
+  const reload = () => qc.invalidateQueries({ queryKey: ["society-maintenance", societyId] });
 
   // bill dialog
   const [billFlat, setBillFlat] = useState<Flat | null>(null);
@@ -60,18 +69,6 @@ function MaintenancePage() {
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [creating, setCreating] = useState(false);
-
-  async function load() {
-    if (!societyId) return;
-    setLoading(true);
-    try {
-      const r = await list({ data: { societyId } });
-      setPeriods(r.periods as Period[]);
-      setFlats(r.flats as Flat[]);
-    } catch (e: any) { toast.error(e.message); }
-    setLoading(false);
-  }
-  useEffect(() => { if (societyId) load(); /* eslint-disable-next-line */ }, [societyId]);
 
   const byFlat = useMemo(() => {
     const m = new Map<string, Period[]>();
