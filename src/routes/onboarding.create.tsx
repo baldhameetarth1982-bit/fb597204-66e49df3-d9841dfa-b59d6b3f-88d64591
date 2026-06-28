@@ -30,14 +30,8 @@ function CreateSociety() {
   const [captchaInput, setCaptchaInput] = useState("");
   const [agreed, setAgreed] = useState(false);
 
-  // Phone verification (required to create a society)
-  const [phone, setPhone] = useState("+91");
-  const [otp, setOtp] = useState("");
-  const [otpStage, setOtpStage] = useState<"idle" | "sent" | "verified">("idle");
-  const [otpBusy, setOtpBusy] = useState(false);
-  const confirmRef = useRef<ConfirmationResult | null>(null);
-  const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
-  useEffect(() => () => { try { recaptchaRef.current?.clear(); } catch {} }, []);
+  // Aadhaar verification (required to create a society) — replaces phone OTP.
+  const [aadhaarVerified, setAadhaarVerified] = useState<boolean>(false);
 
   const [created, setCreated] = useState<{ id: string; code: string; name: string } | null>(null);
 
