@@ -35,7 +35,7 @@ function SocietyGuard() {
     );
   }
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (primaryRole !== ROLES.SOCIETY_ADMIN) {
+  if (primaryRole !== ROLES.SOCIETY_ADMIN && primaryRole !== ROLES.BLOCK_ADMIN) {
     return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/login"} replace />;
   }
   if (!societyId) return <Navigate to="/onboarding" replace />;

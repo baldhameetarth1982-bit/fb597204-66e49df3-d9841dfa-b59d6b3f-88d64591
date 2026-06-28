@@ -43,11 +43,13 @@ const AuthContext = createContext<AuthState | null>(null);
 const ROLE_PRIORITY: Role[] = [
   ROLES.SUPER_ADMIN,
   ROLES.SOCIETY_ADMIN,
+  ROLES.BLOCK_ADMIN,
+  ROLES.SECURITY,
   ROLES.RESIDENT,
 ];
 
 function isKnownRole(role: unknown): role is Role {
-  return role === ROLES.SUPER_ADMIN || role === ROLES.SOCIETY_ADMIN || role === ROLES.RESIDENT;
+  return Object.values(ROLES).includes(role as Role);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

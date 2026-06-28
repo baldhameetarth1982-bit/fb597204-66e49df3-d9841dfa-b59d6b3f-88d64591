@@ -47,7 +47,7 @@ export function useSocietyId() {
         return;
       }
 
-      if (hasRole(ROLES.SOCIETY_ADMIN)) {
+      if (hasRole(ROLES.SOCIETY_ADMIN) || hasRole(ROLES.BLOCK_ADMIN) || hasRole(ROLES.SECURITY)) {
         const { data } = await supabase
           .from("user_roles")
           .select("society_id")

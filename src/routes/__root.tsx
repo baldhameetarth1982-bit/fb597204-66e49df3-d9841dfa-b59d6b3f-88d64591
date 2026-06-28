@@ -227,11 +227,11 @@ function ShellSwitcher() {
     return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/login"} replace />;
   }
 
-  if (pathname.startsWith("/society") && primaryRole !== ROLES.SOCIETY_ADMIN) {
+  if (pathname.startsWith("/society") && primaryRole !== ROLES.SOCIETY_ADMIN && primaryRole !== ROLES.BLOCK_ADMIN) {
     return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/login"} replace />;
   }
 
-  if (pathname.startsWith("/app") && primaryRole !== ROLES.RESIDENT) {
+  if (pathname.startsWith("/app") && primaryRole !== ROLES.RESIDENT && primaryRole !== ROLES.SECURITY) {
     return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/login"} replace />;
   }
 

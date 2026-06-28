@@ -35,7 +35,7 @@ function ResidentGuard() {
     );
   }
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (primaryRole !== ROLES.RESIDENT) {
+  if (primaryRole !== ROLES.RESIDENT && primaryRole !== ROLES.SECURITY) {
     return <Navigate to={primaryRole ? ROLE_HOME[primaryRole] : "/onboarding"} replace />;
   }
   if (!societyId) return <Navigate to="/onboarding" replace />;
