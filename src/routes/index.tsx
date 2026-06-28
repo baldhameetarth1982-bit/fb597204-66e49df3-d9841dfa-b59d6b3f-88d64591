@@ -1,7 +1,7 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { ROLE_HOME } from "@/config/roles";
+import { ROLE_HOME, ROLES } from "@/config/roles";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -33,8 +33,17 @@ function IndexRedirect() {
     return <Navigate to={seen ? "/login" : "/welcome"} />;
   }
 
-  // Residents (or users without a society yet) land on the onboarding chooser.
-  if (!profile?.society_id && primaryRole !== "super_admin") {
+  if (primaryRole === ROLES.SUPER_ADMIN) {
+    return <Navigate to={ROLE_HOME[ROLES.SUPER_ADMIN]} />;
+  }
+
+  // Existing society admins/residents must never land on the create/join chooser.
+  if (profile?.society_id && primaryRole) {
+    return <Navigate to={ROLE_HOME[primaryRole]} />;
+  }
+
+  // Brand-new users without any society still land on onboarding.
+  if (!profile?.society_id) {
     return <Navigate to="/onboarding" />;
   }
 

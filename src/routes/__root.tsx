@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import {
   Outlet,
   Link,
+  Navigate,
   createRootRouteWithContext,
   useRouter,
   useRouterState,
@@ -198,10 +199,26 @@ function MarketingAnalytics() {
 
 function ShellSwitcher() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { isLoading, isAuthenticated } = useAuth();
+  const isProtectedPath = ["/app", "/society", "/admin", "/settings", "/onboarding"].some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
 
   // Bare shell: auth pages
   if (AUTH_PATHS.some((p) => pathname.startsWith(p))) {
     return <Outlet />;
+  }
+
+  if (isProtectedPath && isLoading) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background text-muted-foreground">
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (isProtectedPath && !isAuthenticated) {
+    return <Navigate to="/login" />;
   }
 
   // Resident shell: native mobile app frame, fixed bottom nav
