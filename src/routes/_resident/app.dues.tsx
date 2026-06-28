@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Wallet, ArrowRight, Check, Clock, IndianRupee, Loader2 } from "lucide-react";
+import { Wallet, ArrowRight, Check, Clock, IndianRupee, Loader2, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { ClaimFlatSheet } from "@/components/resident/ClaimFlatSheet";
 
 export const Route = createFileRoute("/_resident/app/dues")({
   head: () => ({ meta: [{ title: "Dues — SocioHub" }] }),
