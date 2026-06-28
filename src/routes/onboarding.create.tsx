@@ -60,49 +60,11 @@ function CreateSociety() {
   }
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  async function sendOtp() {
-    if (!/^\+\d{8,15}$/.test(phone)) {
-      toast.error("Enter phone in international format, e.g. +919876543210");
-      return;
-    }
-    setOtpBusy(true);
-    try {
-      const auth = getFirebaseAuth();
-      if (!recaptchaRef.current) {
-        recaptchaRef.current = new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible" });
-      }
-      confirmRef.current = await signInWithPhoneNumber(auth, phone, recaptchaRef.current);
-      setOtpStage("sent");
-      toast.success("OTP sent");
-    } catch (e: any) {
-      toast.error(e.message ?? "Could not send OTP");
-    }
-    setOtpBusy(false);
-  }
-
-  async function verifyOtp() {
-    if (!confirmRef.current || !user) return;
-    setOtpBusy(true);
-    try {
-      const res = await confirmRef.current.confirm(otp.trim());
-      const fbUid = res.user.uid;
-      const { error } = await (supabase as any)
-        .from("phone_verifications")
-        .upsert({ user_id: user.id, phone, firebase_uid: fbUid }, { onConflict: "user_id" });
-      if (error) throw new Error(error.message);
-      setOtpStage("verified");
-      toast.success("Phone verified ✓");
-    } catch (e: any) {
-      toast.error(e.message ?? "Wrong code");
-    }
-    setOtpBusy(false);
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
-    if (otpStage !== "verified") {
-      toast.error("Please verify your phone number first");
+    if (!aadhaarVerified) {
+      toast.error("Please verify your Aadhaar first");
       return;
     }
     if (Number(captchaInput) !== captcha.answer) {
