@@ -213,6 +213,14 @@ function BillsScreen() {
         <Receipt className="h-3.5 w-3.5" />
         Powered by SocioHub
       </div>
+
+      {profile?.society_id && (
+        <ClaimFlatSheet
+          open={claimOpen}
+          onOpenChange={setClaimOpen}
+          societyId={profile.society_id}
+        />
+      )}
     </div>
   );
 }
