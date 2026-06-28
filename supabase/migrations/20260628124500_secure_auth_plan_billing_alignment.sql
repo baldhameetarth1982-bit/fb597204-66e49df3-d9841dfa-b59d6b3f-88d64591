@@ -234,3 +234,68 @@ $$;
 
 REVOKE ALL ON FUNCTION public.admin_list_users() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_list_users() TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.admin_income_summary()
+RETURNS TABLE(
+  subscription_mrr numeric,
+  transaction_fee_revenue numeric,
+  total_revenue numeric,
+  plans jsonb
+)
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE v_user uuid := auth.uid();
+BEGIN
+  IF v_user IS NULL OR NOT public.is_super_admin(v_user) THEN
+    RAISE EXCEPTION 'Not authorized';
+  END IF;
+
+  RETURN QUERY
+  WITH plan_counts AS (
+    SELECT
+      p.id,
+      p.name,
+      p.price_monthly_inr,
+      p.txn_fee_pct,
+      p.sort_order,
+      COUNT(s.id) FILTER (WHERE s.plan_id = p.id) AS society_count
+    FROM public.plans p
+    LEFT JOIN public.societies s ON s.plan_id = p.id
+    GROUP BY p.id, p.name, p.price_monthly_inr, p.txn_fee_pct, p.sort_order
+  ), sub AS (
+    SELECT COALESCE(SUM(COALESCE(p.price_monthly_inr, 0)), 0)::numeric AS amount
+    FROM public.societies s
+    JOIN public.plans p ON p.id = s.plan_id
+    WHERE COALESCE(s.plan_status, '') IN ('active', 'trialing')
+  ), fees AS (
+    SELECT COALESCE(SUM((COALESCE(pay.amount, 0) * COALESCE(pl.txn_fee_pct, 1.5)) / 100), 0)::numeric AS amount
+    FROM public.payments pay
+    LEFT JOIN public.societies soc ON soc.id = pay.society_id
+    LEFT JOIN public.plans pl ON pl.id = soc.plan_id
+    WHERE pay.status = 'success'
+  )
+  SELECT
+    sub.amount,
+    fees.amount,
+    (sub.amount + fees.amount),
+    COALESCE((
+      SELECT jsonb_agg(
+        jsonb_build_object(
+          'id', pc.id,
+          'name', pc.name,
+          'price_monthly_inr', pc.price_monthly_inr,
+          'txn_fee_pct', pc.txn_fee_pct,
+          'society_count', pc.society_count
+        ) ORDER BY pc.sort_order
+      )
+      FROM plan_counts pc
+    ), '[]'::jsonb)
+  FROM sub, fees;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.admin_income_summary() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_income_summary() TO authenticated;
