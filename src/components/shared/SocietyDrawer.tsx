@@ -3,7 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Building2, Car, DoorOpen, LayoutDashboard, Megaphone, Menu, Receipt,
   ShieldCheck, Trophy, UserCheck, Users, Vote, Wallet, Wand2, Sparkles,
-  Calculator, BadgeCheck, LogOut, Settings,
+  Calculator, BadgeCheck, LogOut, Settings, ListChecks, Wrench,
 } from "lucide-react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose,
@@ -27,9 +27,11 @@ const GROUPS: Group[] = [
   {
     label: "Setup",
     items: [
+      { label: "Setup Wizard", to: "/society/setup", icon: Wrench },
       { label: "Blocks", to: "/society/blocks", icon: Building2 },
       { label: "Flats", to: "/society/flats", icon: DoorOpen },
       { label: "Residents", to: "/society/residents", icon: Users },
+      { label: "Custom Fields", to: "/society/custom-fields", icon: ListChecks },
       { label: "Team & Roles", to: "/society/team", icon: ShieldCheck },
       { label: "Verifications", to: "/society/verifications", icon: BadgeCheck },
     ],
