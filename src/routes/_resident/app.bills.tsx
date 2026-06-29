@@ -1,15 +1,18 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Receipt, Download, Clock, CheckCircle2, ArrowRight, Fingerprint, Loader2, Home } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Receipt, Download, Clock, CheckCircle2, ArrowRight, Loader2, Home, IndianRupee } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FeeBreakdown } from "@/components/shared/FeeBreakdown";
-import { requireBiometric } from "@/lib/biometric";
 import { cacheSet, cacheGet } from "@/lib/offline-cache";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { ClaimFlatSheet } from "@/components/resident/ClaimFlatSheet";
+import { useServerFn } from "@tanstack/react-start";
+import { createMaintenanceOrder } from "@/lib/maintenance-pay.functions";
+import { openRazorpayForOrder } from "@/lib/razorpay";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_resident/app/bills")({
   head: () => ({ meta: [{ title: "Bills — SocioHub" }] }),
