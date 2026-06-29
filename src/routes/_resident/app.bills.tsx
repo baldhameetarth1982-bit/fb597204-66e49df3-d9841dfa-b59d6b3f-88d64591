@@ -1,15 +1,18 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Receipt, Download, Clock, CheckCircle2, ArrowRight, Fingerprint, Loader2, Home } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Receipt, Download, Clock, CheckCircle2, ArrowRight, Loader2, Home, IndianRupee } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FeeBreakdown } from "@/components/shared/FeeBreakdown";
-import { requireBiometric } from "@/lib/biometric";
 import { cacheSet, cacheGet } from "@/lib/offline-cache";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { ClaimFlatSheet } from "@/components/resident/ClaimFlatSheet";
+import { useServerFn } from "@tanstack/react-start";
+import { createMaintenanceOrder } from "@/lib/maintenance-pay.functions";
+import { openRazorpayForOrder } from "@/lib/razorpay";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_resident/app/bills")({
   head: () => ({ meta: [{ title: "Bills — SocioHub" }] }),
@@ -27,11 +30,14 @@ interface BillRow {
 function BillsScreen() {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const createOrder = useServerFn(createMaintenanceOrder);
   const [visibleBills, setVisibleBills] = useState<BillRow[]>([]);
   const [online, setOnline] = useState(true);
   const [loading, setLoading] = useState(true);
   const [noFlat, setNoFlat] = useState(false);
   const [claimOpen, setClaimOpen] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [payoutActive, setPayoutActive] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,6 +96,13 @@ function BillsScreen() {
     };
   }, [profile?.id, profile?.society_id]);
 
+  useEffect(() => {
+    if (!profile?.society_id) return;
+    void supabase.from("societies").select("payout_status").eq("id", profile.society_id).maybeSingle().then(({ data }) => {
+      setPayoutActive(data?.payout_status === "active");
+    });
+  }, [profile?.society_id]);
+
   const outstanding = visibleBills.find((b) => b.status === "unpaid" || b.status === "overdue" || b.status === "due");
 
   if (loading) {
@@ -136,17 +149,42 @@ function BillsScreen() {
           <p className="mt-1 text-4xl font-semibold tabular-nums">₹{(outstanding?.amount ?? 0).toLocaleString("en-IN")}</p>
           <p className="mt-1 text-xs opacity-80">{outstanding ? `Due ${outstanding.due}` : "No outstanding dues"}</p>
           <Button
-            disabled={!outstanding}
+            disabled={!outstanding || paying || !payoutActive}
             onClick={async () => {
               if (!outstanding) return;
-              const ok = await requireBiometric("authorize this payment");
-              if (ok) navigate({ to: "/app/dues" });
+              setPaying(true);
+              try {
+                const order = await createOrder({ data: { billId: outstanding.id } });
+                if (!order.orderId || !order.keyId) throw new Error("Order failed");
+                await openRazorpayForOrder({
+                  orderId: order.orderId,
+                  keyId: order.keyId,
+                  amount: order.amount,
+                  name: order.societyName ?? "SocioHub",
+                  description: order.label ?? "Maintenance bill",
+                  prefill: { email: profile?.email ?? undefined, contact: profile?.phone ?? undefined, name: profile?.full_name ?? undefined },
+                  onSuccess: async () => {
+                    toast.success("Payment received — updating your bill…");
+                    setTimeout(() => navigate({ to: "/app/bills" }), 1500);
+                  },
+                  onDismiss: () => setPaying(false),
+                });
+              } catch (e: any) {
+                toast.error(e?.message ?? "Could not start payment");
+              } finally {
+                setPaying(false);
+              }
             }}
             className="mt-5 w-full h-12 rounded-xl bg-background text-primary hover:bg-background/90 font-semibold disabled:opacity-60"
           >
-            <Fingerprint className="h-4 w-4 mr-2" />
+            {paying ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <IndianRupee className="h-4 w-4 mr-2" />}
             Pay now <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
+          {!payoutActive && outstanding && (
+            <p className="mt-3 text-xs opacity-90">
+              Online payments not set up by your admin yet — please pay cash. Admin will mark it paid.
+            </p>
+          )}
         </CardContent>
       </Card>
 

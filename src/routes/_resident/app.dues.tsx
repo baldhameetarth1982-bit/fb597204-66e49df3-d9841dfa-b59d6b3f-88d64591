@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Wallet, ArrowRight, Check, Clock, IndianRupee, Loader2, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +7,10 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ClaimFlatSheet } from "@/components/resident/ClaimFlatSheet";
+import { useServerFn } from "@tanstack/react-start";
+import { createMaintenanceOrder } from "@/lib/maintenance-pay.functions";
+import { openRazorpayForOrder } from "@/lib/razorpay";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_resident/app/dues")({
   head: () => ({ meta: [{ title: "Dues — SocioHub" }] }),
@@ -23,10 +27,42 @@ interface BillItem {
 
 function DuesPage() {
   const { profile } = useAuth();
+  const createOrder = useServerFn(createMaintenanceOrder);
   const [bills, setBills] = useState<BillItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [noFlat, setNoFlat] = useState(false);
   const [claimOpen, setClaimOpen] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [payoutActive, setPayoutActive] = useState(false);
+
+  useEffect(() => {
+    if (!profile?.society_id) return;
+    void supabase.from("societies").select("payout_status").eq("id", profile.society_id).maybeSingle().then(({ data }) => {
+      setPayoutActive(data?.payout_status === "active");
+    });
+  }, [profile?.society_id]);
+
+  async function handlePay() {
+    if (!current) return;
+    setPaying(true);
+    try {
+      const order = await createOrder({ data: { billId: current.id } });
+      if (!order.orderId || !order.keyId) throw new Error("Order failed");
+      await openRazorpayForOrder({
+        orderId: order.orderId,
+        keyId: order.keyId,
+        amount: order.amount,
+        name: order.societyName ?? "SocioHub",
+        description: order.label ?? "Maintenance bill",
+        prefill: { email: profile?.email ?? undefined, contact: profile?.phone ?? undefined, name: profile?.full_name ?? undefined },
+        onSuccess: () => { toast.success("Payment received — updating bill…"); setTimeout(() => window.location.reload(), 1500); },
+        onDismiss: () => setPaying(false),
+      });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not start payment");
+    } finally { setPaying(false); }
+  }
+
 
   useEffect(() => {
     let cancelled = false;
@@ -137,15 +173,19 @@ function DuesPage() {
             </div>
           </div>
           <Button
-            asChild
             size="lg"
-            disabled={!current}
+            disabled={!current || paying || !payoutActive}
+            onClick={handlePay}
             className="w-full bg-white text-primary hover:bg-white/90 rounded-xl font-semibold disabled:opacity-60"
           >
-            <Link to="/app/bills">
-              Pay now <ArrowRight className="h-4 w-4 ml-1" />
-            </Link>
+            {paying ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+            Pay now <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
+          {!payoutActive && current && (
+            <p className="mt-3 text-[11px] opacity-90 text-center">
+              Online payments not set up — please pay cash to your admin.
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -176,9 +216,6 @@ function DuesPage() {
             </Card>
           ))}
         </div>
-        <Button asChild variant="ghost" className="w-full mt-2 text-xs">
-          <Link to="/app/ledger">View full ledger →</Link>
-        </Button>
       </div>
 
       {profile?.society_id && (

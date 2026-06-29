@@ -4,7 +4,7 @@ import {
   Building2, Car, DoorOpen, LayoutDashboard, Megaphone, Menu, Receipt,
   ShieldCheck, Trophy, UserCheck, Users, Vote, Wallet, Wand2, Sparkles,
   Calculator, BadgeCheck, LogOut, Settings, ListChecks, Wrench, CalendarRange,
-  BarChart3, Compass, Grid3x3, Upload, BookOpen, PhoneCall,
+  BarChart3, Compass, Grid3x3, Upload, BookOpen, PhoneCall, Landmark,
 } from "lucide-react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose,
@@ -46,6 +46,7 @@ const GROUPS: Group[] = [
       { label: "Maintenance", to: "/society/maintenance", icon: CalendarRange },
       { label: "Bill Studio", to: "/society/bill-studio", icon: Wand2 },
       { label: "Billing", to: "/society/billing", icon: Receipt },
+      { label: "Payouts (Bank)", to: "/society/payouts", icon: Landmark },
       { label: "Expenses", to: "/society/expenses", icon: Wallet },
       { label: "Income & Expense", to: "/society/accounts", icon: Calculator },
       { label: "Ledger", to: "/society/ledger", icon: Calculator },
