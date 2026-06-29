@@ -27,10 +27,42 @@ interface BillItem {
 
 function DuesPage() {
   const { profile } = useAuth();
+  const createOrder = useServerFn(createMaintenanceOrder);
   const [bills, setBills] = useState<BillItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [noFlat, setNoFlat] = useState(false);
   const [claimOpen, setClaimOpen] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [payoutActive, setPayoutActive] = useState(false);
+
+  useEffect(() => {
+    if (!profile?.society_id) return;
+    void supabase.from("societies").select("payout_status").eq("id", profile.society_id).maybeSingle().then(({ data }) => {
+      setPayoutActive(data?.payout_status === "active");
+    });
+  }, [profile?.society_id]);
+
+  async function handlePay() {
+    if (!current) return;
+    setPaying(true);
+    try {
+      const order = await createOrder({ data: { billId: current.id } });
+      if (!order.orderId || !order.keyId) throw new Error("Order failed");
+      await openRazorpayForOrder({
+        orderId: order.orderId,
+        keyId: order.keyId,
+        amount: order.amount,
+        name: order.societyName ?? "SocioHub",
+        description: order.label ?? "Maintenance bill",
+        prefill: { email: profile?.email ?? undefined, contact: profile?.phone ?? undefined, name: profile?.full_name ?? undefined },
+        onSuccess: () => { toast.success("Payment received — updating bill…"); setTimeout(() => window.location.reload(), 1500); },
+        onDismiss: () => setPaying(false),
+      });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not start payment");
+    } finally { setPaying(false); }
+  }
+
 
   useEffect(() => {
     let cancelled = false;
