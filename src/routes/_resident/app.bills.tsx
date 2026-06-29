@@ -30,11 +30,14 @@ interface BillRow {
 function BillsScreen() {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const createOrder = useServerFn(createMaintenanceOrder);
   const [visibleBills, setVisibleBills] = useState<BillRow[]>([]);
   const [online, setOnline] = useState(true);
   const [loading, setLoading] = useState(true);
   const [noFlat, setNoFlat] = useState(false);
   const [claimOpen, setClaimOpen] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [payoutActive, setPayoutActive] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
