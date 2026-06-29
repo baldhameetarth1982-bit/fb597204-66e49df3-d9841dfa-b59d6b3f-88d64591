@@ -61,7 +61,7 @@ export const Route = createFileRoute("/api/public/hooks/razorpay")({
             {
               bill_id: billId,
               society_id: societyId,
-              flat_id: bill?.flat_id ?? null,
+              flat_id: bill?.flat_id ?? undefined,
               amount: amountPaise / 100,
               method: "razorpay",
               status: "success",
