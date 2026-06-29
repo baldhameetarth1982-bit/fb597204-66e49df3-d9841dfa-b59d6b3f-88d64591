@@ -244,6 +244,8 @@ function BillStudio() {
             </Button>
           </div>
         </CardContent>
+      </Card>
+
       <OneOffBills societyId={societyId} />
     </PageShell>
   );
