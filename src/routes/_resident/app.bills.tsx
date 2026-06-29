@@ -96,6 +96,13 @@ function BillsScreen() {
     };
   }, [profile?.id, profile?.society_id]);
 
+  useEffect(() => {
+    if (!profile?.society_id) return;
+    void supabase.from("societies").select("payout_status").eq("id", profile.society_id).maybeSingle().then(({ data }) => {
+      setPayoutActive(data?.payout_status === "active");
+    });
+  }, [profile?.society_id]);
+
   const outstanding = visibleBills.find((b) => b.status === "unpaid" || b.status === "overdue" || b.status === "due");
 
   if (loading) {
