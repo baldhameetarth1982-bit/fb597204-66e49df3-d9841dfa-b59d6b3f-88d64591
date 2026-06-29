@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +7,8 @@ import { useSocietyId } from "@/hooks/useSocietyId";
 
 export const Route = createFileRoute("/_resident/app/ledger")({
   head: () => ({ meta: [{ title: "Financial Summary — SocioHub" }] }),
+  // Residents shouldn't see society-wide ledger. Send them back to their bills.
+  beforeLoad: () => { throw redirect({ to: "/app/bills" }); },
   component: ResidentLedger,
 });
 
