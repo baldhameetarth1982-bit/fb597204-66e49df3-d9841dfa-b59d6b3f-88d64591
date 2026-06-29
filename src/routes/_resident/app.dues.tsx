@@ -216,9 +216,6 @@ function DuesPage() {
             </Card>
           ))}
         </div>
-        <Button asChild variant="ghost" className="w-full mt-2 text-xs">
-          <Link to="/app/ledger">View full ledger →</Link>
-        </Button>
       </div>
 
       {profile?.society_id && (
