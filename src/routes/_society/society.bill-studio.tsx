@@ -281,7 +281,7 @@ function OneOffBills({ societyId }: { societyId: string }) {
     setBusy(true);
     try {
       const due = new Date(); due.setDate(due.getDate() + Number(dueDays || 7));
-      const { data, error } = await supabase.rpc("create_oneoff_bills", {
+      const { data, error } = await (supabase.rpc as any)("create_oneoff_bills", {
         _society_id: societyId,
         _target: target,
         _block_id: target === "block" ? blockId : null,
