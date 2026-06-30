@@ -183,7 +183,7 @@ function DuesPage() {
           </Button>
           {!payoutActive && current && (
             <p className="mt-3 text-[11px] opacity-90 text-center">
-              Online payments not set up — please pay cash to your admin.
+              Your society admin hasn't enabled online payments yet.
             </p>
           )}
         </CardContent>
