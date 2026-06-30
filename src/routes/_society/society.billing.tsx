@@ -49,11 +49,8 @@ function BillingPage() {
   const [dueDate, setDueDate] = useState("");
   const [generating, setGenerating] = useState(false);
 
-  // Mark-paid dialog state
-  const [payBill, setPayBill] = useState<BillRow | null>(null);
-  const [payMethod, setPayMethod] = useState<"cash" | "upi" | "bank" | "cheque" | "other">("cash");
-  const [payRef, setPayRef] = useState("");
-  const [payingNow, setPayingNow] = useState(false);
+  // Cash / manual mark-paid removed — all payments are online (Razorpay)
+
 
   async function load() {
     if (!societyId) {
