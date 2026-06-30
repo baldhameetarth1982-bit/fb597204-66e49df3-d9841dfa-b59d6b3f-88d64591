@@ -37,8 +37,8 @@ function DuesPage() {
 
   useEffect(() => {
     if (!profile?.society_id) return;
-    void supabase.from("societies").select("payout_status").eq("id", profile.society_id).maybeSingle().then(({ data }) => {
-      setPayoutActive(data?.payout_status === "active");
+    void (supabase as any).rpc("society_payout_active", { _society_id: profile.society_id }).then(({ data }: any) => {
+      setPayoutActive(data === true);
     });
   }, [profile?.society_id]);
 
