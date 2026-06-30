@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { shareBillAsImage } from "@/components/billing/BillCardImage";
 
 export const Route = createFileRoute("/_society/society/billing")({
   head: () => ({ meta: [{ title: "Billing — SocioHub" }] }),
