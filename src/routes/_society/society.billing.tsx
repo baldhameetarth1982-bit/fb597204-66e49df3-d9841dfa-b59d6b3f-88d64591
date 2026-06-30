@@ -269,16 +269,8 @@ function BillingPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1.5 flex-wrap">
-                        {r.status !== "paid" && r.status !== "cancelled" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-lg h-8"
-                            onClick={() => { setPayBill(r); setPayMethod("cash"); setPayRef(""); }}
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Mark paid
-                          </Button>
-                        )}
+                        {/* Mark-paid removed: settlements are automatic via Razorpay */}
+
                         <Button
                           size="sm"
                           variant="ghost"
