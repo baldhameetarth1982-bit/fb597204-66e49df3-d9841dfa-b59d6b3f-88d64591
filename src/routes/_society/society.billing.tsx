@@ -308,53 +308,8 @@ function BillingPage() {
         </>
       )}
 
-      <Dialog open={!!payBill} onOpenChange={(o) => !o && setPayBill(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Record payment</DialogTitle>
-          </DialogHeader>
-          {payBill && (
-            <div className="space-y-4">
-              <div className="rounded-xl bg-secondary/40 p-3 text-sm">
-                <p className="font-medium">
-                  {payBill.flat?.block?.name ? `${payBill.flat.block.name}-` : ""}
-                  {payBill.flat?.flat_number} · {payBill.period_label}
-                </p>
-                <p className="text-muted-foreground inline-flex items-center">
-                  <IndianRupee className="h-3.5 w-3.5" />
-                  {Number(payBill.amount).toLocaleString("en-IN")}
-                </p>
-              </div>
-              <div className="grid gap-2">
-                <Label>Payment method</Label>
-                <Select value={payMethod} onValueChange={(v) => setPayMethod(v as typeof payMethod)}>
-                  <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="upi">UPI</SelectItem>
-                    <SelectItem value="bank">Bank transfer</SelectItem>
-                    <SelectItem value="cheque">Cheque</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {payMethod !== "cash" && (
-                <div className="grid gap-2">
-                  <Label>Reference no. (optional)</Label>
-                  <Input value={payRef} onChange={(e) => setPayRef(e.target.value)} placeholder="UPI/Txn/Cheque #" className="rounded-xl" />
-                </div>
-              )}
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setPayBill(null)} className="rounded-xl">Cancel</Button>
-            <Button onClick={confirmPaid} disabled={payingNow} className="rounded-xl">
-              {payingNow && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Confirm payment
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Manual payment dialog removed — Razorpay settles automatically */}
+
     </PageShell>
   );
 }
