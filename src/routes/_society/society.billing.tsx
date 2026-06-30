@@ -276,9 +276,20 @@ function BillingPage() {
                           size="sm"
                           variant="ghost"
                           className="rounded-lg h-8"
-                          onClick={() => {
-                            const txt = `Bill ${r.period_label}\nFlat ${r.flat?.flat_number ?? ""}\nAmount: ₹${Number(r.amount).toLocaleString("en-IN")}\nDue: ${new Date(r.due_date).toLocaleDateString()}`;
-                            window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
+                          onClick={async () => {
+                            try {
+                              await shareBillAsImage({
+                                societyName: "Society Bill",
+                                flatLabel: `${r.flat?.block?.name ? r.flat.block.name + "-" : ""}${r.flat?.flat_number ?? ""}`,
+                                period: r.period_label,
+                                amount: Number(r.amount),
+                                dueDate: new Date(r.due_date).toLocaleDateString(),
+                                status: (r.status as any) || "due",
+                                adminSignature: user?.email?.split("@")[0],
+                              });
+                            } catch (e: any) {
+                              toast.error(e?.message ?? "Could not share");
+                            }
                           }}
                         >
                           Share
