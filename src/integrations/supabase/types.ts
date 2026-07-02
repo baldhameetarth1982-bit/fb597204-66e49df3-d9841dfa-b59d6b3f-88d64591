@@ -1497,10 +1497,17 @@ export type Database = {
           address: string | null
           bill_theme: string
           billing_active: boolean
+          business_address: string | null
+          business_city: string | null
+          business_gstin: string | null
+          business_pan: string | null
+          business_pincode: string | null
+          business_state: string | null
           city: string | null
           created_at: string
           id: string
           invite_code: string | null
+          legal_business_name: string | null
           logo_url: string | null
           name: string
           payout_bank_last4: string | null
@@ -1525,10 +1532,17 @@ export type Database = {
           address?: string | null
           bill_theme?: string
           billing_active?: boolean
+          business_address?: string | null
+          business_city?: string | null
+          business_gstin?: string | null
+          business_pan?: string | null
+          business_pincode?: string | null
+          business_state?: string | null
           city?: string | null
           created_at?: string
           id?: string
           invite_code?: string | null
+          legal_business_name?: string | null
           logo_url?: string | null
           name: string
           payout_bank_last4?: string | null
@@ -1553,10 +1567,17 @@ export type Database = {
           address?: string | null
           bill_theme?: string
           billing_active?: boolean
+          business_address?: string | null
+          business_city?: string | null
+          business_gstin?: string | null
+          business_pan?: string | null
+          business_pincode?: string | null
+          business_state?: string | null
           city?: string | null
           created_at?: string
           id?: string
           invite_code?: string | null
+          legal_business_name?: string | null
           logo_url?: string | null
           name?: string
           payout_bank_last4?: string | null
@@ -2326,6 +2347,19 @@ export type Database = {
       start_trial_for_society: {
         Args: { _society_id: string }
         Returns: string
+      }
+      update_society_business_profile: {
+        Args: {
+          _business_address: string
+          _business_city: string
+          _business_gstin: string
+          _business_pan: string
+          _business_pincode: string
+          _business_state: string
+          _legal_business_name: string
+          _society_id: string
+        }
+        Returns: undefined
       }
       verify_resident_kyc: {
         Args: { _approved: boolean; _reason?: string; _user_id: string }
