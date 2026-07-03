@@ -132,10 +132,26 @@ function ResidentDashboard() {
 
   return (
     <div className="px-4 md:px-8 py-6 md:py-10 max-w-3xl mx-auto space-y-6">
-      <header>
-        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Hi {firstName} 👋</h1>
-        <p className="mt-1 text-muted-foreground">Here's what needs your attention.</p>
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight truncate">
+            Hi {firstName} 👋
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground truncate">
+            {profile?.house_no ? `${profile.house_no} · ` : ""}Welcome back
+          </p>
+        </div>
+        <Link
+          to="/app/notifications"
+          className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-background hover:bg-accent"
+          aria-label="Notifications"
+        >
+          <Bell className="h-5 w-5" />
+        </Link>
       </header>
+
+      <QuickActions />
+
 
       <Card className="rounded-2xl bg-primary text-primary-foreground border-0">
         <CardContent className="p-6 md:p-8">
