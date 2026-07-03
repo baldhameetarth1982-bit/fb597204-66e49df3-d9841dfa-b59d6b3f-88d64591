@@ -313,6 +313,10 @@ function ResidentDetailPage() {
           </div>
         </Section>
 
+        <Section id="documents" title="Documents" icon={Paperclip}>
+          <DocumentsPanel userId={p.id} active={openSection === "documents"} />
+        </Section>
+
         <Section id="history" title="Occupancy history" icon={History}>
           <div className="pt-3 space-y-2">
             {!history ? (
