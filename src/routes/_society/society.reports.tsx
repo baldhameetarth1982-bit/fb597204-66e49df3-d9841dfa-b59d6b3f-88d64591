@@ -167,17 +167,39 @@ function ReportsPage() {
       />
 
       <Card className="rounded-2xl mb-4 print:hidden">
-        <CardContent className="p-4 grid sm:grid-cols-2 gap-3">
-          <div>
-            <Label className="text-xs">From</Label>
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+        <CardContent className="p-4 space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {(() => {
+              const y = today.getFullYear();
+              const fyStart = today.getMonth() >= 3 ? y : y - 1;
+              const presets = [
+                { label: "This month", from: format(startOfMonth(today), "yyyy-MM-dd"), to: format(today, "yyyy-MM-dd") },
+                { label: "Last 3 months", from: format(subMonths(today, 2), "yyyy-MM-01"), to: format(today, "yyyy-MM-dd") },
+                { label: "Last 6 months", from: format(subMonths(today, 5), "yyyy-MM-01"), to: format(today, "yyyy-MM-dd") },
+                { label: `FY ${fyStart}-${String(fyStart + 1).slice(2)}`, from: `${fyStart}-04-01`, to: `${fyStart + 1}-03-31` },
+                { label: `FY ${fyStart - 1}-${String(fyStart).slice(2)}`, from: `${fyStart - 1}-04-01`, to: `${fyStart}-03-31` },
+              ];
+              return presets.map((p) => (
+                <Button key={p.label} variant="outline" size="sm" className="rounded-full h-7 text-xs"
+                  onClick={() => { setFrom(p.from); setTo(p.to); }}>
+                  {p.label}
+                </Button>
+              ));
+            })()}
           </div>
-          <div>
-            <Label className="text-xs">To</Label>
-            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs">From</Label>
+              <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">To</Label>
+              <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            </div>
           </div>
         </CardContent>
       </Card>
+
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
         <Card className="rounded-2xl bg-emerald-500/5 border-emerald-500/20">
