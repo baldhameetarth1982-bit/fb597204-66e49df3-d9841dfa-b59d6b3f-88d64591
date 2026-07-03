@@ -138,7 +138,7 @@ function ResidentDashboard() {
             Hi {firstName} 👋
           </h1>
           <p className="mt-1 text-sm text-muted-foreground truncate">
-            {profile?.house_no ? `${profile.house_no} · ` : ""}Welcome back
+            Welcome back
           </p>
         </div>
         <Link
