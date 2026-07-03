@@ -1,211 +1,193 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Check, X, Sparkles, Loader2, ShieldCheck, Eye, Palette } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Check, Sparkles, Loader2, ShieldCheck, Zap, Crown, Building2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { NeonThemePreview } from "@/components/shared/NeonThemePreview";
-import { useAuth } from "@/context/AuthContext";
-import { ROLES } from "@/config/roles";
+import { getApplicablePlans, getPricingSettings } from "@/lib/pricing-engine";
+import { LegalFooter } from "@/components/shared/LegalFooter";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — SocioHub" },
-      { name: "description", content: "Simple plans for every society. Start with a 14-day free trial. No credit card required." },
+      {
+        name: "description",
+        content:
+          "Simple pricing for every society. Start with a free trial. Custom modules, transparent per-unit rates.",
+      },
     ],
   }),
   component: PricingPage,
 });
 
-type Plan = {
-  id: string; name: string; price_monthly_inr: number; txn_fee_pct: number;
-  ads_enabled: boolean; trial_days: number; is_recommended: boolean;
-  features: string[]; sort_order: number;
-};
-
 function PricingPage() {
-  const [yearly, setYearly] = useState(false);
-  const { primaryRole, isAuthenticated } = useAuth();
-  const isResident = isAuthenticated && primaryRole === ROLES.RESIDENT;
+  const [units, setUnits] = useState<number | null>(null);
+  const [showEnterprise, setShowEnterprise] = useState(false);
 
-  const { data: plans, isLoading } = useQuery({
-    queryKey: ["plans"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("plans").select("*").order("sort_order");
-      if (error) throw error;
-      return (data ?? []) as Plan[];
-    },
+  const { data: settings } = useQuery({
+    queryKey: ["pricing-settings"],
+    queryFn: getPricingSettings,
   });
 
-  // Strict role-based catalogue: residents get the personal ₹50 plan only,
-  // society admins (and guests) see the 3 society plans.
-  const residentPlans = (plans ?? []).filter((p) => p.id === "resident" || p.id === "ad_free");
-  const adminPaid = (plans ?? []).filter((p) => !["trial", "resident", "ad_free"].includes(p.id));
-  const paid = isResident ? residentPlans : adminPaid;
-  const trial = !isResident ? (plans ?? []).find((p) => p.id === "trial") : undefined;
+  const { data: plans, isLoading } = useQuery({
+    enabled: units !== null || !showEnterprise,
+    queryKey: ["applicable-plans-public", units],
+    queryFn: () => getApplicablePlans(units),
+  });
+
+  const trialDays = settings?.trial_days ?? 14;
+  const threshold = settings?.enterprise_threshold_units ?? 500;
+  const enterprise = plans?.find((p) => p.enterprise);
+  const standard = (plans ?? []).filter((p) => !p.enterprise && p.plan_id !== "trial");
 
   return (
-    <main className="min-h-dvh bg-[#121212] text-foreground py-16 px-4">
-      <div className="max-w-6xl mx-auto">
-        <header className="text-center mb-10">
-          <Badge className="bg-[#B91C1C]/15 text-[#F87171] border-[#B91C1C]/30 mb-4">14-day free trial</Badge>
-          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">Plans that scale with your society</h1>
-          <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">
-            Start free for 14 days — no credit card required. Switch or cancel anytime.
+    <main className="min-h-dvh bg-background text-foreground">
+      <section className="max-w-6xl mx-auto px-5 py-14">
+        <header className="text-center mb-10 space-y-3">
+          <Badge className="rounded-full bg-primary/10 text-primary border-primary/20">
+            <Sparkles className="h-3 w-3 mr-1" /> {trialDays}-day free trial
+          </Badge>
+          <h1 className="type-display">Plans that scale with your society</h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-base">
+            Start free — no credit card required. Modules pay for themselves in your first month.
           </p>
-
-          <div className="inline-flex items-center mt-8 p-1 rounded-2xl bg-[#1E1E1E] border border-white/5">
-            <button
-              onClick={() => setYearly(false)}
-              className={`min-h-[44px] px-5 rounded-xl text-sm font-medium transition ${!yearly ? "bg-[#B91C1C] text-white" : "text-muted-foreground"}`}
-            >Monthly</button>
-            <button
-              onClick={() => setYearly(true)}
-              className={`min-h-[44px] px-5 rounded-xl text-sm font-medium transition ${yearly ? "bg-[#B91C1C] text-white" : "text-muted-foreground"}`}
-            >Yearly <span className="ml-1 text-xs opacity-80">save 16%</span></button>
-          </div>
         </header>
 
+        {/* Total-units estimator */}
+        <Card className="rounded-3xl border border-border p-5 mb-8 max-w-lg mx-auto">
+          <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+            How many units does your society have?
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="number"
+              min={1}
+              placeholder="e.g. 120"
+              value={units ?? ""}
+              onChange={(e) => {
+                const n = Number(e.target.value);
+                setUnits(Number.isFinite(n) && n > 0 ? n : null);
+              }}
+              className="flex-1 h-11 rounded-2xl border border-border bg-background px-3 text-base outline-none focus:border-primary"
+            />
+            <Button
+              variant="outline"
+              className="rounded-2xl h-11"
+              onClick={() => {
+                setUnits(threshold + 1);
+                setShowEnterprise(true);
+              }}
+            >
+              I need enterprise
+            </Button>
+          </div>
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Societies with more than {threshold} units automatically qualify for enterprise pricing.
+          </p>
+        </Card>
+
         {isLoading ? (
-          <div className="py-16 grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+          <div className="py-16 grid place-items-center">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : enterprise ? (
+          <Card className="rounded-3xl border-2 border-primary/30 p-8 bg-gradient-to-br from-primary/10 via-background to-background">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="h-14 w-14 rounded-2xl bg-primary/15 grid place-items-center">
+                <Building2 className="h-7 w-7 text-primary" />
+              </div>
+              <div className="flex-1 space-y-2">
+                <Badge>Enterprise</Badge>
+                <h2 className="type-title-lg">Tailored for large societies</h2>
+                <p className="text-sm text-muted-foreground">
+                  Dedicated onboarding, an SLA, priority support and volume-based pricing. Perfect for townships,
+                  villa communities and multi-tower complexes.
+                </p>
+              </div>
+              <Button asChild className="rounded-2xl h-12 min-w-[200px]">
+                <a href={`mailto:${settings?.enterprise_contact_email ?? "sales@sociohub.live"}`}>
+                  Talk to sales
+                </a>
+              </Button>
+            </div>
+          </Card>
         ) : (
           <>
-            {/* Trial banner */}
-            {trial && (
-              <Card className="rounded-2xl bg-[#1E1E1E] border-white/5 p-6 mb-8 flex flex-col md:flex-row md:items-center gap-4">
-                <div className="flex-1">
-                  <p className="text-sm uppercase tracking-wider text-[#F87171]">Try free for {trial.trial_days} days</p>
-                  <h3 className="text-xl font-semibold mt-1">All features unlocked. No credit card required.</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Auto-converts to Basic when the trial ends — cancel anytime.</p>
+            {/* Trial highlight */}
+            <Card className="rounded-3xl border-0 p-6 mb-8 bg-gradient-to-br from-primary to-primary/85 text-primary-foreground">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="h-14 w-14 rounded-2xl bg-primary-foreground/15 grid place-items-center shrink-0">
+                  <Zap className="h-7 w-7" />
                 </div>
-                <Button asChild className="min-h-[56px] rounded-xl px-6 bg-[#B91C1C] hover:bg-[#991B1B]">
-                  <a href="/onboarding/create">Start free trial</a>
+                <div className="flex-1">
+                  <h2 className="type-title-lg">Free for {trialDays} days</h2>
+                  <p className="opacity-90 text-sm mt-1">
+                    All Premium features unlocked. Auto-converts to any paid plan you pick — cancel anytime.
+                  </p>
+                </div>
+                <Button
+                  asChild
+                  className="min-h-[48px] rounded-2xl px-6 bg-background text-foreground hover:bg-background/90 font-semibold"
+                >
+                  <Link to="/onboarding" search={{} as any}>
+                    Start free trial
+                  </Link>
                 </Button>
-              </Card>
-            )}
+              </div>
+            </Card>
 
-            {/* Plan cards */}
-            <div className="grid md:grid-cols-3 gap-5">
-              {paid.map((p) => {
-                const recommended = p.is_recommended;
-                const price = yearly ? Math.round(p.price_monthly_inr * 10) : p.price_monthly_inr;
+            {/* Standard plans */}
+            <div className="grid md:grid-cols-3 gap-4">
+              {standard.map((p) => {
+                const Icon = p.plan_id === "premium" ? Crown : p.plan_id === "pro" ? Sparkles : ShieldCheck;
                 return (
                   <Card
-                    key={p.id}
-                    className={`rounded-2xl bg-[#1E1E1E] p-6 flex flex-col transition ${
-                      recommended
-                        ? "border-2 border-[#B91C1C] shadow-[0_0_40px_-10px_#B91C1C]"
-                        : "border border-white/5"
+                    key={p.plan_id}
+                    className={`rounded-3xl p-6 flex flex-col ${
+                      p.is_recommended ? "border-2 border-primary shadow-lg" : "border border-border"
                     }`}
                   >
-                    {recommended && (
-                      <Badge className="self-start mb-3 bg-[#B91C1C] text-white border-0">
-                        <Sparkles className="h-3 w-3 mr-1" /> Recommended
+                    {p.is_recommended && (
+                      <Badge className="self-start mb-3 rounded-full">
+                        <Sparkles className="h-3 w-3 mr-1" /> Most popular
                       </Badge>
                     )}
-                    <h3 className="text-2xl font-semibold">{p.name}</h3>
-                    <div className="mt-2 flex items-baseline gap-1">
-                      <span className="text-4xl font-bold">₹{price.toLocaleString("en-IN")}</span>
-                      <span className="text-muted-foreground">/{yearly ? "year" : "month"}</span>
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-5 w-5 text-primary" />
+                      <h3 className="type-title-lg">{p.plan_name}</h3>
                     </div>
-                    <div className="mt-4 space-y-2 text-sm">
-                      <Row label={`Transaction fee: ${p.txn_fee_pct}%`} ok={p.txn_fee_pct === 0} />
-                      <Row label={p.ads_enabled ? "Ad-supported" : "Ad-free"} ok={!p.ads_enabled} />
-                      {(p.features ?? []).map((f, i) => <Row key={i} label={f} ok />)}
-                      {p.id === "premium" ? (
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
-                          <span className="flex-1">Premium <b>Neon</b> theme (advanced look)</span>
-                          <ThemePreviewButton />
-                        </div>
-                      ) : (
-                        <Row label="Standard theme only" ok={false} />
-                      )}
+                    <div className="mt-3 flex items-baseline gap-1">
+                      <span className="text-4xl font-bold">₹{p.price_monthly_inr ?? 0}</span>
+                      <span className="text-muted-foreground text-sm">/mo</span>
                     </div>
-                    <Button
-                      asChild
-                      className={`mt-6 min-h-[56px] rounded-xl ${
-                        recommended ? "bg-[#B91C1C] hover:bg-[#991B1B]" : "bg-white/5 hover:bg-white/10"
-                      }`}
-                    >
-                      <a href={`/checkout/${p.id}`}>Choose {p.name}</a>
+                    <ul className="mt-4 space-y-2 text-sm flex-1">
+                      {p.features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-primary mt-0.5" /> {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <Button asChild className="mt-6 min-h-[48px] rounded-2xl">
+                      <Link to="/checkout/$planId" params={{ planId: p.plan_id }}>
+                        Choose {p.plan_name}
+                      </Link>
                     </Button>
                   </Card>
                 );
               })}
             </div>
-
-            {/* Comparison */}
-            <section className="mt-14">
-              <h2 className="text-2xl font-semibold mb-4">Compare plans</h2>
-              <div className="overflow-x-auto rounded-2xl border border-white/5 bg-[#1E1E1E]">
-                <table className="w-full text-sm">
-                  <thead className="bg-white/5 text-left">
-                    <tr>
-                      <th className="p-4">Feature</th>
-                      {paid.map((p) => <th key={p.id} className="p-4">{p.name}</th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <CompareRow label="Monthly price" values={paid.map((p) => `₹${p.price_monthly_inr}`)} />
-                    <CompareRow label="Transaction fee" values={paid.map((p) => `${p.txn_fee_pct}%`)} />
-                    <CompareRow label="Ads" values={paid.map((p) => p.ads_enabled ? "Shown" : "None")} />
-                    <CompareRow label="Priority support" values={paid.map((p) => p.id === "basic" ? "—" : "Yes")} />
-                    <CompareRow label="Custom branding" values={paid.map((p) => p.id === "premium" ? "Yes" : "—")} />
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            <p className="mt-10 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
-              <ShieldCheck className="h-4 w-4" /> Payments secured by Razorpay. GST invoice provided.
-            </p>
           </>
         )}
-      </div>
-    </main>
-  );
-}
 
-function Row({ label, ok }: { label: string; ok: boolean }) {
-  return (
-    <div className="flex items-start gap-2">
-      {ok ? <Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> : <X className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />}
-      <span className={ok ? "" : "text-muted-foreground"}>{label}</span>
-    </div>
-  );
-}
-
-function CompareRow({ label, values }: { label: string; values: string[] }) {
-  return (
-    <tr className="border-t border-white/5">
-      <td className="p-4 font-medium">{label}</td>
-      {values.map((v, i) => <td key={i} className="p-4 text-muted-foreground">{v}</td>)}
-    </tr>
-  );
-}
-
-function ThemePreviewButton() {
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <button className="text-xs inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-[#B91C1C]/15 text-[#F87171] border border-[#B91C1C]/30 hover:bg-[#B91C1C]/25">
-          <Eye className="h-3 w-3" /> Preview
-        </button>
-      </DialogTrigger>
-      <DialogContent className="max-w-sm bg-[#0d0d0d] border-white/10">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><Palette className="h-4 w-4" /> Neon theme preview</DialogTitle>
-        </DialogHeader>
-        <NeonThemePreview />
-        <p className="text-xs text-muted-foreground mt-2">
-          Premium-only. Switch back to the standard theme anytime in <b>Settings → Appearance</b>.
+        <p className="text-center text-xs text-muted-foreground mt-10">
+          Prices in INR, exclusive of applicable taxes. Payments are processed through secure Indian gateways
+          (PayU / Cashfree) with UPI, cards, net banking and wallet support.
         </p>
-      </DialogContent>
-    </Dialog>
+      </section>
+      <LegalFooter />
+    </main>
   );
 }

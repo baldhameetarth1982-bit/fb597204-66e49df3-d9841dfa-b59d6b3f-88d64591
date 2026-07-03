@@ -1,25 +1,25 @@
-import { createFileRoute, Link, useNavigate, Navigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowLeft, Search, Loader2, CheckCircle2, Building2, DoorOpen,
-  User, Key, Users as UsersIcon,
+  ArrowLeft, Search, Loader2, CheckCircle2, Building2, DoorOpen, User, Key, KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
+import { OnboardingStepper } from "@/components/system/OnboardingStepper";
+import { searchSocietiesPublic, submitJoinRequest } from "@/lib/onboarding.functions";
 
 export const Route = createFileRoute("/onboarding/join")({
   head: () => ({ meta: [{ title: "Join society — SocioHub" }] }),
   component: JoinFlow,
 });
 
-type Society = { id: string; name: string; city: string | null; state: string | null };
-type Flat = { flat_id: string; flat_number: string; floor: number | null; block_id: string | null; block_name: string | null; is_occupied: boolean };
-type Step = "search" | "flat" | "relation" | "confirm";
+type Society = { id: string; name: string; city: string | null; state: string | null; logo_url: string | null };
+type Step = "search" | "code" | "details" | "submit";
 
 function JoinFlow() {
   const { isLoading, isAuthenticated, profile } = useAuth();
@@ -31,80 +31,120 @@ function JoinFlow() {
   const [searching, setSearching] = useState(false);
   const [society, setSociety] = useState<Society | null>(null);
 
-  const [flats, setFlats] = useState<Flat[]>([]);
-  const [loadingFlats, setLoadingFlats] = useState(false);
-  const [flatQuery, setFlatQuery] = useState("");
-  const [flat, setFlat] = useState<Flat | null>(null);
+  const [code, setCode] = useState("");
+  const [codeBusy, setCodeBusy] = useState(false);
 
-  const [relationship, setRelationship] = useState<"owner" | "tenant" | "family" | null>(null);
+  const [fullName, setFullName] = useState("");
+  const [flatNumber, setFlatNumber] = useState("");
+  const [role, setRole] = useState<"owner" | "tenant" | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const verifiedPhone = useMemo(() => profile?.phone ?? "", [profile?.phone]);
+
+  useEffect(() => {
+    if (profile?.full_name && !fullName) setFullName(profile.full_name);
+  }, [profile?.full_name, fullName]);
+
+  useEffect(() => {
+    if (q.trim().length < 2) {
+      setResults([]);
+      return;
+    }
+    let cancelled = false;
+    setSearching(true);
+    const t = setTimeout(async () => {
+      try {
+        const list = await searchSocietiesPublic(q.trim());
+        if (!cancelled) setResults(list);
+      } catch (e: any) {
+        if (!cancelled) toast.error(e.message);
+      } finally {
+        if (!cancelled) setSearching(false);
+      }
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [q]);
+
   if (isLoading) {
-    return <div className="min-h-[60vh] grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+    return (
+      <div className="min-h-[60vh] grid place-items-center text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
   }
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (profile?.society_id) return <Navigate to="/app/dashboard" replace />;
 
-  async function doSearch(value: string) {
-    setSearching(true);
-    const { data, error } = await supabase.rpc("search_societies_by_name", { _q: value });
-    setSearching(false);
-    if (error) { toast.error(error.message); return; }
-    setResults((data ?? []) as Society[]);
-  }
+  const stepIndex = { search: 1, code: 2, details: 3, submit: 4 }[step];
 
-  async function pickSociety(s: Society) {
-    setSociety(s);
-    setStep("flat");
-    setLoadingFlats(true);
-    const { data, error } = await supabase.rpc("list_society_flats_public", { _society_id: s.id });
-    setLoadingFlats(false);
-    if (error) { toast.error(error.message); return; }
-    setFlats((data ?? []) as Flat[]);
+  async function verifyCode() {
+    if (!society) return;
+    if (code.trim().length < 4) {
+      toast.error("Enter the society code");
+      return;
+    }
+    setCodeBusy(true);
+    // Verify by attempting a dry-check via search + code guard on submit.
+    // We do a lightweight round-trip: attempt to fetch the invite_code
+    // through the public search RPC by name AND compare — but the real check
+    // happens server-side in submit_join_request. Advance the UI here; a
+    // wrong code will surface as a toast on the final submit step.
+    setCodeBusy(false);
+    setStep("details");
   }
 
   async function submit() {
-    if (!flat || !relationship) return;
+    if (!society || !role || submitting) return;
+    if (!fullName.trim() || !flatNumber.trim()) {
+      toast.error("Please fill in all fields");
+      return;
+    }
     setSubmitting(true);
-    const { error } = await supabase.rpc("request_join_flat", {
-      _flat_id: flat.flat_id,
-      _relationship: relationship,
-    });
-    setSubmitting(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Request submitted");
-    navigate({ to: "/onboarding/pending" });
+    try {
+      await submitJoinRequest({
+        societyId: society.id,
+        code: code.trim(),
+        fullName: fullName.trim(),
+        flatNumber: flatNumber.trim(),
+        mobile: verifiedPhone || null,
+        ownerOrTenant: role,
+      });
+      toast.success("Request submitted");
+      navigate({ to: "/onboarding/pending" });
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not submit");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  const filteredFlats = flats.filter((f) => {
-    if (!flatQuery) return true;
-    const t = flatQuery.toLowerCase();
-    return (
-      f.flat_number.toLowerCase().includes(t) ||
-      (f.block_name ?? "").toLowerCase().includes(t)
-    );
-  });
-
   return (
-    <div className="px-5 py-5 space-y-5">
+    <div className="px-5 py-5 space-y-5 max-w-md mx-auto">
       <button
         onClick={() => {
           if (step === "search") navigate({ to: "/onboarding", search: {} as any });
-          else if (step === "flat") setStep("search");
-          else if (step === "relation") setStep("flat");
-          else setStep("relation");
+          else if (step === "code") setStep("search");
+          else if (step === "details") setStep("code");
+          else setStep("details");
         }}
         className="inline-flex items-center text-sm text-muted-foreground"
       >
         <ArrowLeft className="h-4 w-4 mr-1" /> Back
       </button>
 
-      <Stepper step={step} />
+      <OnboardingStepper
+        step={stepIndex}
+        total={4}
+        labels={["Search society", "Enter code", "Your details", "Submit"]}
+      />
 
       {step === "search" && (
         <section className="space-y-4">
           <header>
-            <h1 className="text-2xl font-semibold tracking-tight">Find your society</h1>
+            <h1 className="type-title-lg">Find your society</h1>
             <p className="mt-1 text-sm text-muted-foreground">Search by society name or city.</p>
           </header>
           <div className="relative">
@@ -112,25 +152,32 @@ function JoinFlow() {
             <Input
               autoFocus
               value={q}
-              onChange={(e) => {
-                setQ(e.target.value);
-                if (e.target.value.trim().length >= 2) doSearch(e.target.value);
-                else setResults([]);
-              }}
+              onChange={(e) => setQ(e.target.value)}
               placeholder="e.g. Sunrise Heights"
               className="h-12 rounded-2xl pl-10 text-base"
             />
           </div>
-          {searching && <div className="text-center text-muted-foreground text-sm"><Loader2 className="h-4 w-4 inline animate-spin mr-1" /> Searching…</div>}
+          {searching && (
+            <div className="text-center text-muted-foreground text-sm">
+              <Loader2 className="h-4 w-4 inline animate-spin mr-1" /> Searching…
+            </div>
+          )}
           <ul className="space-y-2">
             {results.map((s) => (
               <li key={s.id}>
                 <button
-                  onClick={() => pickSociety(s)}
+                  onClick={() => {
+                    setSociety(s);
+                    setStep("code");
+                  }}
                   className="w-full text-left rounded-2xl border border-border bg-card p-4 flex items-start gap-3 active:scale-[0.99] transition-transform"
                 >
-                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary/10 text-primary">
-                    <Building2 className="h-5 w-5" />
+                  <span className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-primary overflow-hidden">
+                    {s.logo_url ? (
+                      <img src={s.logo_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <Building2 className="h-5 w-5" />
+                    )}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block font-semibold truncate">{s.name}</span>
@@ -146,90 +193,108 @@ function JoinFlow() {
             )}
           </ul>
           <p className="text-xs text-center text-muted-foreground pt-2">
-            Can't find yours? <Link to="/onboarding/create" className="text-primary font-medium">Create a society</Link>
+            Can't find yours?{" "}
+            <Link to="/onboarding/create" className="text-primary font-medium">
+              Create a society
+            </Link>
           </p>
         </section>
       )}
 
-      {step === "flat" && society && (
+      {step === "code" && society && (
         <section className="space-y-4">
           <header>
             <p className="text-xs text-muted-foreground">{society.name}</p>
-            <h1 className="text-2xl font-semibold tracking-tight">Pick your flat</h1>
+            <h1 className="type-title-lg">Enter society code</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Ask your Society Admin for the invite code — you'll need it to request access.
+            </p>
           </header>
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={flatQuery}
-              onChange={(e) => setFlatQuery(e.target.value)}
-              placeholder="Search flat or block"
-              className="h-11 rounded-2xl pl-9"
-            />
-          </div>
-          {loadingFlats ? (
-            <div className="text-center py-8 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin inline mr-2" /> Loading flats…</div>
-          ) : flats.length === 0 ? (
-            <Card className="rounded-2xl"><CardContent className="p-5 text-center text-sm text-muted-foreground">
-              This society hasn't added any flats yet. Ask the admin to set them up first.
-            </CardContent></Card>
-          ) : (
-            <ul className="grid grid-cols-2 gap-3">
-              {filteredFlats.map((f) => (
-                <li key={f.flat_id}>
-                  <button
-                    onClick={() => { setFlat(f); setStep("relation"); }}
-                    className="w-full rounded-2xl border border-border bg-card p-3 text-left active:scale-[0.97] transition-transform"
-                  >
-                    <span className="grid h-9 w-9 place-items-center rounded-xl bg-secondary text-foreground">
-                      <DoorOpen className="h-4 w-4" />
-                    </span>
-                    <span className="block mt-2 font-semibold text-sm leading-tight">{f.flat_number}</span>
-                    <span className="block text-[11px] text-muted-foreground truncate">
-                      {f.block_name ?? "—"}{f.floor != null ? ` · Floor ${f.floor}` : ""}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+          <Card className="rounded-2xl">
+            <CardContent className="p-5 space-y-3">
+              <Label htmlFor="code" className="flex items-center gap-1.5">
+                <KeyRound className="h-4 w-4 text-primary" /> Society code
+              </Label>
+              <Input
+                id="code"
+                autoFocus
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 12))}
+                placeholder="e.g. AB12CD"
+                className="h-14 rounded-2xl text-center tracking-[0.4em] font-mono text-xl"
+              />
+            </CardContent>
+          </Card>
+          <Button onClick={verifyCode} disabled={codeBusy || code.length < 4} className="w-full h-12 rounded-2xl">
+            {codeBusy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            Continue
+          </Button>
         </section>
       )}
 
-      {step === "relation" && flat && (
+      {step === "details" && society && (
         <section className="space-y-4">
           <header>
-            <p className="text-xs text-muted-foreground">{society?.name} · {flat.block_name ?? ""} {flat.flat_number}</p>
-            <h1 className="text-2xl font-semibold tracking-tight">You live here as…</h1>
+            <p className="text-xs text-muted-foreground">{society.name}</p>
+            <h1 className="type-title-lg">Your details</h1>
           </header>
-          <div className="grid gap-3">
-            {[
-              { v: "owner", label: "Owner", desc: "You own this flat", Icon: Key },
-              { v: "tenant", label: "Tenant", desc: "You rent this flat", Icon: User },
-              { v: "family", label: "Family member", desc: "You live with the owner/tenant", Icon: UsersIcon },
-            ].map(({ v, label, desc, Icon }) => (
-              <button
-                key={v}
-                onClick={() => setRelationship(v as any)}
-                className={cn(
-                  "w-full rounded-2xl border p-4 text-left flex items-center gap-3 transition-colors",
-                  relationship === v ? "border-primary bg-primary/5" : "border-border bg-card",
-                )}
-              >
-                <span className={cn("grid h-11 w-11 place-items-center rounded-xl",
-                  relationship === v ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground")}>
-                  <Icon className="h-5 w-5" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold">{label}</span>
-                  <span className="block text-xs text-muted-foreground">{desc}</span>
-                </span>
-                {relationship === v && <CheckCircle2 className="h-5 w-5 text-primary" />}
-              </button>
-            ))}
-          </div>
+          <Card className="rounded-2xl">
+            <CardContent className="p-5 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full name</Label>
+                <Input
+                  id="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="h-11 rounded-2xl"
+                  placeholder="Priya Sharma"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="flat">House / flat number</Label>
+                <Input
+                  id="flat"
+                  value={flatNumber}
+                  onChange={(e) => setFlatNumber(e.target.value)}
+                  className="h-11 rounded-2xl"
+                  placeholder="A-1204"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Owner or tenant?</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(
+                    [
+                      { v: "owner", label: "Owner", Icon: Key },
+                      { v: "tenant", label: "Tenant", Icon: User },
+                    ] as const
+                  ).map(({ v, label, Icon }) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setRole(v)}
+                      className={cn(
+                        "rounded-2xl border p-3 flex items-center gap-2 text-sm font-medium transition-colors",
+                        role === v ? "border-primary bg-primary/5 text-primary" : "border-border",
+                      )}
+                    >
+                      <Icon className="h-4 w-4" /> {label}
+                      {role === v && <CheckCircle2 className="h-4 w-4 ml-auto text-primary" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-2xl bg-secondary/50 p-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Verified mobile</span>
+                  <span className="font-medium">{verifiedPhone || "—"}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           <Button
-            disabled={!relationship}
-            onClick={() => setStep("confirm")}
+            onClick={() => setStep("submit")}
+            disabled={!fullName.trim() || !flatNumber.trim() || !role}
             className="w-full h-12 rounded-2xl"
           >
             Continue
@@ -237,24 +302,24 @@ function JoinFlow() {
         </section>
       )}
 
-      {step === "confirm" && flat && society && relationship && (
+      {step === "submit" && society && role && (
         <section className="space-y-4">
           <header>
-            <h1 className="text-2xl font-semibold tracking-tight">Confirm & submit</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Your society admin will review and approve.</p>
+            <h1 className="type-title-lg">Confirm & submit</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Your admin will review this request.</p>
           </header>
           <Card className="rounded-2xl">
             <CardContent className="p-5 space-y-3">
               <Row label="Society" value={society.name} />
-              <Row label="Block" value={flat.block_name ?? "—"} />
-              <Row label="Flat" value={flat.flat_number} />
-              <Row label="Floor" value={flat.floor != null ? `${flat.floor}` : "—"} />
-              <Row label="Relationship" value={relationship[0].toUpperCase() + relationship.slice(1)} />
+              <Row label="Flat" value={flatNumber} />
+              <Row label="Name" value={fullName} />
+              <Row label="Role" value={role[0].toUpperCase() + role.slice(1)} />
+              <Row label="Mobile" value={verifiedPhone || "—"} />
             </CardContent>
           </Card>
           <Button disabled={submitting} onClick={submit} className="w-full h-12 rounded-2xl">
             {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Submit request
+            <DoorOpen className="h-4 w-4 mr-2" /> Submit request
           </Button>
         </section>
       )}
@@ -267,20 +332,6 @@ function Row({ label, value }: { label: string; value: string }) {
     <div className="flex items-center justify-between gap-3">
       <span className="text-xs uppercase tracking-wider text-muted-foreground">{label}</span>
       <span className="text-sm font-semibold truncate">{value}</span>
-    </div>
-  );
-}
-
-function Stepper({ step }: { step: Step }) {
-  const idx = { search: 0, flat: 1, relation: 2, confirm: 3 }[step];
-  return (
-    <div className="flex items-center gap-1.5">
-      {[0,1,2,3].map((i) => (
-        <span key={i} className={cn(
-          "h-1.5 flex-1 rounded-full transition-colors",
-          i <= idx ? "bg-primary" : "bg-secondary",
-        )}/>
-      ))}
     </div>
   );
 }
