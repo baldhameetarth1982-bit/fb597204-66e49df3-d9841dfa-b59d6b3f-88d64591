@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useServerFn } from "@tanstack/react-start";
 import { getPartnerSummary, requestWithdrawal } from "@/lib/referral.functions";
 import { toast } from "sonner";
+import { LanguageSelector } from "@/components/shared/LanguageSelector";
 
 export const Route = createFileRoute("/_resident/app/profile")({
   head: () => ({ meta: [{ title: "My profile — SocioHub" }] }),
