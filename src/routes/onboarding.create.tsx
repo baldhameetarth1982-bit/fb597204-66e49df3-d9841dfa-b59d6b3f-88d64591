@@ -1,6 +1,6 @@
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import {
 } from "@/features/onboarding/wizard/societySetup";
 import { commitSocietyWizard, loadWizardDraft } from "@/lib/hierarchy.functions";
 import { createSocietyFull } from "@/lib/onboarding.functions";
+import { PhoneOtpForm } from "@/components/auth/PhoneOtpForm";
 
 export const Route = createFileRoute("/onboarding/create")({
   head: () => ({ meta: [{ title: "Create society — SocioHub" }] }),
