@@ -35,15 +35,16 @@ export const generateCommunityDigest = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(50);
 
-    // Also pull recent announcements so a quiet week still produces a digest.
-    const { data: notices } = await supabase
-      .from("posts")
-      .select("id, body, created_at")
-      .eq("society_id", data.societyId)
-      .eq("kind", "announcement")
-      .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
-      .order("created_at", { ascending: false })
-      .limit(20);
+    // Also pull the last 30 days of posts as a fallback so a quiet week still produces a digest.
+    const { data: notices } = havePostsWeek(posts)
+      ? { data: null as any }
+      : await supabase
+          .from("posts")
+          .select("id, body, created_at")
+          .eq("society_id", data.societyId)
+          .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+          .order("created_at", { ascending: false })
+          .limit(20);
 
     const havePosts = (posts?.length ?? 0) > 0;
     const haveNotices = (notices?.length ?? 0) > 0;
