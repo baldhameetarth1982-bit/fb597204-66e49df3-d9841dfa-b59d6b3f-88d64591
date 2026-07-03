@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { OnboardingStepper } from "@/components/system/OnboardingStepper";
 import { searchSocietiesPublic, submitJoinRequest } from "@/lib/onboarding.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/onboarding/join")({
   head: () => ({ meta: [{ title: "Join society — SocioHub" }] }),
