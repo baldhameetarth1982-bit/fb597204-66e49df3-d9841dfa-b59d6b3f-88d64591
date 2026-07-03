@@ -23,6 +23,7 @@ function CreateSocietyWizardPage() {
   const [societyId, setSocietyId] = useState<string | null>(null);
   const [initialState, setInitialState] = useState<Partial<WizardState> | null>(null);
   const [bootstrapping, setBootstrapping] = useState(true);
+  const [phoneVerified, setPhoneVerified] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!user) return;
