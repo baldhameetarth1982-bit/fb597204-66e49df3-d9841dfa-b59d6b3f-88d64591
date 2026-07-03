@@ -131,6 +131,10 @@ function BillStudio() {
         }
       />
 
+      <BillAppearanceCard societyId={societyId} />
+
+
+
       {sch && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
           <Card className="rounded-2xl">
