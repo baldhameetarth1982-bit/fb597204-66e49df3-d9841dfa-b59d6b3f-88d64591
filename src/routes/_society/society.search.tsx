@@ -12,7 +12,7 @@ function SocietySearch() {
   const { societyId } = useSocietyId();
   return (
     <PageShell>
-      <PageHeader title="Search" subtitle="Find residents, flats, bills, visitors and notices" />
+      <PageHeader title="Search" description="Find residents, flats, bills, visitors and notices" />
       {societyId ? <GlobalSearch societyId={societyId} scope="society" /> : null}
     </PageShell>
   );

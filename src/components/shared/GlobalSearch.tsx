@@ -75,20 +75,19 @@ export function GlobalSearch({ societyId, scope }: { societyId: string; scope: S
       if (admin) {
         const { data: bills } = await supabase
           .from("bills")
-          .select("id, bill_number, status, total_amount")
+          .select("id, bill_number, status, amount")
           .eq("society_id", societyId)
           .ilike("bill_number", like)
           .limit(6);
-        (bills ?? []).forEach(
-          (b: { id: string; bill_number: string; status: string | null; total_amount: number | null }) =>
-            results.push({
-              id: `b-${b.id}`,
-              type: "bill",
-              title: b.bill_number,
-              subtitle: `${b.status ?? "issued"} · ₹${b.total_amount ?? 0}`,
-              href: `/society/billing`,
-              icon: FileText,
-            }),
+        (bills ?? []).forEach((b) =>
+          results.push({
+            id: `b-${b.id}`,
+            type: "bill",
+            title: b.bill_number ?? b.id.slice(0, 8),
+            subtitle: `${b.status ?? "issued"} · ₹${b.amount ?? 0}`,
+            href: `/society/billing`,
+            icon: FileText,
+          }),
         );
       }
 
@@ -100,36 +99,34 @@ export function GlobalSearch({ societyId, scope }: { societyId: string; scope: S
         .or(`visitor_name.ilike.${like},phone.ilike.${like}`)
         .order("entry_at", { ascending: false })
         .limit(6);
-      (vis ?? []).forEach(
-        (v: { id: string; visitor_name: string; phone: string | null; flat_number: string | null }) =>
-          results.push({
-            id: `v-${v.id}`,
-            type: "visitor",
-            title: v.visitor_name,
-            subtitle: [v.flat_number, v.phone].filter(Boolean).join(" · "),
-            href: admin ? `/society/visitors` : `/app/visitors`,
-            icon: UserCheck,
-          }),
+      (vis ?? []).forEach((v) =>
+        results.push({
+          id: `v-${v.id}`,
+          type: "visitor",
+          title: v.visitor_name,
+          subtitle: [v.flat_number, v.phone].filter(Boolean).join(" · "),
+          href: admin ? `/society/visitors` : `/app/visitors`,
+          icon: UserCheck,
+        }),
       );
 
-      // Posts / announcements
+      // Posts / announcements — search by body
       const { data: posts } = await supabase
         .from("posts")
-        .select("id, title, kind, created_at")
+        .select("id, body, created_at")
         .eq("society_id", societyId)
-        .ilike("title", like)
+        .ilike("body", like)
         .order("created_at", { ascending: false })
         .limit(6);
-      (posts ?? []).forEach(
-        (p: { id: string; title: string; kind: string | null }) =>
-          results.push({
-            id: `n-${p.id}`,
-            type: "post",
-            title: p.title,
-            subtitle: p.kind ?? "",
-            href: admin ? `/society/announcements` : `/app/comm`,
-            icon: Bell,
-          }),
+      (posts ?? []).forEach((p) =>
+        results.push({
+          id: `n-${p.id}`,
+          type: "post",
+          title: (p.body ?? "").slice(0, 60) || "Post",
+          subtitle: new Date(p.created_at).toLocaleDateString(),
+          href: admin ? `/society/announcements` : `/app/comm`,
+          icon: Bell,
+        }),
       );
 
       if (!ctl.signal.aborted) setHits(results);
