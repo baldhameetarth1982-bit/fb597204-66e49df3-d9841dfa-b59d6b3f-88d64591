@@ -44,6 +44,7 @@ import { Route as SocietySocietyReportsRouteImport } from './routes/_society/soc
 import { Route as SocietySocietyPollsRouteImport } from './routes/_society/society.polls'
 import { Route as SocietySocietyPlanRequiredRouteImport } from './routes/_society/society.plan-required'
 import { Route as SocietySocietyPayoutsRouteImport } from './routes/_society/society.payouts'
+import { Route as SocietySocietyMatrixImportRouteImport } from './routes/_society/society.matrix-import'
 import { Route as SocietySocietyMatrixRouteImport } from './routes/_society/society.matrix'
 import { Route as SocietySocietyMaintenanceRouteImport } from './routes/_society/society.maintenance'
 import { Route as SocietySocietyLedgerRouteImport } from './routes/_society/society.ledger'
@@ -272,6 +273,12 @@ const SocietySocietyPayoutsRoute = SocietySocietyPayoutsRouteImport.update({
   path: '/society/payouts',
   getParentRoute: () => SocietyRoute,
 } as any)
+const SocietySocietyMatrixImportRoute =
+  SocietySocietyMatrixImportRouteImport.update({
+    id: '/society/matrix-import',
+    path: '/society/matrix-import',
+    getParentRoute: () => SocietyRoute,
+  } as any)
 const SocietySocietyMatrixRoute = SocietySocietyMatrixRouteImport.update({
   id: '/society/matrix',
   path: '/society/matrix',
@@ -623,6 +630,7 @@ export interface FileRoutesByFullPath {
   '/society/ledger': typeof SocietySocietyLedgerRoute
   '/society/maintenance': typeof SocietySocietyMaintenanceRoute
   '/society/matrix': typeof SocietySocietyMatrixRoute
+  '/society/matrix-import': typeof SocietySocietyMatrixImportRoute
   '/society/payouts': typeof SocietySocietyPayoutsRoute
   '/society/plan-required': typeof SocietySocietyPlanRequiredRoute
   '/society/polls': typeof SocietySocietyPollsRoute
@@ -709,6 +717,7 @@ export interface FileRoutesByTo {
   '/society/ledger': typeof SocietySocietyLedgerRoute
   '/society/maintenance': typeof SocietySocietyMaintenanceRoute
   '/society/matrix': typeof SocietySocietyMatrixRoute
+  '/society/matrix-import': typeof SocietySocietyMatrixImportRoute
   '/society/payouts': typeof SocietySocietyPayoutsRoute
   '/society/plan-required': typeof SocietySocietyPlanRequiredRoute
   '/society/polls': typeof SocietySocietyPollsRoute
@@ -801,6 +810,7 @@ export interface FileRoutesById {
   '/_society/society/ledger': typeof SocietySocietyLedgerRoute
   '/_society/society/maintenance': typeof SocietySocietyMaintenanceRoute
   '/_society/society/matrix': typeof SocietySocietyMatrixRoute
+  '/_society/society/matrix-import': typeof SocietySocietyMatrixImportRoute
   '/_society/society/payouts': typeof SocietySocietyPayoutsRoute
   '/_society/society/plan-required': typeof SocietySocietyPlanRequiredRoute
   '/_society/society/polls': typeof SocietySocietyPollsRoute
@@ -890,6 +900,7 @@ export interface FileRouteTypes {
     | '/society/ledger'
     | '/society/maintenance'
     | '/society/matrix'
+    | '/society/matrix-import'
     | '/society/payouts'
     | '/society/plan-required'
     | '/society/polls'
@@ -976,6 +987,7 @@ export interface FileRouteTypes {
     | '/society/ledger'
     | '/society/maintenance'
     | '/society/matrix'
+    | '/society/matrix-import'
     | '/society/payouts'
     | '/society/plan-required'
     | '/society/polls'
@@ -1067,6 +1079,7 @@ export interface FileRouteTypes {
     | '/_society/society/ledger'
     | '/_society/society/maintenance'
     | '/_society/society/matrix'
+    | '/_society/society/matrix-import'
     | '/_society/society/payouts'
     | '/_society/society/plan-required'
     | '/_society/society/polls'
@@ -1354,6 +1367,13 @@ declare module '@tanstack/react-router' {
       path: '/society/payouts'
       fullPath: '/society/payouts'
       preLoaderRoute: typeof SocietySocietyPayoutsRouteImport
+      parentRoute: typeof SocietyRoute
+    }
+    '/_society/society/matrix-import': {
+      id: '/_society/society/matrix-import'
+      path: '/society/matrix-import'
+      fullPath: '/society/matrix-import'
+      preLoaderRoute: typeof SocietySocietyMatrixImportRouteImport
       parentRoute: typeof SocietyRoute
     }
     '/_society/society/matrix': {
@@ -1870,6 +1890,7 @@ interface SocietyRouteChildren {
   SocietySocietyLedgerRoute: typeof SocietySocietyLedgerRoute
   SocietySocietyMaintenanceRoute: typeof SocietySocietyMaintenanceRoute
   SocietySocietyMatrixRoute: typeof SocietySocietyMatrixRoute
+  SocietySocietyMatrixImportRoute: typeof SocietySocietyMatrixImportRoute
   SocietySocietyPayoutsRoute: typeof SocietySocietyPayoutsRoute
   SocietySocietyPlanRequiredRoute: typeof SocietySocietyPlanRequiredRoute
   SocietySocietyPollsRoute: typeof SocietySocietyPollsRoute
@@ -1903,6 +1924,7 @@ const SocietyRouteChildren: SocietyRouteChildren = {
   SocietySocietyLedgerRoute: SocietySocietyLedgerRoute,
   SocietySocietyMaintenanceRoute: SocietySocietyMaintenanceRoute,
   SocietySocietyMatrixRoute: SocietySocietyMatrixRoute,
+  SocietySocietyMatrixImportRoute: SocietySocietyMatrixImportRoute,
   SocietySocietyPayoutsRoute: SocietySocietyPayoutsRoute,
   SocietySocietyPlanRequiredRoute: SocietySocietyPlanRequiredRoute,
   SocietySocietyPollsRoute: SocietySocietyPollsRoute,
@@ -1965,13 +1987,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
