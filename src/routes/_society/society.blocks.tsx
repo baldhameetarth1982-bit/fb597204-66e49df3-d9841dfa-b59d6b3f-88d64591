@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Building2, Plus, Loader2, Copy, Sparkles } from "lucide-react";
+import { Building2, Plus, Loader2, Copy, Sparkles, Wand2, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSocietyId } from "@/hooks/useSocietyId";
 import { PageHeader, PageShell, EmptyState } from "@/components/shared/PageHeader";
@@ -51,6 +51,13 @@ function BlocksPage() {
   const [aiText, setAiText] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
   const [aiPlan, setAiPlan] = useState<any>(null);
+
+  // Auto-designer (structured, no AI)
+  const [autoOpen, setAutoOpen] = useState(false);
+  const [autoRows, setAutoRows] = useState<{ name: string; floors: number; flats_per_floor: number; start_floor: number }[]>([
+    { name: "A", floors: 4, flats_per_floor: 4, start_floor: 1 },
+  ]);
+  const [autoBusy, setAutoBusy] = useState(false);
 
   const planFn = useServerFn(planSocietyFromText) as any;
   const applyFn = useServerFn(applySocietyPlan) as any;
@@ -126,6 +133,34 @@ function BlocksPage() {
     setAiBusy(false);
   }
 
+  async function handleAutoDesign() {
+    if (!societyId) return;
+    const clean = autoRows
+      .map((r) => ({
+        name: (r.name || "").trim(),
+        floors: Math.max(1, Number(r.floors) || 1),
+        flats_per_floor: Math.max(1, Number(r.flats_per_floor) || 1),
+        start_floor: Number.isFinite(Number(r.start_floor)) ? Number(r.start_floor) : 1,
+      }))
+      .filter((r) => r.name.length > 0);
+    if (clean.length === 0) { toast.error("Add at least one block with a name"); return; }
+    setAutoBusy(true);
+    try {
+      const { data, error } = await (supabase.rpc as any)("bulk_generate_society_hierarchy", {
+        _society_id: societyId,
+        _blocks: clean,
+      });
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      toast.success(`Created ${row?.blocks_created ?? 0} block(s) and ${row?.flats_created ?? 0} flat(s)`);
+      setAutoOpen(false);
+      void fetchBlocks(societyId);
+    } catch (e: any) {
+      toast.error(e.message ?? "Auto-design failed");
+    }
+    setAutoBusy(false);
+  }
+
   if (!sidLoading && !societyId) {
     return (
       <PageShell>
@@ -146,7 +181,10 @@ function BlocksPage() {
         title="Blocks"
         description="Apartments, bungalows or mixed — describe once, duplicate easily."
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" className="rounded-xl" onClick={() => setAutoOpen(true)}>
+              <Wand2 className="h-4 w-4 mr-2" /> Auto Design
+            </Button>
             <Button variant="secondary" className="rounded-xl" onClick={() => setAiOpen(true)}>
               <Sparkles className="h-4 w-4 mr-2" /> AI Build
             </Button>
@@ -277,6 +315,88 @@ function BlocksPage() {
                 </Button>
               </div>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Auto Design dialog — structured no-AI society builder */}
+      <Dialog open={autoOpen} onOpenChange={setAutoOpen}>
+        <DialogContent className="sm:max-w-2xl rounded-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-primary" /> Auto Design society
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Enter each block name, number of floors, and flats per floor. We'll create the entire hierarchy automatically. You can edit anything afterwards.
+            </p>
+            <div className="hidden sm:grid grid-cols-12 gap-2 text-[11px] font-medium text-muted-foreground uppercase tracking-wider px-1">
+              <div className="col-span-4">Block name</div>
+              <div className="col-span-2">Floors</div>
+              <div className="col-span-3">Flats / floor</div>
+              <div className="col-span-2">Start floor</div>
+              <div className="col-span-1"></div>
+            </div>
+            <div className="space-y-2">
+              {autoRows.map((r, i) => (
+                <div key={i} className="grid grid-cols-12 gap-2 items-center">
+                  <Input
+                    className="col-span-12 sm:col-span-4"
+                    placeholder="A"
+                    value={r.name}
+                    onChange={(e) => setAutoRows((rows) => rows.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))}
+                  />
+                  <Input
+                    className="col-span-4 sm:col-span-2"
+                    type="number" min={1} max={100}
+                    value={r.floors}
+                    onChange={(e) => setAutoRows((rows) => rows.map((x, idx) => idx === i ? { ...x, floors: Number(e.target.value) || 1 } : x))}
+                  />
+                  <Input
+                    className="col-span-4 sm:col-span-3"
+                    type="number" min={1} max={50}
+                    value={r.flats_per_floor}
+                    onChange={(e) => setAutoRows((rows) => rows.map((x, idx) => idx === i ? { ...x, flats_per_floor: Number(e.target.value) || 1 } : x))}
+                  />
+                  <Input
+                    className="col-span-3 sm:col-span-2"
+                    type="number" min={0} max={100}
+                    value={r.start_floor}
+                    onChange={(e) => setAutoRows((rows) => rows.map((x, idx) => idx === i ? { ...x, start_floor: Number(e.target.value) || 0 } : x))}
+                  />
+                  <Button
+                    variant="ghost" size="icon"
+                    className="col-span-1 text-destructive"
+                    onClick={() => setAutoRows((rows) => rows.length > 1 ? rows.filter((_, idx) => idx !== i) : rows)}
+                    aria-label="Remove block"
+                    disabled={autoRows.length <= 1}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              className="rounded-xl w-full"
+              onClick={() => setAutoRows((rows) => [...rows, { name: String.fromCharCode(65 + rows.length), floors: 4, flats_per_floor: 4, start_floor: 1 }])}
+            >
+              <Plus className="h-4 w-4 mr-2" /> Add another block
+            </Button>
+            <div className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">
+              Flat numbering pattern: <span className="font-mono font-medium">Block-FloorFlat</span> — e.g. block <span className="font-mono">A</span>, floor <span className="font-mono">1</span>, flat 2 becomes <span className="font-mono">A-102</span>. Existing blocks and flats with the same name are skipped.
+            </div>
+            <div className="rounded-xl bg-primary/5 p-3 text-xs text-foreground">
+              Total: <b>{autoRows.reduce((s, r) => s + (Number(r.floors) || 0) * (Number(r.flats_per_floor) || 0), 0)}</b> flats across <b>{autoRows.filter((r) => r.name.trim()).length}</b> block(s).
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setAutoOpen(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={handleAutoDesign} disabled={autoBusy} className="rounded-xl">
+              {autoBusy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wand2 className="h-4 w-4 mr-2" />}
+              Build society
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

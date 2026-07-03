@@ -9,6 +9,13 @@ import {
   KeyRound,
   Copy,
   Inbox,
+  Receipt,
+  UserCheck,
+  Users,
+  Zap,
+  Vote,
+  Sparkles,
+  Search,
 } from "lucide-react";
 import {
   Card,
@@ -190,7 +197,36 @@ function SocietyDashboard() {
         </Card>
       )}
 
+      {/* Quick actions — one-tap shortcuts to the most common admin tasks */}
+      <section className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Quick actions</h2>
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
+          {[
+            { to: "/society/billing" as const, label: "New bill", icon: Receipt },
+            { to: "/society/approvals" as const, label: "Approvals", icon: UserCheck },
+            { to: "/society/residents" as const, label: "Residents", icon: Users },
+            { to: "/society/visitors" as const, label: "Visitors", icon: UserCheck },
+            { to: "/society/announcements" as const, label: "Notice", icon: Megaphone },
+            { to: "/society/polls" as const, label: "Poll", icon: Vote },
+            { to: "/society/digest" as const, label: "AI Digest", icon: Sparkles },
+            { to: "/society/search" as const, label: "Search", icon: Search },
+          ].map((a) => (
+            <Link
+              key={a.to}
+              to={a.to}
+              className="group rounded-2xl border bg-card hover:bg-primary/5 hover:border-primary/40 transition p-3 flex flex-col items-center justify-center gap-1.5 text-center min-h-[76px]"
+            >
+              <a.icon className="h-5 w-5 text-primary shrink-0" />
+              <span className="text-[11px] sm:text-xs font-medium leading-tight">{a.label}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+
         <Card className="rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total registered flats</CardTitle>
