@@ -3,19 +3,21 @@ import { Home, Receipt, ShieldCheck, Building2, User, Search } from "lucide-reac
 import { useTranslation } from "react-i18next";
 import "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
 
 const ITEMS = [
-  { to: "/app/dashboard", labelKey: "nav.home", icon: Home, match: ["/app/dashboard"] },
-  { to: "/app/bills", labelKey: "nav.bills", icon: Receipt, match: ["/app/bills", "/app/dues", "/app/ledger"] },
-  { to: "/app/search", labelKey: "nav.search", icon: Search, match: ["/app/search"] },
-  { to: "/app/visitors", labelKey: "nav.visitors", icon: ShieldCheck, match: ["/app/visitors", "/app/guard"] },
-  { to: "/app/comm", labelKey: "nav.society", icon: Building2, match: ["/app/comm", "/app/notices", "/app/helpdesk", "/app/contacts", "/app/bylaws", "/app/feed", "/app/polls"] },
-  { to: "/app/profile", labelKey: "nav.profile", icon: User, match: ["/app/profile", "/app/family", "/app/vehicles"] },
+  { to: "/app/dashboard", labelKey: "nav.home", icon: Home, match: ["/app/dashboard"], badgeKey: null },
+  { to: "/app/bills", labelKey: "nav.bills", icon: Receipt, match: ["/app/bills", "/app/dues", "/app/ledger"], badgeKey: null },
+  { to: "/app/search", labelKey: "nav.search", icon: Search, match: ["/app/search"], badgeKey: null },
+  { to: "/app/visitors", labelKey: "nav.visitors", icon: ShieldCheck, match: ["/app/visitors", "/app/guard"], badgeKey: null },
+  { to: "/app/comm", labelKey: "nav.society", icon: Building2, match: ["/app/comm", "/app/notices", "/app/helpdesk", "/app/contacts", "/app/bylaws", "/app/feed", "/app/polls", "/app/notifications"], badgeKey: "notif" as const },
+  { to: "/app/profile", labelKey: "nav.profile", icon: User, match: ["/app/profile", "/app/family", "/app/vehicles"], badgeKey: null },
 ] as const;
 
 export function ResidentBottomNav() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { t } = useTranslation();
+  const unread = useUnreadNotifications();
   return (
     <nav
       aria-label="Resident navigation"
@@ -25,6 +27,7 @@ export function ResidentBottomNav() {
         {ITEMS.map((it) => {
           const active = it.match.some((p) => path === p || path.startsWith(p + "/"));
           const Icon = it.icon;
+          const showBadge = it.badgeKey === "notif" && unread > 0;
           return (
             <li key={it.to} className="flex-1">
               <Link
@@ -34,7 +37,14 @@ export function ResidentBottomNav() {
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Icon className={cn("h-5 w-5", active && "stroke-[2.5]")} />
+                <span className="relative">
+                  <Icon className={cn("h-5 w-5", active && "stroke-[2.5]")} />
+                  {showBadge && (
+                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold grid place-items-center leading-none">
+                      {unread > 99 ? "99+" : unread}
+                    </span>
+                  )}
+                </span>
                 <span>{t(it.labelKey)}</span>
               </Link>
             </li>
