@@ -730,8 +730,12 @@ export type Database = {
       join_requests: {
         Row: {
           created_at: string
-          flat_id: string
+          flat_id: string | null
+          flat_number_input: string | null
+          full_name: string | null
           id: string
+          mobile: string | null
+          owner_or_tenant: string | null
           reason: string | null
           relationship: string
           reviewed_at: string | null
@@ -743,8 +747,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          flat_id: string
+          flat_id?: string | null
+          flat_number_input?: string | null
+          full_name?: string | null
           id?: string
+          mobile?: string | null
+          owner_or_tenant?: string | null
           reason?: string | null
           relationship: string
           reviewed_at?: string | null
@@ -756,8 +764,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          flat_id?: string
+          flat_id?: string | null
+          flat_number_input?: string | null
+          full_name?: string | null
           id?: string
+          mobile?: string | null
+          owner_or_tenant?: string | null
           reason?: string | null
           relationship?: string
           reviewed_at?: string | null
@@ -1318,6 +1330,48 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_settings: {
+        Row: {
+          active_gateway: string
+          custom_module_prices: Json
+          enterprise_contact_email: string | null
+          enterprise_contact_phone: string | null
+          enterprise_threshold_units: number
+          id: number
+          promo_config: Json
+          taxes: Json
+          trial_days: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          active_gateway?: string
+          custom_module_prices?: Json
+          enterprise_contact_email?: string | null
+          enterprise_contact_phone?: string | null
+          enterprise_threshold_units?: number
+          id?: number
+          promo_config?: Json
+          taxes?: Json
+          trial_days?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          active_gateway?: string
+          custom_module_prices?: Json
+          enterprise_contact_email?: string | null
+          enterprise_contact_phone?: string | null
+          enterprise_threshold_units?: number
+          id?: number
+          promo_config?: Json
+          taxes?: Json
+          trial_days?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           aadhaar_last4: string | null
@@ -1505,8 +1559,10 @@ export type Database = {
           business_state: string | null
           city: string | null
           created_at: string
+          full_address: string | null
           id: string
           invite_code: string | null
+          invite_code_enabled: boolean
           legal_business_name: string | null
           logo_url: string | null
           name: string
@@ -1522,9 +1578,12 @@ export type Database = {
           property_type: string
           razorpay_account_id: string | null
           registration_no: string | null
+          registration_number: string | null
           signature_url: string | null
           state: string | null
           status: string
+          total_units: number | null
+          trial_consumed_at: string | null
           trial_ends_at: string | null
           updated_at: string
         }
@@ -1540,8 +1599,10 @@ export type Database = {
           business_state?: string | null
           city?: string | null
           created_at?: string
+          full_address?: string | null
           id?: string
           invite_code?: string | null
+          invite_code_enabled?: boolean
           legal_business_name?: string | null
           logo_url?: string | null
           name: string
@@ -1557,9 +1618,12 @@ export type Database = {
           property_type?: string
           razorpay_account_id?: string | null
           registration_no?: string | null
+          registration_number?: string | null
           signature_url?: string | null
           state?: string | null
           status?: string
+          total_units?: number | null
+          trial_consumed_at?: string | null
           trial_ends_at?: string | null
           updated_at?: string
         }
@@ -1575,8 +1639,10 @@ export type Database = {
           business_state?: string | null
           city?: string | null
           created_at?: string
+          full_address?: string | null
           id?: string
           invite_code?: string | null
+          invite_code_enabled?: boolean
           legal_business_name?: string | null
           logo_url?: string | null
           name?: string
@@ -1592,9 +1658,12 @@ export type Database = {
           property_type?: string
           razorpay_account_id?: string | null
           registration_no?: string | null
+          registration_number?: string | null
           signature_url?: string | null
           state?: string | null
           status?: string
+          total_units?: number | null
+          trial_consumed_at?: string | null
           trial_ends_at?: string | null
           updated_at?: string
         }
@@ -2147,6 +2216,14 @@ export type Database = {
         Args: { _society_id: string; _user_id: string }
         Returns: boolean
       }
+      bulk_approve_join_requests: {
+        Args: { _request_ids: string[]; _society_id: string }
+        Returns: number
+      }
+      bulk_reject_join_requests: {
+        Args: { _reason?: string; _request_ids: string[]; _society_id: string }
+        Returns: number
+      }
       cancel_bill: {
         Args: { _bill_id: string; _reason: string }
         Returns: undefined
@@ -2187,6 +2264,24 @@ export type Database = {
           _name: string
           _referral_code?: string
           _state?: string
+        }
+        Returns: {
+          id: string
+          invite_code: string
+          name: string
+        }[]
+      }
+      create_society_full: {
+        Args: {
+          _city: string
+          _full_address: string
+          _logo_url: string
+          _name: string
+          _pincode: string
+          _referral_code?: string
+          _registration_number: string
+          _state: string
+          _total_units: number
         }
         Returns: {
           id: string
@@ -2242,6 +2337,19 @@ export type Database = {
       generate_society_code: { Args: never; Returns: string }
       get_admin_block_ids: { Args: { _user_id: string }; Returns: string[] }
       get_admin_society_ids: { Args: { _user_id: string }; Returns: string[] }
+      get_applicable_plans: {
+        Args: { _total_units?: number }
+        Returns: {
+          enterprise: boolean
+          features: Json
+          is_recommended: boolean
+          plan_id: string
+          plan_name: string
+          price_monthly_inr: number
+          tier: string
+          trial_days: number
+        }[]
+      }
       get_current_auth_context: {
         Args: never
         Returns: {
@@ -2266,6 +2374,16 @@ export type Database = {
         Returns: {
           configured: boolean
           key_id: string
+        }[]
+      }
+      get_society_access_status: {
+        Args: { _society_id: string }
+        Returns: {
+          plan_expires_at: string
+          plan_id: string
+          status: string
+          trial_consumed_at: string
+          trial_ends_at: string
         }[]
       }
       get_society_business_profile: {
@@ -2326,6 +2444,19 @@ export type Database = {
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       join_society_with_code: { Args: { _code: string }; Returns: string }
+      list_pending_join_requests: {
+        Args: { _society_id: string }
+        Returns: {
+          created_at: string
+          flat_number_input: string
+          full_name: string
+          id: string
+          mobile: string
+          owner_or_tenant: string
+          requester_email: string
+          user_id: string
+        }[]
+      }
       list_society_flats_public: {
         Args: { _society_id: string }
         Returns: {
@@ -2338,6 +2469,10 @@ export type Database = {
         }[]
       }
       mark_aadhaar_verified: { Args: { _last4: string }; Returns: undefined }
+      regenerate_society_invite_code: {
+        Args: { _society_id: string }
+        Returns: string
+      }
       request_join_flat: {
         Args: { _flat_id: string; _relationship: string }
         Returns: string
@@ -2360,10 +2495,40 @@ export type Database = {
           state: string
         }[]
       }
+      search_societies_public: {
+        Args: { _q: string }
+        Returns: {
+          city: string
+          id: string
+          logo_url: string
+          name: string
+          state: string
+        }[]
+      }
+      set_society_invite_code_custom: {
+        Args: { _code: string; _society_id: string }
+        Returns: string
+      }
+      set_society_invite_code_enabled: {
+        Args: { _enabled: boolean; _society_id: string }
+        Returns: boolean
+      }
       society_has_access: { Args: { _society_id: string }; Returns: boolean }
       society_payout_active: { Args: { _society_id: string }; Returns: boolean }
+      start_society_trial: { Args: { _society_id: string }; Returns: string }
       start_trial_for_society: {
         Args: { _society_id: string }
+        Returns: string
+      }
+      submit_join_request: {
+        Args: {
+          _code: string
+          _flat_number: string
+          _full_name: string
+          _mobile: string
+          _owner_or_tenant: string
+          _society_id: string
+        }
         Returns: string
       }
       update_society_business_profile: {
