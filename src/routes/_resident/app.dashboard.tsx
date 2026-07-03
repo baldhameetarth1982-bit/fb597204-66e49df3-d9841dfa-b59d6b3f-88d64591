@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Bell, ArrowRight, Receipt, ShieldCheck, ShieldAlert, Fingerprint, Inbox,
-  Megaphone, LifeBuoy, FileText, Phone, Wallet, Building2,
+  Megaphone, LifeBuoy, FileText, Phone, Wallet, Building2, Bot,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -251,7 +251,7 @@ const QUICK_ACTIONS: Array<{ to: string; label: string; icon: any; tone: string 
   { to: "/app/helpdesk", label: "Complaints", icon: LifeBuoy, tone: "bg-rose-500/10 text-rose-600" },
   { to: "/app/comm", label: "Notices", icon: Megaphone, tone: "bg-amber-500/10 text-amber-600" },
   { to: "/app/bylaws", label: "Documents", icon: FileText, tone: "bg-violet-500/10 text-violet-600" },
-  { to: "/app/comm", label: "Contacts", icon: Phone, tone: "bg-teal-500/10 text-teal-600" },
+  { to: "/support", label: "Ask AI", icon: Bot, tone: "bg-indigo-500/10 text-indigo-600" },
   { to: "/app/emergency", label: "SOS", icon: ShieldAlert, tone: "bg-destructive/10 text-destructive" },
 ];
 
