@@ -92,7 +92,7 @@ export function SocietyFinanceChart({ societyId }: { societyId: string }) {
           {tone === "growth" ? <TrendingUp className="h-4 w-4" />
             : tone === "loss" ? <TrendingDown className="h-4 w-4" />
             : <Minus className="h-4 w-4" />}
-          {pct === 0 ? "0%" : `${pct > 0 ? "+" : ""}${pct.toFixed(1)}%`}
+          {pct === null ? "New" : pct === 0 ? "0%" : `${pct > 0 ? "+" : ""}${pct.toFixed(1)}%`}
         </div>
       </CardHeader>
       <CardContent>
