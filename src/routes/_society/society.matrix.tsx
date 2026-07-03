@@ -113,6 +113,29 @@ function MatrixPage() {
     XLSX.writeFile(wb, `maintenance-matrix-${year}.xlsx`);
   }
 
+  function exportPDF() {
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    doc.setFontSize(14);
+    doc.text(`Maintenance Matrix ${year}`, 40, 40);
+    doc.setFontSize(9);
+    doc.setTextColor(120);
+    doc.text(`Generated ${new Date().toLocaleString("en-IN")} · ${filtered.length} units`, 40, 56);
+    doc.setTextColor(0);
+    autoTable(doc, {
+      startY: 74,
+      head: [["Unit", ...MONTH_NAMES]],
+      body: filtered.map((f) => [
+        `${f.block_name}-${f.flat_number}`,
+        ...Array.from({ length: 12 }, (_, m) => cell(f.id, m).label),
+      ]),
+      styles: { fontSize: 7, cellPadding: 3 },
+      headStyles: { fillColor: [30, 41, 59] },
+      columnStyles: { 0: { fontStyle: "bold" } },
+    });
+    doc.save(`maintenance-matrix-${year}.pdf`);
+    toast.success("PDF exported");
+  }
+
   return (
     <PageShell>
       <PageHeader
@@ -126,8 +149,14 @@ function MatrixPage() {
               onChange={(e) => setYear(Number(e.target.value) || year)}
               className="w-20 h-9"
             />
+            <Button asChild variant="outline" size="sm" className="rounded-xl">
+              <Link to="/society/matrix-import"><Upload className="h-4 w-4 mr-1" /> Import</Link>
+            </Button>
             <Button variant="outline" size="sm" onClick={exportExcel} className="rounded-xl">
               <Download className="h-4 w-4 mr-1" /> Excel
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportPDF} className="rounded-xl">
+              <Download className="h-4 w-4 mr-1" /> PDF
             </Button>
           </div>
         }
