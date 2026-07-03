@@ -558,11 +558,17 @@ function AppearanceCard({
 
   useEffect(() => {
     if (!societyId) { setPlan(null); return; }
-    supabase.from("societies").select("plan").eq("id", societyId).maybeSingle()
-      .then(({ data }) => setPlan((data as any)?.plan ?? null));
+    supabase.from("societies").select("plan, plan_id").eq("id", societyId).maybeSingle()
+      .then(({ data }) => {
+        const d = data as any;
+        // Prefer the modern plan_id (references plans.id: trial/basic/pro/premium),
+        // fall back to the legacy plan text column.
+        setPlan((d?.plan_id ?? d?.plan) ?? null);
+      });
   }, [societyId]);
 
-  const isPremium = isSuperAdmin || plan === "premium";
+  // Neon theme is included on every paid, ad-free tier (Pro, Premium, custom).
+  const isPremium = isSuperAdmin || plan === "premium" || plan === "pro" || plan === "master";
 
   async function setTheme(next: "default" | "neon") {
     if (next === "neon" && !isPremium) {
