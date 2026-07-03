@@ -21,7 +21,7 @@ function RevenuePage() {
         supabase.rpc("admin_platform_summary"),
         supabase.from("societies").select("plan_id, plan_status").eq("plan_status", "active"),
         supabase.from("plans").select("id, price_monthly_inr"),
-        supabase.from("ads").select("id, is_active").eq("is_active", true).limit(1),
+        supabase.from("ads").select("id, active").eq("active", true),
       ]);
       const priceMap = new Map<string, number>((plans.data ?? []).map((p: any) => [p.id, p.price_monthly_inr ?? 0]));
       let mrr = 0, activePaid = 0;
