@@ -155,7 +155,7 @@ function ReportsPage() {
         description="Income, expenses & net position — export for accountant or audit."
         actions={
           <div className="flex gap-2 print:hidden">
-            <Button variant="outline" className="rounded-xl" onClick={() => window.print()}>
+            <Button variant="outline" className="rounded-xl" onClick={exportPdf} disabled={!txns.length}>
               <Printer className="h-4 w-4 mr-1.5" />
               PDF
             </Button>
