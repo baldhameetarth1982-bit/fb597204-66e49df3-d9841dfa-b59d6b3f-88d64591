@@ -1,8 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Building2, DoorOpen, Users, Receipt, Megaphone,
-  ShieldCheck, Vote, Calculator, Sparkles, Car, UserCheck, Trophy, Wallet,
-  Wand2, Search, Zap,
+  ShieldCheck, Vote, Sparkles, Car, UserCheck, Trophy,
+  Search, Zap,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
