@@ -9,6 +9,13 @@ import {
   KeyRound,
   Copy,
   Inbox,
+  Receipt,
+  UserCheck,
+  Users,
+  Zap,
+  Vote,
+  Sparkles,
+  Search,
 } from "lucide-react";
 import {
   Card,
