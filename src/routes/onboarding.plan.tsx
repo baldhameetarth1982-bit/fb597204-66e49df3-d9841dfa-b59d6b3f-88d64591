@@ -1,9 +1,7 @@
 import { createFileRoute, Navigate, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Loader2, Sparkles, Check, ShieldCheck, Zap, Crown, ArrowRight, Clock, Lock,
-} from "lucide-react";
+import { Loader2, Sparkles, Check, ArrowRight, Clock, Lock, Crown, ShieldCheck, Building2, Zap } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useSocietyId } from "@/hooks/useSocietyId";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { OnboardingStepper } from "@/components/system/OnboardingStepper";
+import { getApplicablePlans, startSocietyTrial, getPricingSettings } from "@/lib/pricing-engine";
 
 export const Route = createFileRoute("/onboarding/plan")({
   head: () => ({ meta: [{ title: "Choose your plan — SocioHub" }] }),
@@ -30,7 +30,7 @@ function PlanGate() {
       const [{ data: row }, { data: access }] = await Promise.all([
         supabase
           .from("societies")
-          .select("id,name,plan_id,plan_status,plan_expires_at,trial_ends_at")
+          .select("id,name,plan_id,plan_status,plan_expires_at,trial_ends_at,total_units,trial_consumed_at")
           .eq("id", societyId!)
           .maybeSingle(),
         supabase.rpc("society_has_access", { _society_id: societyId! }),
@@ -40,19 +40,23 @@ function PlanGate() {
   });
 
   const { data: plans } = useQuery({
-    queryKey: ["plans-onboarding"],
-    queryFn: async () => (await supabase.from("plans").select("*").neq("id", "ad_free").order("sort_order")).data ?? [],
+    enabled: !!society,
+    queryKey: ["applicable-plans", (society as any)?.total_units],
+    queryFn: () => getApplicablePlans((society as any)?.total_units ?? null),
   });
 
-  // If access is already granted, kick into the app.
+  const { data: settings } = useQuery({
+    queryKey: ["pricing-settings"],
+    queryFn: getPricingSettings,
+  });
+
   useEffect(() => {
-    if (!society) return;
-    if (society.has_access) navigate({ to: "/society/dashboard", replace: true });
+    if (society && (society as any).has_access) navigate({ to: "/society/dashboard", replace: true });
   }, [society, navigate]);
 
   if (isLoading || sLoading) {
     return (
-      <div className="min-h-dvh grid place-items-center bg-[#0a0a0a]">
+      <div className="min-h-dvh grid place-items-center bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
@@ -60,102 +64,162 @@ function PlanGate() {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!societyId) return <Navigate to="/onboarding/create" replace />;
 
-  async function startTrial() {
+  async function handleStartTrial() {
+    if (busy) return;
     setBusy(true);
-    const { error } = await supabase.rpc("start_trial_for_society", { _society_id: societyId! });
-    setBusy(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success("14-day free trial started 🎉");
-    navigate({ to: "/society/dashboard", replace: true });
+    try {
+      await startSocietyTrial(societyId!);
+      toast.success(`Free trial started 🎉`);
+      navigate({ to: "/society/dashboard", replace: true });
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not start trial");
+    } finally {
+      setBusy(false);
+    }
   }
 
-  const paid = (plans ?? []).filter((p: any) => p.id !== "trial");
+  const enterprise = plans?.find((p) => p.enterprise);
+  const standard = (plans ?? []).filter((p) => !p.enterprise && p.plan_id !== "trial");
+  const trialAlreadyUsed = Boolean((society as any)?.trial_consumed_at);
+  const trialDays = settings?.trial_days ?? 14;
 
   return (
-    <main className="min-h-dvh bg-gradient-to-br from-[#0a0a0a] via-[#150505] to-[#0a0a0a] text-white">
-      <div className="max-w-6xl mx-auto px-5 py-12">
-        {/* Hero */}
-        <header className="text-center mb-10 space-y-3">
-          <Badge className="bg-[#B91C1C]/15 text-[#FCA5A5] border-[#B91C1C]/30 rounded-full">
+    <main className="min-h-dvh bg-background text-foreground">
+      <div className="max-w-6xl mx-auto px-5 py-10">
+        <OnboardingStepper
+          step={2}
+          total={4}
+          labels={["Society details", "Choose plan", "Payment", "Setup"]}
+          className="mb-6 max-w-md"
+        />
+
+        <header className="text-center mb-8 space-y-3">
+          <Badge className="rounded-full bg-primary/10 text-primary border-primary/20">
             <Lock className="h-3 w-3 mr-1" /> Required to continue
           </Badge>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-            Pick a plan to launch <span className="text-[#F87171]">{society?.name ?? "your society"}</span>
+          <h1 className="type-display">
+            Pick a plan for{" "}
+            <span className="text-primary">{(society as any)?.name ?? "your society"}</span>
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Start free for 14 days — no credit card required. Every resident in your society gets full access while your plan is active.
+          <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
+            Every resident gets full access while your plan is active. Cancel anytime.
           </p>
         </header>
 
-        {/* Free trial spotlight */}
-        <Card className="rounded-3xl border-0 bg-gradient-to-br from-[#B91C1C] to-[#7f1d1d] p-7 mb-8 shadow-[0_20px_60px_-20px_#B91C1C]">
-          <div className="flex flex-col md:flex-row md:items-center gap-5">
-            <div className="h-16 w-16 rounded-2xl bg-white/15 grid place-items-center shrink-0">
-              <Sparkles className="h-8 w-8" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 text-sm opacity-90">
-                <Clock className="h-4 w-4" /> 14 days · No card needed
+        {/* Enterprise fast-path */}
+        {enterprise ? (
+          <Card className="rounded-3xl border-2 border-primary/30 p-8 mb-8 bg-gradient-to-br from-primary/10 via-background to-background">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="h-14 w-14 rounded-2xl bg-primary/15 grid place-items-center">
+                <Building2 className="h-7 w-7 text-primary" />
               </div>
-              <h2 className="text-2xl font-bold mt-1">Try every Premium feature free</h2>
-              <p className="opacity-90 mt-1 text-sm">After 14 days, your society will be locked until you choose a paid plan. Cancel anytime.</p>
-            </div>
-            <Button
-              disabled={busy}
-              onClick={startTrial}
-              className="min-h-[56px] rounded-xl px-6 bg-white text-[#7f1d1d] hover:bg-white/90 font-semibold"
-            >
-              {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
-              Start free trial
-            </Button>
-          </div>
-        </Card>
-
-        {/* Paid plans */}
-        <div className="grid md:grid-cols-3 gap-5 mb-10">
-          {paid.map((p: any) => {
-            const recommended = p.is_recommended;
-            const Icon = p.id === "premium" ? Crown : p.id === "pro" ? Sparkles : ShieldCheck;
-            return (
-              <Card
-                key={p.id}
-                className={`rounded-3xl p-6 flex flex-col transition bg-[#161616] ${
-                  recommended ? "border-2 border-[#B91C1C] shadow-[0_0_40px_-10px_#B91C1C]" : "border border-white/10"
-                }`}
-              >
-                {recommended && (
-                  <Badge className="self-start mb-3 bg-[#B91C1C] text-white border-0">
-                    <Sparkles className="h-3 w-3 mr-1" /> Most popular
-                  </Badge>
-                )}
-                <div className="flex items-center gap-2">
-                  <Icon className="h-5 w-5 text-[#F87171]" />
-                  <h3 className="text-2xl font-semibold">{p.name}</h3>
-                </div>
-                <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold">₹{p.price_monthly_inr}</span>
-                  <span className="text-muted-foreground">/mo</span>
-                </div>
-                <ul className="mt-4 space-y-2 text-sm flex-1">
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5" /> {p.txn_fee_pct}% transaction fee</li>
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5" /> {p.ads_enabled ? "Ad-supported" : "Ad-free experience"}</li>
-                  {(p.features ?? []).map((f: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5" /> {f}</li>
-                  ))}
-                </ul>
-                <Button asChild className={`mt-6 min-h-[52px] rounded-xl ${recommended ? "bg-[#B91C1C] hover:bg-[#991B1B]" : "bg-white/5 hover:bg-white/10"}`}>
-                  <Link to="/checkout/$planId" params={{ planId: p.id }}>
-                    Choose {p.name} <ArrowRight className="h-4 w-4 ml-1" />
-                  </Link>
+              <div className="flex-1 space-y-2">
+                <Badge className="rounded-full">Enterprise</Badge>
+                <h2 className="text-xl font-semibold tracking-tight">Custom pricing for your society</h2>
+                <p className="text-sm text-muted-foreground">
+                  With <strong>{(society as any)?.total_units ?? "500+"}</strong> units, you qualify for enterprise
+                  pricing with dedicated onboarding, SLA and account management.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 w-full md:w-auto">
+                <Button
+                  asChild
+                  className="rounded-2xl h-12 min-w-[200px]"
+                >
+                  <a
+                    href={`mailto:${settings?.enterprise_contact_email ?? "sales@sociohub.live"}?subject=Enterprise plan enquiry`}
+                  >
+                    Talk to sales
+                  </a>
                 </Button>
+                {settings?.enterprise_contact_phone && (
+                  <a
+                    href={`tel:${settings.enterprise_contact_phone}`}
+                    className="text-xs text-center text-muted-foreground hover:text-foreground"
+                  >
+                    or call {settings.enterprise_contact_phone}
+                  </a>
+                )}
+              </div>
+            </div>
+          </Card>
+        ) : (
+          <>
+            {/* Trial */}
+            {!trialAlreadyUsed && (
+              <Card className="rounded-3xl border-0 bg-gradient-to-br from-primary to-primary/85 text-primary-foreground p-6 mb-6">
+                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                  <div className="h-14 w-14 rounded-2xl bg-primary-foreground/15 grid place-items-center shrink-0">
+                    <Sparkles className="h-7 w-7" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 text-xs opacity-90">
+                      <Clock className="h-4 w-4" /> {trialDays} days · No card needed
+                    </div>
+                    <h2 className="text-xl font-semibold tracking-tight mt-1">Try every Premium feature free</h2>
+                    <p className="opacity-90 mt-1 text-sm">
+                      Trial can be started once per society. After it ends, you can switch to any paid plan.
+                    </p>
+                  </div>
+                  <Button
+                    disabled={busy}
+                    onClick={handleStartTrial}
+                    className="min-h-[52px] rounded-2xl px-6 bg-background text-foreground hover:bg-background/90 font-semibold"
+                  >
+                    {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
+                    Start free trial
+                  </Button>
+                </div>
               </Card>
-            );
-          })}
-        </div>
+            )}
 
-        <p className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
-          <ShieldCheck className="h-4 w-4" /> Secured by Razorpay · GST invoice · Cancel anytime
-        </p>
+            {/* Plans */}
+            <div className="grid md:grid-cols-3 gap-4 mb-8">
+              {standard.map((p) => {
+                const Icon = p.plan_id === "premium" ? Crown : p.plan_id === "pro" ? Sparkles : ShieldCheck;
+                return (
+                  <Card
+                    key={p.plan_id}
+                    className={`rounded-3xl p-6 flex flex-col ${p.is_recommended ? "border-2 border-primary shadow-lg" : "border border-border"}`}
+                  >
+                    {p.is_recommended && (
+                      <Badge className="self-start mb-3 rounded-full">
+                        <Sparkles className="h-3 w-3 mr-1" /> Most popular
+                      </Badge>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-5 w-5 text-primary" />
+                      <h3 className="text-xl font-semibold tracking-tight">{p.plan_name}</h3>
+                    </div>
+                    <div className="mt-3 flex items-baseline gap-1">
+                      <span className="text-4xl font-bold">₹{p.price_monthly_inr ?? 0}</span>
+                      <span className="text-muted-foreground text-sm">/mo</span>
+                    </div>
+                    <ul className="mt-4 space-y-2 text-sm flex-1">
+                      {p.features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-primary mt-0.5" /> {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      asChild
+                      className={`mt-6 min-h-[48px] rounded-2xl ${p.is_recommended ? "" : "variant-outline"}`}
+                    >
+                      <Link to="/checkout/$planId" params={{ planId: p.plan_id }}>
+                        Choose {p.plan_name} <ArrowRight className="h-4 w-4 ml-1" />
+                      </Link>
+                    </Button>
+                  </Card>
+                );
+              })}
+            </div>
+
+            <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+              <ShieldCheck className="h-4 w-4" /> Secure payments · GST invoice · Cancel anytime
+            </p>
+          </>
+        )}
       </div>
     </main>
   );

@@ -7,8 +7,6 @@ export const ROUTES = {
   landing: "/",
   login: "/login",
   register: "/register",
-  forgotPassword: "/forgot-password",
-  resetPassword: "/reset-password",
   onboarding: "/onboarding",
 
   // Super Admin

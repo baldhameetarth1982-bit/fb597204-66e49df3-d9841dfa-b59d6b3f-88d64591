@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as VerifyPhoneRouteImport } from './routes/verify-phone'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -32,10 +33,7 @@ import { Route as OnboardingJoinRouteImport } from './routes/onboarding.join'
 import { Route as OnboardingCreateRouteImport } from './routes/onboarding.create'
 import { Route as CheckoutPlanIdRouteImport } from './routes/checkout.$planId'
 import { Route as ApiSupportChatRouteImport } from './routes/api/support-chat'
-import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
-import { Route as AuthPhoneOtpRouteImport } from './routes/_auth/phone-otp'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
-import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as SocietySocietyVisitorsRouteImport } from './routes/_society/society.visitors'
 import { Route as SocietySocietyVerificationsRouteImport } from './routes/_society/society.verifications'
 import { Route as SocietySocietyVehiclesRouteImport } from './routes/_society/society.vehicles'
@@ -102,6 +100,11 @@ import { Route as ResidentAppFeedPostIdRouteImport } from './routes/_resident/ap
 const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyPhoneRoute = VerifyPhoneRouteImport.update({
+  id: '/verify-phone',
+  path: '/verify-phone',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -210,24 +213,9 @@ const ApiSupportChatRoute = ApiSupportChatRouteImport.update({
   path: '/api/support-chat',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthPhoneOtpRoute = AuthPhoneOtpRouteImport.update({
-  id: '/phone-otp',
-  path: '/phone-otp',
-  getParentRoute: () => AuthRoute,
-} as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
   getParentRoute: () => AuthRoute,
 } as any)
 const SocietySocietyVisitorsRoute = SocietySocietyVisitorsRouteImport.update({
@@ -562,11 +550,9 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/verify-phone': typeof VerifyPhoneRoute
   '/welcome': typeof WelcomeRoute
-  '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
-  '/phone-otp': typeof AuthPhoneOtpRoute
-  '/reset-password': typeof AuthResetPasswordRoute
   '/api/support-chat': typeof ApiSupportChatRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/onboarding/create': typeof OnboardingCreateRoute
@@ -648,11 +634,9 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/verify-phone': typeof VerifyPhoneRoute
   '/welcome': typeof WelcomeRoute
-  '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
-  '/phone-otp': typeof AuthPhoneOtpRoute
-  '/reset-password': typeof AuthResetPasswordRoute
   '/api/support-chat': typeof ApiSupportChatRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/onboarding/create': typeof OnboardingCreateRoute
@@ -740,11 +724,9 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/verify-phone': typeof VerifyPhoneRoute
   '/welcome': typeof WelcomeRoute
-  '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
-  '/_auth/phone-otp': typeof AuthPhoneOtpRoute
-  '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/api/support-chat': typeof ApiSupportChatRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/onboarding/create': typeof OnboardingCreateRoute
@@ -829,11 +811,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/support'
     | '/terms'
+    | '/verify-phone'
     | '/welcome'
-    | '/forgot-password'
     | '/login'
-    | '/phone-otp'
-    | '/reset-password'
     | '/api/support-chat'
     | '/checkout/$planId'
     | '/onboarding/create'
@@ -915,11 +895,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/support'
     | '/terms'
+    | '/verify-phone'
     | '/welcome'
-    | '/forgot-password'
     | '/login'
-    | '/phone-otp'
-    | '/reset-password'
     | '/api/support-chat'
     | '/checkout/$planId'
     | '/onboarding/create'
@@ -1006,11 +984,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/support'
     | '/terms'
+    | '/verify-phone'
     | '/welcome'
-    | '/_auth/forgot-password'
     | '/_auth/login'
-    | '/_auth/phone-otp'
-    | '/_auth/reset-password'
     | '/api/support-chat'
     | '/checkout/$planId'
     | '/onboarding/create'
@@ -1098,6 +1074,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
+  VerifyPhoneRoute: typeof VerifyPhoneRoute
   WelcomeRoute: typeof WelcomeRoute
   ApiSupportChatRoute: typeof ApiSupportChatRoute
   CheckoutPlanIdRoute: typeof CheckoutPlanIdRoute
@@ -1112,6 +1089,13 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-phone': {
+      id: '/verify-phone'
+      path: '/verify-phone'
+      fullPath: '/verify-phone'
+      preLoaderRoute: typeof VerifyPhoneRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -1268,32 +1252,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSupportChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_auth/reset-password': {
-      id: '/_auth/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof AuthResetPasswordRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/_auth/phone-otp': {
-      id: '/_auth/phone-otp'
-      path: '/phone-otp'
-      fullPath: '/phone-otp'
-      preLoaderRoute: typeof AuthPhoneOtpRouteImport
-      parentRoute: typeof AuthRoute
-    }
     '/_auth/login': {
       id: '/_auth/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof AuthLoginRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/_auth/forgot-password': {
-      id: '/_auth/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
     '/_society/society/visitors': {
@@ -1758,17 +1721,11 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AuthRouteChildren {
-  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
-  AuthPhoneOtpRoute: typeof AuthPhoneOtpRoute
-  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
-  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
-  AuthPhoneOtpRoute: AuthPhoneOtpRoute,
-  AuthResetPasswordRoute: AuthResetPasswordRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
@@ -1942,6 +1899,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
+  VerifyPhoneRoute: VerifyPhoneRoute,
   WelcomeRoute: WelcomeRoute,
   ApiSupportChatRoute: ApiSupportChatRoute,
   CheckoutPlanIdRoute: CheckoutPlanIdRoute,
