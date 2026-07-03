@@ -24,7 +24,7 @@ import { RootErrorBoundary, installGlobalErrorLogger } from "@/components/shared
 import { ProtectedRoute } from "@/components/shared/AuthGuard";
 import { LegalFooter } from "@/components/shared/LegalFooter";
 import { PageTransition } from "@/components/system/PageTransition";
-import { useRef } from "react";
+
 
 function NotFoundComponent() {
   return (
@@ -239,14 +239,14 @@ function ProtectedShell({ pathname }: { pathname: string }) {
   // Resident shell: native mobile app frame, fixed bottom nav
   if (pathname.startsWith("/app") || pathname.startsWith("/onboarding")) {
     return (
-      <div className="min-h-[100dvh] w-full bg-secondary/40">
+      <div className="min-h-[100dvh] w-full bg-muted/40">
         <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[480px] flex-col bg-background shadow-xl">
           <AppHeader withSidebarTrigger={false} />
           <main
             className="flex-1"
             style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
           >
-            <Outlet />
+            <TransitionedOutlet />
           </main>
           {pathname.startsWith("/app") && <ResidentBottomNav />}
         </div>
@@ -257,7 +257,7 @@ function ProtectedShell({ pathname }: { pathname: string }) {
   if (pathname.startsWith("/society")) {
     return (
       <SidebarProvider>
-        <div className="min-h-[100dvh] w-full bg-secondary/40 md:bg-background">
+        <div className="min-h-[100dvh] w-full bg-muted/40 md:bg-background">
           <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[480px] bg-background shadow-xl md:max-w-none md:shadow-none">
             {/* Desktop sidebar only — hidden on mobile to make room for drawer */}
             <div className="hidden md:block">
@@ -269,7 +269,7 @@ function ProtectedShell({ pathname }: { pathname: string }) {
                 className="flex-1"
                 style={{ paddingBottom: "calc(40px + env(safe-area-inset-bottom))" }}
               >
-                <Outlet />
+                <TransitionedOutlet />
               </main>
               <SocietyFab />
             </div>
@@ -291,7 +291,7 @@ function DefaultShell() {
         <div className="flex-1 flex flex-col min-w-0">
           <AppHeader />
           <main className="flex-1">
-            <Outlet />
+            <TransitionedOutlet />
           </main>
           <LegalFooter />
         </div>
