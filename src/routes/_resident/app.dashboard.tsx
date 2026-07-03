@@ -1,6 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bell, ArrowRight, Receipt, ShieldCheck, ShieldAlert, Fingerprint, Inbox } from "lucide-react";
+import {
+  Bell, ArrowRight, Receipt, ShieldCheck, ShieldAlert, Fingerprint, Inbox,
+  Megaphone, LifeBuoy, FileText, Phone, Wallet, Building2,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -129,10 +132,26 @@ function ResidentDashboard() {
 
   return (
     <div className="px-4 md:px-8 py-6 md:py-10 max-w-3xl mx-auto space-y-6">
-      <header>
-        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Hi {firstName} 👋</h1>
-        <p className="mt-1 text-muted-foreground">Here's what needs your attention.</p>
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight truncate">
+            Hi {firstName} 👋
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground truncate">
+            Welcome back
+          </p>
+        </div>
+        <Link
+          to="/app/notifications"
+          className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-background hover:bg-accent"
+          aria-label="Notifications"
+        >
+          <Bell className="h-5 w-5" />
+        </Link>
       </header>
+
+      <QuickActions />
+
 
       <Card className="rounded-2xl bg-primary text-primary-foreground border-0">
         <CardContent className="p-6 md:p-8">
@@ -224,3 +243,39 @@ function ResidentDashboard() {
     </div>
   );
 }
+
+const QUICK_ACTIONS: Array<{ to: string; label: string; icon: any; tone: string }> = [
+  { to: "/app/dues", label: "Pay", icon: Wallet, tone: "bg-emerald-500/10 text-emerald-600" },
+  { to: "/app/bills", label: "Bills", icon: Receipt, tone: "bg-primary/10 text-primary" },
+  { to: "/app/visitors", label: "Visitors", icon: ShieldCheck, tone: "bg-sky-500/10 text-sky-600" },
+  { to: "/app/helpdesk", label: "Complaints", icon: LifeBuoy, tone: "bg-rose-500/10 text-rose-600" },
+  { to: "/app/comm", label: "Notices", icon: Megaphone, tone: "bg-amber-500/10 text-amber-600" },
+  { to: "/app/bylaws", label: "Documents", icon: FileText, tone: "bg-violet-500/10 text-violet-600" },
+  { to: "/app/comm", label: "Contacts", icon: Phone, tone: "bg-teal-500/10 text-teal-600" },
+  { to: "/app/emergency", label: "SOS", icon: ShieldAlert, tone: "bg-destructive/10 text-destructive" },
+];
+
+function QuickActions() {
+  return (
+    <section aria-label="Quick actions">
+      <div className="grid grid-cols-4 gap-2">
+        {QUICK_ACTIONS.map((a) => {
+          const Icon = a.icon;
+          return (
+            <Link
+              key={a.label}
+              to={a.to}
+              className="flex flex-col items-center gap-1.5 rounded-2xl border bg-card p-3 hover:bg-accent/40 transition-colors"
+            >
+              <span className={`h-10 w-10 rounded-xl grid place-items-center ${a.tone}`}>
+                <Icon className="h-5 w-5" />
+              </span>
+              <span className="text-[11px] font-medium text-center leading-tight">{a.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
