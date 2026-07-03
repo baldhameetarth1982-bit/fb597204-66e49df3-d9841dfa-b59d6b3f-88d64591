@@ -133,6 +133,34 @@ function BlocksPage() {
     setAiBusy(false);
   }
 
+  async function handleAutoDesign() {
+    if (!societyId) return;
+    const clean = autoRows
+      .map((r) => ({
+        name: (r.name || "").trim(),
+        floors: Math.max(1, Number(r.floors) || 1),
+        flats_per_floor: Math.max(1, Number(r.flats_per_floor) || 1),
+        start_floor: Number.isFinite(Number(r.start_floor)) ? Number(r.start_floor) : 1,
+      }))
+      .filter((r) => r.name.length > 0);
+    if (clean.length === 0) { toast.error("Add at least one block with a name"); return; }
+    setAutoBusy(true);
+    try {
+      const { data, error } = await (supabase.rpc as any)("bulk_generate_society_hierarchy", {
+        _society_id: societyId,
+        _blocks: clean,
+      });
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      toast.success(`Created ${row?.blocks_created ?? 0} block(s) and ${row?.flats_created ?? 0} flat(s)`);
+      setAutoOpen(false);
+      void fetchBlocks(societyId);
+    } catch (e: any) {
+      toast.error(e.message ?? "Auto-design failed");
+    }
+    setAutoBusy(false);
+  }
+
   if (!sidLoading && !societyId) {
     return (
       <PageShell>
