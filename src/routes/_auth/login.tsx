@@ -8,12 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { PhoneOtpForm } from "@/components/auth/PhoneOtpForm";
 import { TruecallerButton } from "@/components/auth/TruecallerButton";
-import { getCapabilities, startTruecallerAuth } from "@/lib/auth-service";
+import {
+  getCapabilities,
+  signInWithGoogleFirebase,
+  signInWithVerifiedPhone,
+  startTruecallerAuth,
+} from "@/lib/auth-service";
 
 export const Route = createFileRoute("/_auth/login")({
   head: () => ({
