@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Receipt, ShieldCheck, LifeBuoy, Megaphone, FileText, Inbox, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { markNotificationsSeen, getLastSeen } from "@/hooks/useUnreadNotifications";
 
 export const Route = createFileRoute("/_resident/app/notifications")({
   head: () => ({
@@ -54,6 +55,8 @@ function NotificationCenter() {
   const { profile } = useAuth();
   const societyId = profile?.society_id;
   const [q, setQ] = useState("");
+  const [lastSeen] = useState(() => getLastSeen());
+  const qc = useQueryClient();
 
   const { data = [], isLoading } = useQuery({
     enabled: !!societyId,
@@ -70,6 +73,25 @@ function NotificationCenter() {
       return (data ?? []) as Notif[];
     },
   });
+
+  useEffect(() => {
+    markNotificationsSeen();
+  }, []);
+
+  useEffect(() => {
+    if (!societyId) return;
+    const channel = supabase
+      .channel(`notifs-${societyId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "audit_log", filter: `society_id=eq.${societyId}` },
+        () => qc.invalidateQueries({ queryKey: ["notifications", societyId] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [societyId, qc]);
 
   const filtered = useMemo(() => {
     if (!q) return data;
@@ -147,9 +169,13 @@ function NotificationCenter() {
                             {amt ? ` · ₹${amt}` : ""}
                           </p>
                         </div>
-                        <Badge variant="outline" className="rounded-full text-[10px] shrink-0">
-                          {n.target_table ?? "event"}
-                        </Badge>
+                        {n.created_at > lastSeen ? (
+                          <Badge className="rounded-full text-[10px] shrink-0 bg-primary text-primary-foreground">New</Badge>
+                        ) : (
+                          <Badge variant="outline" className="rounded-full text-[10px] shrink-0">
+                            {n.target_table ?? "event"}
+                          </Badge>
+                        )}
                       </CardContent>
                     </Card>
                   </Link>
