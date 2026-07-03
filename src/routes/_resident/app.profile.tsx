@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useServerFn } from "@tanstack/react-start";
 import { getPartnerSummary, requestWithdrawal } from "@/lib/referral.functions";
 import { toast } from "sonner";
+import { LanguageSelector } from "@/components/shared/LanguageSelector";
 
 export const Route = createFileRoute("/_resident/app/profile")({
   head: () => ({ meta: [{ title: "My profile — SocioHub" }] }),
@@ -57,7 +58,11 @@ function ProfilePage() {
 
   return (
     <div className="px-5 py-6 space-y-6 pb-24">
-      <h1 className="text-2xl font-semibold tracking-tight">My profile</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight">My profile</h1>
+        <LanguageSelector compact />
+      </div>
+
 
       <Card className="rounded-2xl">
         <CardContent className="p-6 flex items-center gap-4">

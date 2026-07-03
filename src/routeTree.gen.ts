@@ -39,6 +39,7 @@ import { Route as SocietySocietyVerificationsRouteImport } from './routes/_socie
 import { Route as SocietySocietyVehiclesRouteImport } from './routes/_society/society.vehicles'
 import { Route as SocietySocietyTeamRouteImport } from './routes/_society/society.team'
 import { Route as SocietySocietySetupRouteImport } from './routes/_society/society.setup'
+import { Route as SocietySocietySearchRouteImport } from './routes/_society/society.search'
 import { Route as SocietySocietyResidentsRouteImport } from './routes/_society/society.residents'
 import { Route as SocietySocietyReportsRouteImport } from './routes/_society/society.reports'
 import { Route as SocietySocietyPollsRouteImport } from './routes/_society/society.polls'
@@ -63,6 +64,7 @@ import { Route as SocietySocietyBlocksRouteImport } from './routes/_society/soci
 import { Route as SocietySocietyBillingSettingsRouteImport } from './routes/_society/society.billing-settings'
 import { Route as SocietySocietyBillingRouteImport } from './routes/_society/society.billing'
 import { Route as SocietySocietyBillStudioRouteImport } from './routes/_society/society.bill-studio'
+import { Route as SocietySocietyAutomationsRouteImport } from './routes/_society/society.automations'
 import { Route as SocietySocietyApprovalsRouteImport } from './routes/_society/society.approvals'
 import { Route as SocietySocietyAnnouncementsRouteImport } from './routes/_society/society.announcements'
 import { Route as SocietySocietyAccountsRouteImport } from './routes/_society/society.accounts'
@@ -70,6 +72,7 @@ import { Route as ResidentAppVisitorsRouteImport } from './routes/_resident/app.
 import { Route as ResidentAppVehiclesRouteImport } from './routes/_resident/app.vehicles'
 import { Route as ResidentAppTrustRouteImport } from './routes/_resident/app.trust'
 import { Route as ResidentAppServicesRouteImport } from './routes/_resident/app.services'
+import { Route as ResidentAppSearchRouteImport } from './routes/_resident/app.search'
 import { Route as ResidentAppProfileRouteImport } from './routes/_resident/app.profile'
 import { Route as ResidentAppPollsRouteImport } from './routes/_resident/app.polls'
 import { Route as ResidentAppPlanRequiredRouteImport } from './routes/_resident/app.plan-required'
@@ -251,6 +254,11 @@ const SocietySocietySetupRoute = SocietySocietySetupRouteImport.update({
   path: '/society/setup',
   getParentRoute: () => SocietyRoute,
 } as any)
+const SocietySocietySearchRoute = SocietySocietySearchRouteImport.update({
+  id: '/society/search',
+  path: '/society/search',
+  getParentRoute: () => SocietyRoute,
+} as any)
 const SocietySocietyResidentsRoute = SocietySocietyResidentsRouteImport.update({
   id: '/society/residents',
   path: '/society/residents',
@@ -379,6 +387,12 @@ const SocietySocietyBillStudioRoute =
     path: '/society/bill-studio',
     getParentRoute: () => SocietyRoute,
   } as any)
+const SocietySocietyAutomationsRoute =
+  SocietySocietyAutomationsRouteImport.update({
+    id: '/society/automations',
+    path: '/society/automations',
+    getParentRoute: () => SocietyRoute,
+  } as any)
 const SocietySocietyApprovalsRoute = SocietySocietyApprovalsRouteImport.update({
   id: '/society/approvals',
   path: '/society/approvals',
@@ -413,6 +427,11 @@ const ResidentAppTrustRoute = ResidentAppTrustRouteImport.update({
 const ResidentAppServicesRoute = ResidentAppServicesRouteImport.update({
   id: '/app/services',
   path: '/app/services',
+  getParentRoute: () => ResidentRoute,
+} as any)
+const ResidentAppSearchRoute = ResidentAppSearchRouteImport.update({
+  id: '/app/search',
+  path: '/app/search',
   getParentRoute: () => ResidentRoute,
 } as any)
 const ResidentAppProfileRoute = ResidentAppProfileRouteImport.update({
@@ -635,6 +654,7 @@ export interface FileRoutesByFullPath {
   '/app/plan-required': typeof ResidentAppPlanRequiredRoute
   '/app/polls': typeof ResidentAppPollsRoute
   '/app/profile': typeof ResidentAppProfileRoute
+  '/app/search': typeof ResidentAppSearchRoute
   '/app/services': typeof ResidentAppServicesRoute
   '/app/trust': typeof ResidentAppTrustRoute
   '/app/vehicles': typeof ResidentAppVehiclesRoute
@@ -642,6 +662,7 @@ export interface FileRoutesByFullPath {
   '/society/accounts': typeof SocietySocietyAccountsRoute
   '/society/announcements': typeof SocietySocietyAnnouncementsRoute
   '/society/approvals': typeof SocietySocietyApprovalsRoute
+  '/society/automations': typeof SocietySocietyAutomationsRoute
   '/society/bill-studio': typeof SocietySocietyBillStudioRoute
   '/society/billing': typeof SocietySocietyBillingRoute
   '/society/billing-settings': typeof SocietySocietyBillingSettingsRoute
@@ -666,6 +687,7 @@ export interface FileRoutesByFullPath {
   '/society/polls': typeof SocietySocietyPollsRoute
   '/society/reports': typeof SocietySocietyReportsRoute
   '/society/residents': typeof SocietySocietyResidentsRouteWithChildren
+  '/society/search': typeof SocietySocietySearchRoute
   '/society/setup': typeof SocietySocietySetupRoute
   '/society/team': typeof SocietySocietyTeamRoute
   '/society/vehicles': typeof SocietySocietyVehiclesRoute
@@ -726,6 +748,7 @@ export interface FileRoutesByTo {
   '/app/plan-required': typeof ResidentAppPlanRequiredRoute
   '/app/polls': typeof ResidentAppPollsRoute
   '/app/profile': typeof ResidentAppProfileRoute
+  '/app/search': typeof ResidentAppSearchRoute
   '/app/services': typeof ResidentAppServicesRoute
   '/app/trust': typeof ResidentAppTrustRoute
   '/app/vehicles': typeof ResidentAppVehiclesRoute
@@ -733,6 +756,7 @@ export interface FileRoutesByTo {
   '/society/accounts': typeof SocietySocietyAccountsRoute
   '/society/announcements': typeof SocietySocietyAnnouncementsRoute
   '/society/approvals': typeof SocietySocietyApprovalsRoute
+  '/society/automations': typeof SocietySocietyAutomationsRoute
   '/society/bill-studio': typeof SocietySocietyBillStudioRoute
   '/society/billing': typeof SocietySocietyBillingRoute
   '/society/billing-settings': typeof SocietySocietyBillingSettingsRoute
@@ -757,6 +781,7 @@ export interface FileRoutesByTo {
   '/society/polls': typeof SocietySocietyPollsRoute
   '/society/reports': typeof SocietySocietyReportsRoute
   '/society/residents': typeof SocietySocietyResidentsRouteWithChildren
+  '/society/search': typeof SocietySocietySearchRoute
   '/society/setup': typeof SocietySocietySetupRoute
   '/society/team': typeof SocietySocietyTeamRoute
   '/society/vehicles': typeof SocietySocietyVehiclesRoute
@@ -823,6 +848,7 @@ export interface FileRoutesById {
   '/_resident/app/plan-required': typeof ResidentAppPlanRequiredRoute
   '/_resident/app/polls': typeof ResidentAppPollsRoute
   '/_resident/app/profile': typeof ResidentAppProfileRoute
+  '/_resident/app/search': typeof ResidentAppSearchRoute
   '/_resident/app/services': typeof ResidentAppServicesRoute
   '/_resident/app/trust': typeof ResidentAppTrustRoute
   '/_resident/app/vehicles': typeof ResidentAppVehiclesRoute
@@ -830,6 +856,7 @@ export interface FileRoutesById {
   '/_society/society/accounts': typeof SocietySocietyAccountsRoute
   '/_society/society/announcements': typeof SocietySocietyAnnouncementsRoute
   '/_society/society/approvals': typeof SocietySocietyApprovalsRoute
+  '/_society/society/automations': typeof SocietySocietyAutomationsRoute
   '/_society/society/bill-studio': typeof SocietySocietyBillStudioRoute
   '/_society/society/billing': typeof SocietySocietyBillingRoute
   '/_society/society/billing-settings': typeof SocietySocietyBillingSettingsRoute
@@ -854,6 +881,7 @@ export interface FileRoutesById {
   '/_society/society/polls': typeof SocietySocietyPollsRoute
   '/_society/society/reports': typeof SocietySocietyReportsRoute
   '/_society/society/residents': typeof SocietySocietyResidentsRouteWithChildren
+  '/_society/society/search': typeof SocietySocietySearchRoute
   '/_society/society/setup': typeof SocietySocietySetupRoute
   '/_society/society/team': typeof SocietySocietyTeamRoute
   '/_society/society/vehicles': typeof SocietySocietyVehiclesRoute
@@ -917,6 +945,7 @@ export interface FileRouteTypes {
     | '/app/plan-required'
     | '/app/polls'
     | '/app/profile'
+    | '/app/search'
     | '/app/services'
     | '/app/trust'
     | '/app/vehicles'
@@ -924,6 +953,7 @@ export interface FileRouteTypes {
     | '/society/accounts'
     | '/society/announcements'
     | '/society/approvals'
+    | '/society/automations'
     | '/society/bill-studio'
     | '/society/billing'
     | '/society/billing-settings'
@@ -948,6 +978,7 @@ export interface FileRouteTypes {
     | '/society/polls'
     | '/society/reports'
     | '/society/residents'
+    | '/society/search'
     | '/society/setup'
     | '/society/team'
     | '/society/vehicles'
@@ -1008,6 +1039,7 @@ export interface FileRouteTypes {
     | '/app/plan-required'
     | '/app/polls'
     | '/app/profile'
+    | '/app/search'
     | '/app/services'
     | '/app/trust'
     | '/app/vehicles'
@@ -1015,6 +1047,7 @@ export interface FileRouteTypes {
     | '/society/accounts'
     | '/society/announcements'
     | '/society/approvals'
+    | '/society/automations'
     | '/society/bill-studio'
     | '/society/billing'
     | '/society/billing-settings'
@@ -1039,6 +1072,7 @@ export interface FileRouteTypes {
     | '/society/polls'
     | '/society/reports'
     | '/society/residents'
+    | '/society/search'
     | '/society/setup'
     | '/society/team'
     | '/society/vehicles'
@@ -1104,6 +1138,7 @@ export interface FileRouteTypes {
     | '/_resident/app/plan-required'
     | '/_resident/app/polls'
     | '/_resident/app/profile'
+    | '/_resident/app/search'
     | '/_resident/app/services'
     | '/_resident/app/trust'
     | '/_resident/app/vehicles'
@@ -1111,6 +1146,7 @@ export interface FileRouteTypes {
     | '/_society/society/accounts'
     | '/_society/society/announcements'
     | '/_society/society/approvals'
+    | '/_society/society/automations'
     | '/_society/society/bill-studio'
     | '/_society/society/billing'
     | '/_society/society/billing-settings'
@@ -1135,6 +1171,7 @@ export interface FileRouteTypes {
     | '/_society/society/polls'
     | '/_society/society/reports'
     | '/_society/society/residents'
+    | '/_society/society/search'
     | '/_society/society/setup'
     | '/_society/society/team'
     | '/_society/society/vehicles'
@@ -1386,6 +1423,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SocietySocietySetupRouteImport
       parentRoute: typeof SocietyRoute
     }
+    '/_society/society/search': {
+      id: '/_society/society/search'
+      path: '/society/search'
+      fullPath: '/society/search'
+      preLoaderRoute: typeof SocietySocietySearchRouteImport
+      parentRoute: typeof SocietyRoute
+    }
     '/_society/society/residents': {
       id: '/_society/society/residents'
       path: '/society/residents'
@@ -1554,6 +1598,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SocietySocietyBillStudioRouteImport
       parentRoute: typeof SocietyRoute
     }
+    '/_society/society/automations': {
+      id: '/_society/society/automations'
+      path: '/society/automations'
+      fullPath: '/society/automations'
+      preLoaderRoute: typeof SocietySocietyAutomationsRouteImport
+      parentRoute: typeof SocietyRoute
+    }
     '/_society/society/approvals': {
       id: '/_society/society/approvals'
       path: '/society/approvals'
@@ -1601,6 +1652,13 @@ declare module '@tanstack/react-router' {
       path: '/app/services'
       fullPath: '/app/services'
       preLoaderRoute: typeof ResidentAppServicesRouteImport
+      parentRoute: typeof ResidentRoute
+    }
+    '/_resident/app/search': {
+      id: '/_resident/app/search'
+      path: '/app/search'
+      fullPath: '/app/search'
+      preLoaderRoute: typeof ResidentAppSearchRouteImport
       parentRoute: typeof ResidentRoute
     }
     '/_resident/app/profile': {
@@ -1903,6 +1961,7 @@ interface ResidentRouteChildren {
   ResidentAppPlanRequiredRoute: typeof ResidentAppPlanRequiredRoute
   ResidentAppPollsRoute: typeof ResidentAppPollsRoute
   ResidentAppProfileRoute: typeof ResidentAppProfileRoute
+  ResidentAppSearchRoute: typeof ResidentAppSearchRoute
   ResidentAppServicesRoute: typeof ResidentAppServicesRoute
   ResidentAppTrustRoute: typeof ResidentAppTrustRoute
   ResidentAppVehiclesRoute: typeof ResidentAppVehiclesRoute
@@ -1929,6 +1988,7 @@ const ResidentRouteChildren: ResidentRouteChildren = {
   ResidentAppPlanRequiredRoute: ResidentAppPlanRequiredRoute,
   ResidentAppPollsRoute: ResidentAppPollsRoute,
   ResidentAppProfileRoute: ResidentAppProfileRoute,
+  ResidentAppSearchRoute: ResidentAppSearchRoute,
   ResidentAppServicesRoute: ResidentAppServicesRoute,
   ResidentAppTrustRoute: ResidentAppTrustRoute,
   ResidentAppVehiclesRoute: ResidentAppVehiclesRoute,
@@ -1957,6 +2017,7 @@ interface SocietyRouteChildren {
   SocietySocietyAccountsRoute: typeof SocietySocietyAccountsRoute
   SocietySocietyAnnouncementsRoute: typeof SocietySocietyAnnouncementsRoute
   SocietySocietyApprovalsRoute: typeof SocietySocietyApprovalsRoute
+  SocietySocietyAutomationsRoute: typeof SocietySocietyAutomationsRoute
   SocietySocietyBillStudioRoute: typeof SocietySocietyBillStudioRoute
   SocietySocietyBillingRoute: typeof SocietySocietyBillingRoute
   SocietySocietyBillingSettingsRoute: typeof SocietySocietyBillingSettingsRoute
@@ -1981,6 +2042,7 @@ interface SocietyRouteChildren {
   SocietySocietyPollsRoute: typeof SocietySocietyPollsRoute
   SocietySocietyReportsRoute: typeof SocietySocietyReportsRoute
   SocietySocietyResidentsRoute: typeof SocietySocietyResidentsRouteWithChildren
+  SocietySocietySearchRoute: typeof SocietySocietySearchRoute
   SocietySocietySetupRoute: typeof SocietySocietySetupRoute
   SocietySocietyTeamRoute: typeof SocietySocietyTeamRoute
   SocietySocietyVehiclesRoute: typeof SocietySocietyVehiclesRoute
@@ -1992,6 +2054,7 @@ const SocietyRouteChildren: SocietyRouteChildren = {
   SocietySocietyAccountsRoute: SocietySocietyAccountsRoute,
   SocietySocietyAnnouncementsRoute: SocietySocietyAnnouncementsRoute,
   SocietySocietyApprovalsRoute: SocietySocietyApprovalsRoute,
+  SocietySocietyAutomationsRoute: SocietySocietyAutomationsRoute,
   SocietySocietyBillStudioRoute: SocietySocietyBillStudioRoute,
   SocietySocietyBillingRoute: SocietySocietyBillingRoute,
   SocietySocietyBillingSettingsRoute: SocietySocietyBillingSettingsRoute,
@@ -2016,6 +2079,7 @@ const SocietyRouteChildren: SocietyRouteChildren = {
   SocietySocietyPollsRoute: SocietySocietyPollsRoute,
   SocietySocietyReportsRoute: SocietySocietyReportsRoute,
   SocietySocietyResidentsRoute: SocietySocietyResidentsRouteWithChildren,
+  SocietySocietySearchRoute: SocietySocietySearchRoute,
   SocietySocietySetupRoute: SocietySocietySetupRoute,
   SocietySocietyTeamRoute: SocietySocietyTeamRoute,
   SocietySocietyVehiclesRoute: SocietySocietyVehiclesRoute,
@@ -2075,13 +2139,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
