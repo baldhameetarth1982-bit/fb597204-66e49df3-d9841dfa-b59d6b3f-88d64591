@@ -27,7 +27,7 @@ export async function createSocietyFull(input: CreateSocietyInput) {
       _state: input.state ?? null,
       _pincode: input.pincode ?? null,
       _logo_url: input.logo_url ?? null,
-      _total_units: input.total_units ?? null,
+      _total_units: (input.total_units ?? undefined) as any,
       _referral_code: input.referral_code ?? null,
     })
     .single();
