@@ -318,6 +318,88 @@ function BlocksPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Auto Design dialog — structured no-AI society builder */}
+      <Dialog open={autoOpen} onOpenChange={setAutoOpen}>
+        <DialogContent className="sm:max-w-2xl rounded-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-primary" /> Auto Design society
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Enter each block name, number of floors, and flats per floor. We'll create the entire hierarchy automatically. You can edit anything afterwards.
+            </p>
+            <div className="hidden sm:grid grid-cols-12 gap-2 text-[11px] font-medium text-muted-foreground uppercase tracking-wider px-1">
+              <div className="col-span-4">Block name</div>
+              <div className="col-span-2">Floors</div>
+              <div className="col-span-3">Flats / floor</div>
+              <div className="col-span-2">Start floor</div>
+              <div className="col-span-1"></div>
+            </div>
+            <div className="space-y-2">
+              {autoRows.map((r, i) => (
+                <div key={i} className="grid grid-cols-12 gap-2 items-center">
+                  <Input
+                    className="col-span-12 sm:col-span-4"
+                    placeholder="A"
+                    value={r.name}
+                    onChange={(e) => setAutoRows((rows) => rows.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))}
+                  />
+                  <Input
+                    className="col-span-4 sm:col-span-2"
+                    type="number" min={1} max={100}
+                    value={r.floors}
+                    onChange={(e) => setAutoRows((rows) => rows.map((x, idx) => idx === i ? { ...x, floors: Number(e.target.value) || 1 } : x))}
+                  />
+                  <Input
+                    className="col-span-4 sm:col-span-3"
+                    type="number" min={1} max={50}
+                    value={r.flats_per_floor}
+                    onChange={(e) => setAutoRows((rows) => rows.map((x, idx) => idx === i ? { ...x, flats_per_floor: Number(e.target.value) || 1 } : x))}
+                  />
+                  <Input
+                    className="col-span-3 sm:col-span-2"
+                    type="number" min={0} max={100}
+                    value={r.start_floor}
+                    onChange={(e) => setAutoRows((rows) => rows.map((x, idx) => idx === i ? { ...x, start_floor: Number(e.target.value) || 0 } : x))}
+                  />
+                  <Button
+                    variant="ghost" size="icon"
+                    className="col-span-1 text-destructive"
+                    onClick={() => setAutoRows((rows) => rows.length > 1 ? rows.filter((_, idx) => idx !== i) : rows)}
+                    aria-label="Remove block"
+                    disabled={autoRows.length <= 1}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              className="rounded-xl w-full"
+              onClick={() => setAutoRows((rows) => [...rows, { name: String.fromCharCode(65 + rows.length), floors: 4, flats_per_floor: 4, start_floor: 1 }])}
+            >
+              <Plus className="h-4 w-4 mr-2" /> Add another block
+            </Button>
+            <div className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">
+              Flat numbering pattern: <span className="font-mono font-medium">Block-FloorFlat</span> — e.g. block <span className="font-mono">A</span>, floor <span className="font-mono">1</span>, flat 2 becomes <span className="font-mono">A-102</span>. Existing blocks and flats with the same name are skipped.
+            </div>
+            <div className="rounded-xl bg-primary/5 p-3 text-xs text-foreground">
+              Total: <b>{autoRows.reduce((s, r) => s + (Number(r.floors) || 0) * (Number(r.flats_per_floor) || 0), 0)}</b> flats across <b>{autoRows.filter((r) => r.name.trim()).length}</b> block(s).
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setAutoOpen(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={handleAutoDesign} disabled={autoBusy} className="rounded-xl">
+              {autoBusy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wand2 className="h-4 w-4 mr-2" />}
+              Build society
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }
