@@ -140,6 +140,36 @@
   --sidebar-accent-foreground: oklch(0.21 0.034 264);
   --sidebar-border: oklch(0.87 0.013 256);
   --sidebar-ring: oklch(0.52 0.094 192);
+
+  /* Semantic containers */
+  --primary-container: oklch(0.94 0.03 192);
+  --primary-container-foreground: oklch(0.28 0.07 192);
+  --success-container: oklch(0.94 0.05 158);
+  --success-container-foreground: oklch(0.32 0.11 158);
+  --warning-container: oklch(0.96 0.08 85);
+  --warning-container-foreground: oklch(0.36 0.12 70);
+  --danger-container: oklch(0.95 0.04 30);
+  --danger-container-foreground: oklch(0.42 0.18 30);
+  --info: oklch(0.55 0.15 230);
+  --info-foreground: oklch(1 0 0);
+  --info-container: oklch(0.94 0.04 230);
+  --info-container-foreground: oklch(0.34 0.14 230);
+  --surface: oklch(0.985 0.002 247);
+  --surface-2: oklch(0.97 0.003 247);
+  --outline: oklch(0.78 0.015 256);
+
+  /* Elevation (soft, no backdrop-filter). */
+  --elevation-1: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 1px rgb(15 23 42 / 0.03);
+  --elevation-2: 0 2px 6px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.04);
+  --elevation-3: 0 8px 20px -6px rgb(15 23 42 / 0.10), 0 2px 6px rgb(15 23 42 / 0.06);
+  --elevation-4: 0 20px 40px -12px rgb(15 23 42 / 0.18), 0 4px 10px rgb(15 23 42 / 0.08);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
 }
 
 /* ---------- DARK (opt-in via .dark on <html>) ---------- */
