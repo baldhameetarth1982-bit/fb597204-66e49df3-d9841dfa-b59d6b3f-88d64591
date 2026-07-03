@@ -94,11 +94,17 @@ import { Route as ResidentAppActivityRouteImport } from './routes/_resident/app.
 import { Route as ResidentAppAchievementsRouteImport } from './routes/_resident/app.achievements'
 import { Route as AdminAdminWithdrawalsRouteImport } from './routes/_admin/admin.withdrawals'
 import { Route as AdminAdminUsersRouteImport } from './routes/_admin/admin.users'
+import { Route as AdminAdminSocietiesRouteImport } from './routes/_admin/admin.societies'
+import { Route as AdminAdminSettingsRouteImport } from './routes/_admin/admin.settings'
+import { Route as AdminAdminSecurityRouteImport } from './routes/_admin/admin.security'
+import { Route as AdminAdminSearchRouteImport } from './routes/_admin/admin.search'
+import { Route as AdminAdminRevenueRouteImport } from './routes/_admin/admin.revenue'
 import { Route as AdminAdminRazorpayRouteImport } from './routes/_admin/admin.razorpay'
 import { Route as AdminAdminPlansRouteImport } from './routes/_admin/admin.plans'
 import { Route as AdminAdminIncomeRouteImport } from './routes/_admin/admin.income'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin/admin.dashboard'
 import { Route as AdminAdminCustomPlansRouteImport } from './routes/_admin/admin.custom-plans'
+import { Route as AdminAdminAuditRouteImport } from './routes/_admin/admin.audit'
 import { Route as AdminAdminAdsRouteImport } from './routes/_admin/admin.ads'
 import { Route as ApiPublicHooksRunBillingRouteImport } from './routes/api/public/hooks/run-billing'
 import { Route as ApiPublicHooksRazorpayRouteImport } from './routes/api/public/hooks/razorpay'
@@ -540,6 +546,31 @@ const AdminAdminUsersRoute = AdminAdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAdminSocietiesRoute = AdminAdminSocietiesRouteImport.update({
+  id: '/admin/societies',
+  path: '/admin/societies',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAdminSettingsRoute = AdminAdminSettingsRouteImport.update({
+  id: '/admin/settings',
+  path: '/admin/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAdminSecurityRoute = AdminAdminSecurityRouteImport.update({
+  id: '/admin/security',
+  path: '/admin/security',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAdminSearchRoute = AdminAdminSearchRouteImport.update({
+  id: '/admin/search',
+  path: '/admin/search',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAdminRevenueRoute = AdminAdminRevenueRouteImport.update({
+  id: '/admin/revenue',
+  path: '/admin/revenue',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAdminRazorpayRoute = AdminAdminRazorpayRouteImport.update({
   id: '/admin/razorpay',
   path: '/admin/razorpay',
@@ -563,6 +594,11 @@ const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
 const AdminAdminCustomPlansRoute = AdminAdminCustomPlansRouteImport.update({
   id: '/admin/custom-plans',
   path: '/admin/custom-plans',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAdminAuditRoute = AdminAdminAuditRouteImport.update({
+  id: '/admin/audit',
+  path: '/admin/audit',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminAdminAdsRoute = AdminAdminAdsRouteImport.update({
@@ -628,11 +664,17 @@ export interface FileRoutesByFullPath {
   '/onboarding/plan': typeof OnboardingPlanRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/admin/ads': typeof AdminAdminAdsRoute
+  '/admin/audit': typeof AdminAdminAuditRoute
   '/admin/custom-plans': typeof AdminAdminCustomPlansRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/income': typeof AdminAdminIncomeRoute
   '/admin/plans': typeof AdminAdminPlansRoute
   '/admin/razorpay': typeof AdminAdminRazorpayRoute
+  '/admin/revenue': typeof AdminAdminRevenueRoute
+  '/admin/search': typeof AdminAdminSearchRoute
+  '/admin/security': typeof AdminAdminSecurityRoute
+  '/admin/settings': typeof AdminAdminSettingsRoute
+  '/admin/societies': typeof AdminAdminSocietiesRoute
   '/admin/users': typeof AdminAdminUsersRoute
   '/admin/withdrawals': typeof AdminAdminWithdrawalsRoute
   '/app/achievements': typeof ResidentAppAchievementsRoute
@@ -722,11 +764,17 @@ export interface FileRoutesByTo {
   '/onboarding/plan': typeof OnboardingPlanRoute
   '/onboarding': typeof OnboardingIndexRoute
   '/admin/ads': typeof AdminAdminAdsRoute
+  '/admin/audit': typeof AdminAdminAuditRoute
   '/admin/custom-plans': typeof AdminAdminCustomPlansRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/income': typeof AdminAdminIncomeRoute
   '/admin/plans': typeof AdminAdminPlansRoute
   '/admin/razorpay': typeof AdminAdminRazorpayRoute
+  '/admin/revenue': typeof AdminAdminRevenueRoute
+  '/admin/search': typeof AdminAdminSearchRoute
+  '/admin/security': typeof AdminAdminSecurityRoute
+  '/admin/settings': typeof AdminAdminSettingsRoute
+  '/admin/societies': typeof AdminAdminSocietiesRoute
   '/admin/users': typeof AdminAdminUsersRoute
   '/admin/withdrawals': typeof AdminAdminWithdrawalsRoute
   '/app/achievements': typeof ResidentAppAchievementsRoute
@@ -822,11 +870,17 @@ export interface FileRoutesById {
   '/onboarding/plan': typeof OnboardingPlanRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/_admin/admin/ads': typeof AdminAdminAdsRoute
+  '/_admin/admin/audit': typeof AdminAdminAuditRoute
   '/_admin/admin/custom-plans': typeof AdminAdminCustomPlansRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
   '/_admin/admin/income': typeof AdminAdminIncomeRoute
   '/_admin/admin/plans': typeof AdminAdminPlansRoute
   '/_admin/admin/razorpay': typeof AdminAdminRazorpayRoute
+  '/_admin/admin/revenue': typeof AdminAdminRevenueRoute
+  '/_admin/admin/search': typeof AdminAdminSearchRoute
+  '/_admin/admin/security': typeof AdminAdminSecurityRoute
+  '/_admin/admin/settings': typeof AdminAdminSettingsRoute
+  '/_admin/admin/societies': typeof AdminAdminSocietiesRoute
   '/_admin/admin/users': typeof AdminAdminUsersRoute
   '/_admin/admin/withdrawals': typeof AdminAdminWithdrawalsRoute
   '/_resident/app/achievements': typeof ResidentAppAchievementsRoute
@@ -919,11 +973,17 @@ export interface FileRouteTypes {
     | '/onboarding/plan'
     | '/onboarding/'
     | '/admin/ads'
+    | '/admin/audit'
     | '/admin/custom-plans'
     | '/admin/dashboard'
     | '/admin/income'
     | '/admin/plans'
     | '/admin/razorpay'
+    | '/admin/revenue'
+    | '/admin/search'
+    | '/admin/security'
+    | '/admin/settings'
+    | '/admin/societies'
     | '/admin/users'
     | '/admin/withdrawals'
     | '/app/achievements'
@@ -1013,11 +1073,17 @@ export interface FileRouteTypes {
     | '/onboarding/plan'
     | '/onboarding'
     | '/admin/ads'
+    | '/admin/audit'
     | '/admin/custom-plans'
     | '/admin/dashboard'
     | '/admin/income'
     | '/admin/plans'
     | '/admin/razorpay'
+    | '/admin/revenue'
+    | '/admin/search'
+    | '/admin/security'
+    | '/admin/settings'
+    | '/admin/societies'
     | '/admin/users'
     | '/admin/withdrawals'
     | '/app/achievements'
@@ -1112,11 +1178,17 @@ export interface FileRouteTypes {
     | '/onboarding/plan'
     | '/onboarding/'
     | '/_admin/admin/ads'
+    | '/_admin/admin/audit'
     | '/_admin/admin/custom-plans'
     | '/_admin/admin/dashboard'
     | '/_admin/admin/income'
     | '/_admin/admin/plans'
     | '/_admin/admin/razorpay'
+    | '/_admin/admin/revenue'
+    | '/_admin/admin/search'
+    | '/_admin/admin/security'
+    | '/_admin/admin/settings'
+    | '/_admin/admin/societies'
     | '/_admin/admin/users'
     | '/_admin/admin/withdrawals'
     | '/_resident/app/achievements'
@@ -1808,6 +1880,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/admin/societies': {
+      id: '/_admin/admin/societies'
+      path: '/admin/societies'
+      fullPath: '/admin/societies'
+      preLoaderRoute: typeof AdminAdminSocietiesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/admin/settings': {
+      id: '/_admin/admin/settings'
+      path: '/admin/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminAdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/admin/security': {
+      id: '/_admin/admin/security'
+      path: '/admin/security'
+      fullPath: '/admin/security'
+      preLoaderRoute: typeof AdminAdminSecurityRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/admin/search': {
+      id: '/_admin/admin/search'
+      path: '/admin/search'
+      fullPath: '/admin/search'
+      preLoaderRoute: typeof AdminAdminSearchRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/admin/revenue': {
+      id: '/_admin/admin/revenue'
+      path: '/admin/revenue'
+      fullPath: '/admin/revenue'
+      preLoaderRoute: typeof AdminAdminRevenueRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/admin/razorpay': {
       id: '/_admin/admin/razorpay'
       path: '/admin/razorpay'
@@ -1841,6 +1948,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/custom-plans'
       fullPath: '/admin/custom-plans'
       preLoaderRoute: typeof AdminAdminCustomPlansRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/admin/audit': {
+      id: '/_admin/admin/audit'
+      path: '/admin/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAdminAuditRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/admin/ads': {
@@ -1897,22 +2011,34 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAdminAdsRoute: typeof AdminAdminAdsRoute
+  AdminAdminAuditRoute: typeof AdminAdminAuditRoute
   AdminAdminCustomPlansRoute: typeof AdminAdminCustomPlansRoute
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
   AdminAdminIncomeRoute: typeof AdminAdminIncomeRoute
   AdminAdminPlansRoute: typeof AdminAdminPlansRoute
   AdminAdminRazorpayRoute: typeof AdminAdminRazorpayRoute
+  AdminAdminRevenueRoute: typeof AdminAdminRevenueRoute
+  AdminAdminSearchRoute: typeof AdminAdminSearchRoute
+  AdminAdminSecurityRoute: typeof AdminAdminSecurityRoute
+  AdminAdminSettingsRoute: typeof AdminAdminSettingsRoute
+  AdminAdminSocietiesRoute: typeof AdminAdminSocietiesRoute
   AdminAdminUsersRoute: typeof AdminAdminUsersRoute
   AdminAdminWithdrawalsRoute: typeof AdminAdminWithdrawalsRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminAdsRoute: AdminAdminAdsRoute,
+  AdminAdminAuditRoute: AdminAdminAuditRoute,
   AdminAdminCustomPlansRoute: AdminAdminCustomPlansRoute,
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
   AdminAdminIncomeRoute: AdminAdminIncomeRoute,
   AdminAdminPlansRoute: AdminAdminPlansRoute,
   AdminAdminRazorpayRoute: AdminAdminRazorpayRoute,
+  AdminAdminRevenueRoute: AdminAdminRevenueRoute,
+  AdminAdminSearchRoute: AdminAdminSearchRoute,
+  AdminAdminSecurityRoute: AdminAdminSecurityRoute,
+  AdminAdminSettingsRoute: AdminAdminSettingsRoute,
+  AdminAdminSocietiesRoute: AdminAdminSocietiesRoute,
   AdminAdminUsersRoute: AdminAdminUsersRoute,
   AdminAdminWithdrawalsRoute: AdminAdminWithdrawalsRoute,
 }
