@@ -1,17 +1,21 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Receipt, ShieldCheck, Building2, User } from "lucide-react";
+import { Home, Receipt, ShieldCheck, Building2, User, Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
-  { to: "/app/dashboard", label: "Home", icon: Home, match: ["/app/dashboard"] },
-  { to: "/app/bills", label: "Bills", icon: Receipt, match: ["/app/bills", "/app/dues", "/app/ledger"] },
-  { to: "/app/visitors", label: "Visitors", icon: ShieldCheck, match: ["/app/visitors", "/app/guard"] },
-  { to: "/app/comm", label: "Society", icon: Building2, match: ["/app/comm", "/app/notices", "/app/helpdesk", "/app/contacts", "/app/bylaws", "/app/feed", "/app/polls"] },
-  { to: "/app/profile", label: "Profile", icon: User, match: ["/app/profile", "/app/family", "/app/vehicles"] },
+  { to: "/app/dashboard", labelKey: "nav.home", icon: Home, match: ["/app/dashboard"] },
+  { to: "/app/bills", labelKey: "nav.bills", icon: Receipt, match: ["/app/bills", "/app/dues", "/app/ledger"] },
+  { to: "/app/search", labelKey: "nav.search", icon: Search, match: ["/app/search"] },
+  { to: "/app/visitors", labelKey: "nav.visitors", icon: ShieldCheck, match: ["/app/visitors", "/app/guard"] },
+  { to: "/app/comm", labelKey: "nav.society", icon: Building2, match: ["/app/comm", "/app/notices", "/app/helpdesk", "/app/contacts", "/app/bylaws", "/app/feed", "/app/polls"] },
+  { to: "/app/profile", labelKey: "nav.profile", icon: User, match: ["/app/profile", "/app/family", "/app/vehicles"] },
 ] as const;
 
 export function ResidentBottomNav() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { t } = useTranslation();
   return (
     <nav
       aria-label="Resident navigation"
@@ -31,7 +35,7 @@ export function ResidentBottomNav() {
                 )}
               >
                 <Icon className={cn("h-5 w-5", active && "stroke-[2.5]")} />
-                <span>{it.label}</span>
+                <span>{t(it.labelKey)}</span>
               </Link>
             </li>
           );
