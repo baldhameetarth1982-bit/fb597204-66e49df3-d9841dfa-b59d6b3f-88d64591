@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shared/AppSidebar";
+import { AdminSidebar } from "@/components/shared/AdminSidebar";
 import { AppHeader } from "@/components/shared/AppHeader";
 import { ResidentBottomNav } from "@/components/shared/ResidentBottomNav";
 import { SocietyDrawer } from "@/components/shared/SocietyDrawer";
@@ -273,6 +274,24 @@ function ProtectedShell({ pathname }: { pathname: string }) {
               </main>
               <SocietyFab />
             </div>
+          </div>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  if (pathname.startsWith("/admin")) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-dvh flex w-full bg-background">
+          <div className="hidden md:block">
+            <AdminSidebar />
+          </div>
+          <div className="flex-1 flex flex-col min-w-0">
+            <AppHeader />
+            <main className="flex-1">
+              <TransitionedOutlet />
+            </main>
           </div>
         </div>
       </SidebarProvider>
