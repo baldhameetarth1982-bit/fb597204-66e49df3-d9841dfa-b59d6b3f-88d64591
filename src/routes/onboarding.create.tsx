@@ -1,6 +1,6 @@
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import {
 } from "@/features/onboarding/wizard/societySetup";
 import { commitSocietyWizard, loadWizardDraft } from "@/lib/hierarchy.functions";
 import { createSocietyFull } from "@/lib/onboarding.functions";
+import { PhoneOtpForm } from "@/components/auth/PhoneOtpForm";
 
 export const Route = createFileRoute("/onboarding/create")({
   head: () => ({ meta: [{ title: "Create society — SocioHub" }] }),
@@ -22,10 +23,24 @@ function CreateSocietyWizardPage() {
   const [societyId, setSocietyId] = useState<string | null>(null);
   const [initialState, setInitialState] = useState<Partial<WizardState> | null>(null);
   const [bootstrapping, setBootstrapping] = useState(true);
+  const [phoneVerified, setPhoneVerified] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
+      // Society admins must have a verified phone before creating a society.
+      const { data: pv } = await (supabase as any)
+        .from("phone_verifications")
+        .select("phone")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const verified = Boolean(pv?.phone);
+      setPhoneVerified(verified);
+      if (!verified) {
+        setBootstrapping(false);
+        return;
+      }
+
       // 1. If admin already has a society, resume its wizard draft
       const { data: role } = await supabase
         .from("user_roles")
@@ -75,6 +90,34 @@ function CreateSocietyWizardPage() {
     );
   }
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (phoneVerified === false) {
+    return (
+      <div className="min-h-dvh grid place-items-center bg-secondary/40 p-4">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-background p-6 md:p-8 shadow-sm">
+          <div className="text-center space-y-2">
+            <div className="mx-auto h-12 w-12 rounded-2xl bg-primary/10 grid place-items-center">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+            </div>
+            <h1 className="text-xl font-semibold tracking-tight">Verify your phone</h1>
+            <p className="text-sm text-muted-foreground">
+              Society admins must verify a mobile number before creating a society.
+              This is used for approvals and resident communication.
+            </p>
+          </div>
+          <div className="mt-6">
+            <PhoneOtpForm
+              linkToCurrentUser
+              submitLabel="Verify & continue"
+              onVerified={() => {
+                toast.success("Phone verified");
+                window.location.reload();
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!societyId) {
     return (
       <div className="min-h-dvh grid place-items-center text-muted-foreground p-6 text-center">
