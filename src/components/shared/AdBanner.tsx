@@ -25,6 +25,33 @@ export function AdBanner({ placement = "dashboard_bottom" }: { placement?: strin
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // 1) Resolve society ad-free status via the society's plan_id → plans.ads_enabled.
+      let societyAdFree = false;
+      if (user) {
+        const { data: profile } = await (supabase as any)
+          .from("profiles")
+          .select("society_id")
+          .eq("id", user.id)
+          .maybeSingle();
+        const sid = profile?.society_id as string | undefined;
+        if (sid) {
+          const { data: soc } = await (supabase as any)
+            .from("societies")
+            .select("plan_id")
+            .eq("id", sid)
+            .maybeSingle();
+          const planId = soc?.plan_id as string | undefined;
+          if (planId) {
+            const { data: plan } = await (supabase as any)
+              .from("plans")
+              .select("ads_enabled")
+              .eq("id", planId)
+              .maybeSingle();
+            if (plan && plan.ads_enabled === false) societyAdFree = true;
+          }
+        }
+      }
+
       const [{ data: adsData }, { data: sub }] = await Promise.all([
         (supabase as any)
           .from("ads")
@@ -42,7 +69,8 @@ export function AdBanner({ placement = "dashboard_bottom" }: { placement?: strin
           : Promise.resolve({ data: null }),
       ]);
       if (cancelled) return;
-      setAdFree(Boolean(sub && new Date(sub.expires_at) > new Date()));
+      const residentAdFree = Boolean(sub && new Date(sub.expires_at) > new Date());
+      setAdFree(societyAdFree || residentAdFree);
 
       // Refresh signed URLs for private bucket entries
       const list = (adsData ?? []) as Ad[];
