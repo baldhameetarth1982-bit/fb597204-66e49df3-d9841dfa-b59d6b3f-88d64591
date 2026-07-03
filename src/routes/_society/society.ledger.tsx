@@ -103,6 +103,7 @@ function AdminLedger() {
 
   return (
     <PageShell>
+      <FinanceTabs />
       <PageHeader
         title="Accounting Ledger"
         description="Track income & expenses for your society"
@@ -110,7 +111,7 @@ function AdminLedger() {
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="rounded-xl"><Plus className="h-4 w-4 mr-1" />
-      <FinanceTabs /> New entry</Button>
+              New entry</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>Add ledger entry</DialogTitle></DialogHeader>

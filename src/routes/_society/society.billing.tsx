@@ -185,6 +185,7 @@ function BillingPage() {
 
   return (
     <PageShell>
+      <FinanceTabs />
       <PageHeader
         title="Billing"
         description="Generate monthly maintenance bills and track payments."
@@ -193,7 +194,7 @@ function BillingPage() {
             <DialogTrigger asChild>
               <Button className="rounded-xl h-11">
                 <Plus className="h-4 w-4 mr-2" />
-      <FinanceTabs /> Generate bills
+                Generate bills
               </Button>
             </DialogTrigger>
             <DialogContent>

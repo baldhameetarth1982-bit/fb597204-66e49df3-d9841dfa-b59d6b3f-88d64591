@@ -111,6 +111,30 @@ function ReportsPage() {
     a.click(); URL.revokeObjectURL(url);
   }
 
+  async function exportPdf() {
+    const [{ default: jsPDF }, autoTable] = await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable").then((m) => m.default),
+    ]);
+    const doc = new jsPDF({ orientation: "landscape" });
+    doc.setFontSize(16);
+    doc.text("SocioHub — Financial Report", 14, 14);
+    doc.setFontSize(10);
+    doc.text(`Period: ${from} to ${to}`, 14, 22);
+    doc.text(`Income: ${INR.format(summary.income)}   Expense: ${INR.format(summary.expense)}   Net: ${INR.format(summary.net)}`, 14, 28);
+    autoTable(doc, {
+      startY: 34,
+      head: [["Date", "Type", "Category", "Description", "Amount", "Source"]],
+      body: txns.map((t) => [
+        t.date, t.kind, t.category, t.description,
+        (t.kind === "income" ? "+" : "-") + INR.format(t.amount), t.source,
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [14, 165, 233] },
+    });
+    doc.save(`sociohub-report-${from}-to-${to}.pdf`);
+  }
+
   const netTone =
     summary.net > 0 ? "text-emerald-600" :
     summary.net < 0 ? "text-rose-600" : "text-foreground";
@@ -125,14 +149,15 @@ function ReportsPage() {
 
   return (
     <PageShell>
+      <FinanceTabs />
       <PageHeader
         title="Reports"
         description="Income, expenses & net position — export for accountant or audit."
         actions={
           <div className="flex gap-2 print:hidden">
-            <Button variant="outline" className="rounded-xl" onClick={() => window.print()}>
+            <Button variant="outline" className="rounded-xl" onClick={exportPdf} disabled={!txns.length}>
               <Printer className="h-4 w-4 mr-1.5" />
-      <FinanceTabs /> PDF
+              PDF
             </Button>
             <Button className="rounded-xl" onClick={exportCsv} disabled={!txns.length}>
               <FileDown className="h-4 w-4 mr-1.5" /> Excel (CSV)
@@ -142,17 +167,39 @@ function ReportsPage() {
       />
 
       <Card className="rounded-2xl mb-4 print:hidden">
-        <CardContent className="p-4 grid sm:grid-cols-2 gap-3">
-          <div>
-            <Label className="text-xs">From</Label>
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+        <CardContent className="p-4 space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {(() => {
+              const y = today.getFullYear();
+              const fyStart = today.getMonth() >= 3 ? y : y - 1;
+              const presets = [
+                { label: "This month", from: format(startOfMonth(today), "yyyy-MM-dd"), to: format(today, "yyyy-MM-dd") },
+                { label: "Last 3 months", from: format(subMonths(today, 2), "yyyy-MM-01"), to: format(today, "yyyy-MM-dd") },
+                { label: "Last 6 months", from: format(subMonths(today, 5), "yyyy-MM-01"), to: format(today, "yyyy-MM-dd") },
+                { label: `FY ${fyStart}-${String(fyStart + 1).slice(2)}`, from: `${fyStart}-04-01`, to: `${fyStart + 1}-03-31` },
+                { label: `FY ${fyStart - 1}-${String(fyStart).slice(2)}`, from: `${fyStart - 1}-04-01`, to: `${fyStart}-03-31` },
+              ];
+              return presets.map((p) => (
+                <Button key={p.label} variant="outline" size="sm" className="rounded-full h-7 text-xs"
+                  onClick={() => { setFrom(p.from); setTo(p.to); }}>
+                  {p.label}
+                </Button>
+              ));
+            })()}
           </div>
-          <div>
-            <Label className="text-xs">To</Label>
-            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs">From</Label>
+              <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">To</Label>
+              <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            </div>
           </div>
         </CardContent>
       </Card>
+
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
         <Card className="rounded-2xl bg-emerald-500/5 border-emerald-500/20">
