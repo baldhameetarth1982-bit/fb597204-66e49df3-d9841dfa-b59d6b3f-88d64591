@@ -28,6 +28,19 @@ function CreateSocietyWizardPage() {
   useEffect(() => {
     if (!user) return;
     (async () => {
+      // Society admins must have a verified phone before creating a society.
+      const { data: pv } = await (supabase as any)
+        .from("phone_verifications")
+        .select("phone")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const verified = Boolean(pv?.phone);
+      setPhoneVerified(verified);
+      if (!verified) {
+        setBootstrapping(false);
+        return;
+      }
+
       // 1. If admin already has a society, resume its wizard draft
       const { data: role } = await supabase
         .from("user_roles")
