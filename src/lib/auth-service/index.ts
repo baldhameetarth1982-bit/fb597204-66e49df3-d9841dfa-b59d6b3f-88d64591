@@ -14,10 +14,39 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
 import {
+  GoogleAuthProvider,
   RecaptchaVerifier,
   signInWithPhoneNumber,
+  signInWithPopup,
   type ConfirmationResult,
 } from "firebase/auth";
+
+/**
+ * Exchange a Firebase ID token for a Supabase session via our server route
+ * and hydrate the browser session. Used by phone-first and Firebase-Google
+ * sign-in paths.
+ */
+async function completeFirebaseSession(input: {
+  provider: "phone" | "google";
+  idToken: string;
+  phone?: string;
+}) {
+  const res = await fetch("/api/public/auth/firebase-session", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const data = (await res.json().catch(() => ({}))) as { email?: string; token_hash?: string; error?: string };
+  if (!res.ok || !data.token_hash || !data.email) {
+    return { ok: false, error: data.error ?? "Sign-in failed" };
+  }
+  const { error } = await supabase.auth.verifyOtp({
+    type: "magiclink",
+    token_hash: data.token_hash,
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
 
 export type OtpProviderName = "firebase" | "msg91" | "twilio";
 export type SocialProviderName = "google" | "truecaller";
@@ -110,6 +139,43 @@ export async function linkVerifiedPhoneToCurrentUser(phone: string, firebaseUid:
     .upsert({ user_id: u.user.id, phone, firebase_uid: firebaseUid }, { onConflict: "user_id" });
   if (error) return { ok: false, error: error.message };
   return { ok: true };
+}
+
+/* ------------------------------------------------------------------------ */
+/* Phone-first sign in: mint a Supabase session from the Firebase phone     */
+/* ID token. No prior Supabase account required.                            */
+/* ------------------------------------------------------------------------ */
+
+export async function signInWithVerifiedPhone(input: {
+  phone: string;
+  firebaseIdToken: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  return completeFirebaseSession({
+    provider: "phone",
+    idToken: input.firebaseIdToken,
+    phone: input.phone,
+  });
+}
+
+/* ------------------------------------------------------------------------ */
+/* Google via Firebase (popup → ID token → Supabase session).               */
+/* We use Firebase's Google provider so the OAuth consent screen shows the  */
+/* SocioHub brand (not the Lovable brand).                                  */
+/* ------------------------------------------------------------------------ */
+
+export async function signInWithGoogleFirebase(): Promise<{ ok: boolean; error?: string }> {
+  if (!isFirebaseConfigured()) return { ok: false, error: "Google sign-in unavailable" };
+  try {
+    const auth = getFirebaseAuth();
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+    const res = await signInWithPopup(auth, provider);
+    const idToken = await res.user.getIdToken();
+    return completeFirebaseSession({ provider: "google", idToken });
+  } catch (e: any) {
+    if (e?.code === "auth/popup-closed-by-user") return { ok: false, error: "Sign-in cancelled" };
+    return { ok: false, error: e?.message ?? "Google sign-in failed" };
+  }
 }
 
 /* ------------------------------------------------------------------------ */

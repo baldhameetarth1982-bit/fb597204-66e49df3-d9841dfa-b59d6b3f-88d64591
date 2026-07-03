@@ -8,12 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { PhoneOtpForm } from "@/components/auth/PhoneOtpForm";
 import { TruecallerButton } from "@/components/auth/TruecallerButton";
-import { getCapabilities, startTruecallerAuth } from "@/lib/auth-service";
+import {
+  getCapabilities,
+  signInWithGoogleFirebase,
+  signInWithVerifiedPhone,
+  startTruecallerAuth,
+} from "@/lib/auth-service";
 
 export const Route = createFileRoute("/_auth/login")({
   head: () => ({
@@ -86,12 +90,8 @@ function LoginPage() {
   async function withGoogle() {
     setBusy("google");
     try {
-      const res = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-        extraParams: { prompt: "select_account" },
-      });
-      if (res.error) throw res.error;
-      if (res.redirected) return;
+      const r = await signInWithGoogleFirebase();
+      if (!r.ok) throw new Error(r.error ?? "Google sign-in failed");
       navigate({ to: "/" });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Google sign-in failed");
@@ -161,20 +161,19 @@ function LoginPage() {
       {step === "phone" && (
         <div className="mt-6">
           <PhoneOtpForm
-            submitLabel="Verify & continue"
-            onVerified={({ phone, firebaseUid }) => {
-              try {
-                sessionStorage.setItem(
-                  "sociohub:pending_phone",
-                  JSON.stringify({ phone, firebaseUid }),
-                );
-              } catch {}
-              toast.success("Phone verified. Complete sign in below.");
-              setStep("choose");
+            submitLabel="Verify & sign in"
+            onVerified={async ({ phone, firebaseIdToken }) => {
+              const r = await signInWithVerifiedPhone({ phone, firebaseIdToken });
+              if (!r.ok) {
+                toast.error(r.error ?? "Could not sign in");
+                return;
+              }
+              toast.success("Signed in");
+              navigate({ to: "/" });
             }}
           />
           <p className="mt-4 text-[11px] text-muted-foreground text-center">
-            After verifying, complete sign-in with Google or Email — your phone will link automatically.
+            We'll create your account automatically if this is your first time.
           </p>
         </div>
       )}
