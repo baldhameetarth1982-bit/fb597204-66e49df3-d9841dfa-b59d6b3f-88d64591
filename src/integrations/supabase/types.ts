@@ -2322,6 +2322,13 @@ export type Database = {
         Args: { _request_ids: string[]; _society_id: string }
         Returns: number
       }
+      bulk_generate_society_hierarchy: {
+        Args: { _blocks: Json; _society_id: string }
+        Returns: {
+          blocks_created: number
+          flats_created: number
+        }[]
+      }
       bulk_reject_join_requests: {
         Args: { _reason?: string; _request_ids: string[]; _society_id: string }
         Returns: number
