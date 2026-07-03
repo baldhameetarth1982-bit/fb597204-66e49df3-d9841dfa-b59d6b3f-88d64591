@@ -52,6 +52,13 @@ function BlocksPage() {
   const [aiBusy, setAiBusy] = useState(false);
   const [aiPlan, setAiPlan] = useState<any>(null);
 
+  // Auto-designer (structured, no AI)
+  const [autoOpen, setAutoOpen] = useState(false);
+  const [autoRows, setAutoRows] = useState<{ name: string; floors: number; flats_per_floor: number; start_floor: number }[]>([
+    { name: "A", floors: 4, flats_per_floor: 4, start_floor: 1 },
+  ]);
+  const [autoBusy, setAutoBusy] = useState(false);
+
   const planFn = useServerFn(planSocietyFromText) as any;
   const applyFn = useServerFn(applySocietyPlan) as any;
   const dupFn = useServerFn(duplicateBlock) as any;
