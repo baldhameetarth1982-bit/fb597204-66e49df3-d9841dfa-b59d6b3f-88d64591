@@ -132,7 +132,7 @@ function ReportsPage() {
           <div className="flex gap-2 print:hidden">
             <Button variant="outline" className="rounded-xl" onClick={() => window.print()}>
               <Printer className="h-4 w-4 mr-1.5" />
-      <FinanceTabs /> PDF
+              PDF
             </Button>
             <Button className="rounded-xl" onClick={exportCsv} disabled={!txns.length}>
               <FileDown className="h-4 w-4 mr-1.5" /> Excel (CSV)
