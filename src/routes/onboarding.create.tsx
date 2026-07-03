@@ -90,6 +90,34 @@ function CreateSocietyWizardPage() {
     );
   }
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (phoneVerified === false) {
+    return (
+      <div className="min-h-dvh grid place-items-center bg-secondary/40 p-4">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-background p-6 md:p-8 shadow-sm">
+          <div className="text-center space-y-2">
+            <div className="mx-auto h-12 w-12 rounded-2xl bg-primary/10 grid place-items-center">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+            </div>
+            <h1 className="text-xl font-semibold tracking-tight">Verify your phone</h1>
+            <p className="text-sm text-muted-foreground">
+              Society admins must verify a mobile number before creating a society.
+              This is used for approvals and resident communication.
+            </p>
+          </div>
+          <div className="mt-6">
+            <PhoneOtpForm
+              linkToCurrentUser
+              submitLabel="Verify & continue"
+              onVerified={() => {
+                toast.success("Phone verified");
+                window.location.reload();
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!societyId) {
     return (
       <div className="min-h-dvh grid place-items-center text-muted-foreground p-6 text-center">
