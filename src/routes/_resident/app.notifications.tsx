@@ -169,9 +169,13 @@ function NotificationCenter() {
                             {amt ? ` · ₹${amt}` : ""}
                           </p>
                         </div>
-                        <Badge variant="outline" className="rounded-full text-[10px] shrink-0">
-                          {n.target_table ?? "event"}
-                        </Badge>
+                        {n.created_at > lastSeen ? (
+                          <Badge className="rounded-full text-[10px] shrink-0 bg-primary text-primary-foreground">New</Badge>
+                        ) : (
+                          <Badge variant="outline" className="rounded-full text-[10px] shrink-0">
+                            {n.target_table ?? "event"}
+                          </Badge>
+                        )}
                       </CardContent>
                     </Card>
                   </Link>
