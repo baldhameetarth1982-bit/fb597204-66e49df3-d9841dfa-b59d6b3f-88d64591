@@ -1,11 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft, Loader2, User, Home, Phone, Mail, IndianRupee, FileText,
   History, ChevronDown, ChevronRight, Edit2, Save, X, AlertTriangle,
-  Calendar, ShieldCheck,
+  Calendar, ShieldCheck, Upload, Trash2, Paperclip, Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
