@@ -21,14 +21,14 @@ export async function createSocietyFull(input: CreateSocietyInput) {
   const { data, error } = await (supabase as any)
     .rpc("create_society_full", {
       _name: input.name,
-      _registration_number: input.registration_number ?? null,
-      _full_address: input.full_address ?? null,
-      _city: input.city ?? null,
-      _state: input.state ?? null,
-      _pincode: input.pincode ?? null,
-      _logo_url: input.logo_url ?? null,
+      _registration_number: (input.registration_number ?? undefined) as any,
+      _full_address: (input.full_address ?? undefined) as any,
+      _city: (input.city ?? undefined) as any,
+      _state: (input.state ?? undefined) as any,
+      _pincode: (input.pincode ?? undefined) as any,
+      _logo_url: (input.logo_url ?? undefined) as any,
       _total_units: (input.total_units ?? undefined) as any,
-      _referral_code: input.referral_code ?? null,
+      _referral_code: (input.referral_code ?? undefined) as any,
     })
     .single();
   if (error) throw new Error(error.message);
