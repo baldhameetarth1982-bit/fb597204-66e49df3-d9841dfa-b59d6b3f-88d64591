@@ -249,7 +249,7 @@ function ProtectedShell({ pathname }: { pathname: string }) {
           >
             <TransitionedOutlet />
           </main>
-          {pathname.startsWith("/app") && <ResidentBottomNav />}
+          {/* Bottom nav rendered by /_resident layout to avoid duplicate stacked bars */}
         </div>
       </div>
     );
