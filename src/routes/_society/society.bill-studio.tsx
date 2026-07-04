@@ -267,13 +267,14 @@ function OneOffBills({ societyId }: { societyId: string }) {
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [blocks, setBlocks] = useState<{ id: string; name: string }[]>([]);
-  const [flats, setFlats] = useState<{ id: string; number: string; block_id: string | null }[]>([]);
+  const [flats, setFlats] = useState<{ id: string; flat_number: string; block_id: string | null }[]>([]);
 
   useEffect(() => {
     (async () => {
       const [{ data: b }, { data: f }] = await Promise.all([
         supabase.from("blocks").select("id,name").eq("society_id", societyId).order("name"),
-        supabase.from("flats").select("id,number,block_id").eq("society_id", societyId).order("number"),
+        supabase.from("flats").select("id,flat_number,block_id").eq("society_id", societyId).order("flat_number"),
+
       ]);
       setBlocks((b as any) ?? []);
       setFlats((f as any) ?? []);
