@@ -342,7 +342,7 @@ function OneOffBills({ societyId }: { societyId: string }) {
               <Label>Flat</Label>
               <Select value={flatId} onValueChange={setFlatId}>
                 <SelectTrigger className="rounded-xl"><SelectValue placeholder="Choose…" /></SelectTrigger>
-                <SelectContent>{filteredFlats.map((f) => <SelectItem key={f.id} value={f.id}>{f.number}</SelectItem>)}</SelectContent>
+                <SelectContent>{filteredFlats.map((f) => <SelectItem key={f.id} value={f.id}>{f.flat_number}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           )}
