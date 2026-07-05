@@ -427,9 +427,12 @@ function BillAppearanceCard({ societyId }: { societyId: string }) {
       if (signErr) throw signErr;
       const url = signed?.signedUrl ?? "";
       const patch = kind === "logo" ? { logo_url: url } : { signature_url: url };
-      const { error: updErr } = await (supabase as any)
-        .from("societies").update(patch).eq("id", societyId);
+      const { data: updated, error: updErr } = await (supabase as any)
+        .from("societies").update(patch).eq("id", societyId).select("id");
       if (updErr) throw updErr;
+      if (!updated || updated.length === 0) {
+        throw new Error("Upload saved to storage but the society record was not updated — check admin rights.");
+      }
       if (kind === "logo") setLogoUrl(url); else setSignatureUrl(url);
       toast.success(`${kind === "logo" ? "Logo" : "Signature"} uploaded`);
     } catch (e: any) {
@@ -441,10 +444,14 @@ function BillAppearanceCard({ societyId }: { societyId: string }) {
   async function saveTheme() {
     setSaving(true);
     try {
-      const bill_theme = { color: themeColor, header_text: headerText.trim() || null };
-      const { error } = await (supabase as any)
-        .from("societies").update({ bill_theme }).eq("id", societyId);
+      // bill_theme is a TEXT column in the DB — must store a JSON string, not an object.
+      const bill_theme = JSON.stringify({ color: themeColor, header_text: headerText.trim() || null });
+      const { data: updated, error } = await (supabase as any)
+        .from("societies").update({ bill_theme }).eq("id", societyId).select("id");
       if (error) throw error;
+      if (!updated || updated.length === 0) {
+        throw new Error("Save was blocked — you may not have admin rights for this society.");
+      }
       toast.success("Bill appearance saved");
     } catch (e: any) {
       toast.error(e.message ?? "Save failed");
@@ -454,9 +461,10 @@ function BillAppearanceCard({ societyId }: { societyId: string }) {
 
   async function removeAsset(kind: "logo" | "signature") {
     const patch = kind === "logo" ? { logo_url: null } : { signature_url: null };
-    const { error } = await (supabase as any)
-      .from("societies").update(patch).eq("id", societyId);
+    const { data: updated, error } = await (supabase as any)
+      .from("societies").update(patch).eq("id", societyId).select("id");
     if (error) { toast.error(error.message); return; }
+    if (!updated || updated.length === 0) { toast.error("Remove failed — check admin rights."); return; }
     if (kind === "logo") setLogoUrl(null); else setSignatureUrl(null);
     toast.success("Removed");
   }

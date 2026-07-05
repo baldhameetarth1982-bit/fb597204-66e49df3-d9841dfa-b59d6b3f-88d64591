@@ -8,22 +8,45 @@ export interface BillCardData {
   amount: number;
   dueDate: string;
   status: "paid" | "due" | "unpaid" | "overdue" | "cancelled";
-  adminSignature?: string; // verified signature text or URL
+  adminSignature?: string; // verified signature text (fallback when no image)
   themeBg?: string; // image url for background canvas
+  /* Branding from Bill Studio (societies.logo_url / signature_url / bill_theme) */
+  logoUrl?: string | null;
+  signatureImageUrl?: string | null;
+  themeColor?: string | null; // hex color from bill_theme.color
+  headerText?: string | null; // custom header from bill_theme.header_text
+}
+
+/** Darken a hex color by a factor (0-1) for gradient depth. */
+function shade(hex: string, factor: number): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const r = Math.round(((n >> 16) & 255) * factor);
+  const g = Math.round(((n >> 8) & 255) * factor);
+  const b = Math.round((n & 255) * factor);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
 }
 
 export const BillCardImage = forwardRef<HTMLDivElement, { data: BillCardData }>(
   ({ data }, ref) => {
     const isPaid = data.status === "paid";
+    const brand = data.themeColor && /^#?[0-9a-f]{6}$/i.test(data.themeColor.trim())
+      ? (data.themeColor.trim().startsWith("#") ? data.themeColor.trim() : `#${data.themeColor.trim()}`)
+      : null;
+    const background = data.themeBg
+      ? `url(${data.themeBg}) center/cover no-repeat`
+      : brand
+        ? `linear-gradient(135deg, ${brand} 0%, ${shade(brand, 0.55)} 100%)`
+        : "linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)";
+    const title = data.headerText?.trim() || data.societyName;
     return (
       <div
         ref={ref}
         style={{
           width: 720,
           minHeight: 960,
-          background: data.themeBg
-            ? `url(${data.themeBg}) center/cover no-repeat`
-            : "linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)",
+          background,
           color: "#fff",
           fontFamily: "Inter, system-ui, sans-serif",
           padding: 48,
@@ -33,7 +56,25 @@ export const BillCardImage = forwardRef<HTMLDivElement, { data: BillCardData }>(
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.5 }}>{data.societyName}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+            {data.logoUrl && (
+              <img
+                src={data.logoUrl || "/placeholder.svg"}
+                alt=""
+                crossOrigin="anonymous"
+                style={{
+                  height: 52,
+                  width: 52,
+                  borderRadius: 12,
+                  objectFit: "contain",
+                  background: "rgba(255,255,255,0.9)",
+                  padding: 4,
+                  boxSizing: "border-box",
+                }}
+              />
+            )}
+            <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.5 }}>{title}</div>
+          </div>
           <div
             style={{
               padding: "8px 16px",
@@ -98,7 +139,28 @@ export const BillCardImage = forwardRef<HTMLDivElement, { data: BillCardData }>(
                 Powered by SocioHub · 100% cashless settlement
               </div>
             </div>
-            {data.adminSignature && (
+            {data.signatureImageUrl ? (
+              <div style={{ textAlign: "right" }}>
+                <img
+                  src={data.signatureImageUrl || "/placeholder.svg"}
+                  alt=""
+                  crossOrigin="anonymous"
+                  style={{
+                    height: 44,
+                    maxWidth: 160,
+                    objectFit: "contain",
+                    background: "rgba(255,255,255,0.9)",
+                    borderRadius: 8,
+                    padding: 4,
+                    boxSizing: "border-box",
+                    marginBottom: 4,
+                  }}
+                />
+                <div style={{ fontSize: 11, opacity: 0.7, borderTop: "1px solid rgba(255,255,255,0.3)", paddingTop: 4 }}>
+                  Authorized Signatory
+                </div>
+              </div>
+            ) : data.adminSignature ? (
               <div style={{ textAlign: "right" }}>
                 <div
                   style={{
@@ -115,7 +177,7 @@ export const BillCardImage = forwardRef<HTMLDivElement, { data: BillCardData }>(
                   Verified Admin Signature
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

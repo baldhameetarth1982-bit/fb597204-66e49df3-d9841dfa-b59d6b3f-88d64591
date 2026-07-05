@@ -45,6 +45,38 @@ function BillingPage() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
 
+  // Society branding from Bill Studio (logo, signature, theme color, header text)
+  const [branding, setBranding] = useState<{
+    name: string;
+    logoUrl: string | null;
+    signatureUrl: string | null;
+    themeColor: string | null;
+    headerText: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!societyId) return;
+    (async () => {
+      const { data } = await supabase
+        .from("societies")
+        .select("name, logo_url, signature_url, bill_theme")
+        .eq("id", societyId)
+        .maybeSingle();
+      if (!data) return;
+      const soc: any = data;
+      let theme: any = {};
+      try { theme = typeof soc.bill_theme === "string" ? JSON.parse(soc.bill_theme) : (soc.bill_theme ?? {}); }
+      catch { theme = {}; }
+      setBranding({
+        name: soc.name ?? "Society Bill",
+        logoUrl: soc.logo_url ?? null,
+        signatureUrl: soc.signature_url ?? null,
+        themeColor: theme.color ?? null,
+        headerText: theme.header_text ?? null,
+      });
+    })();
+  }, [societyId]);
+
   // Generate dialog state
   const [period, setPeriod] = useState("");
   const [amount, setAmount] = useState("");
@@ -282,13 +314,17 @@ function BillingPage() {
                           onClick={async () => {
                             try {
                               await shareBillAsImage({
-                                societyName: "Society Bill",
+                                societyName: branding?.name ?? "Society Bill",
                                 flatLabel: `${r.flat?.block?.name ? r.flat.block.name + "-" : ""}${r.flat?.flat_number ?? ""}`,
                                 period: r.period_label,
                                 amount: Number(r.amount),
                                 dueDate: new Date(r.due_date).toLocaleDateString(),
                                 status: (r.status as any) || "due",
                                 adminSignature: user?.email?.split("@")[0],
+                                logoUrl: branding?.logoUrl,
+                                signatureImageUrl: branding?.signatureUrl,
+                                themeColor: branding?.themeColor,
+                                headerText: branding?.headerText,
                               });
                             } catch (e: any) {
                               toast.error(e?.message ?? "Could not share");
