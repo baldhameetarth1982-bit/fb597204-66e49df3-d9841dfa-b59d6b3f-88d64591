@@ -146,7 +146,6 @@ function CommunicationCenter() {
               <Card key={n.id} className="rounded-2xl">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-2">
-                    {n.is_pinned && <Pin className="h-4 w-4 shrink-0 text-primary mt-0.5" />}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm whitespace-pre-line">{(n.body ?? "").slice(0, 240)}</p>
                       <p className="mt-1.5 text-[11px] text-muted-foreground">
