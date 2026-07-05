@@ -223,7 +223,7 @@ function CommunicationCenter() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">{c.name}</p>
-                          <p className="text-[11px] text-muted-foreground truncate">{c.role ?? cat}</p>
+                          <p className="text-[11px] text-muted-foreground truncate">{c.role_label ?? cat}</p>
                         </div>
                         {c.phone && (
                           <Button asChild size="sm" variant="outline" className="rounded-xl">
