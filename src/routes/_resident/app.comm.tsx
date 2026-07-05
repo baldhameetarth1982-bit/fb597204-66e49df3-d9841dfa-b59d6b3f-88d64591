@@ -34,9 +34,8 @@ function CommunicationCenter() {
     queryFn: async () => {
       const { data } = await supabase
         .from("posts")
-        .select("id, body, created_at, is_pinned")
+        .select("id, body, created_at")
         .eq("society_id", societyId!)
-        .order("is_pinned", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(50);
       return data ?? [];
