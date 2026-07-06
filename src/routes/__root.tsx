@@ -17,8 +17,12 @@ import { AppSidebar } from "@/components/shared/AppSidebar";
 import { AdminSidebar } from "@/components/shared/AdminSidebar";
 import { AppHeader } from "@/components/shared/AppHeader";
 
-import { SocietyDrawer } from "@/components/shared/SocietyDrawer";
 import { SocietyFab } from "@/components/shared/SocietyFab";
+import { ResidentBottomNav } from "@/components/nav/ResidentBottomNav";
+import { SocietyAdminBottomNav } from "@/components/nav/SocietyAdminBottomNav";
+import { GuardBottomNav } from "@/components/nav/GuardBottomNav";
+import { SuperAdminBottomNav } from "@/components/nav/SuperAdminBottomNav";
+
 import { Toaster } from "@/components/ui/sonner";
 import { SplashScreen } from "@/components/shared/SplashScreen";
 import { RootErrorBoundary, installGlobalErrorLogger } from "@/components/shared/RootErrorBoundary";
