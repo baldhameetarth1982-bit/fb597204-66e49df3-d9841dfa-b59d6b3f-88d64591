@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useSocietyId } from "@/hooks/useSocietyId";
 import { PageHeader, PageShell, EmptyState } from "@/components/shared/PageHeader";
-import { FinanceTabs } from "@/components/shared/FinanceTabs";
+import { BillingCenterTabs } from "@/components/nav/BillingCenterTabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -185,7 +185,7 @@ function BillingPage() {
 
   return (
     <PageShell>
-      <FinanceTabs />
+      <BillingCenterTabs onGenerate={() => setOpen(true)} />
       <PageHeader
         title="Billing"
         description="Generate monthly maintenance bills and track payments."

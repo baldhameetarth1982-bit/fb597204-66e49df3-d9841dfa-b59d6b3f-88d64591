@@ -51,10 +51,11 @@ const TABS = [
     ],
   },
   {
-    to: "/society/business-profile",
+    to: "/society/more",
     label: "More",
     icon: MoreHorizontal,
     match: [
+      "/society/more",
       "/society/business-profile",
       "/society/team",
       "/society/custom-fields",

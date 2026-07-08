@@ -1,33 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
-  Building2,
-  Wallet,
-  AlertTriangle,
-  Megaphone,
-  ArrowUpRight,
-  KeyRound,
-  Copy,
-  Inbox,
-  Receipt,
-  UserCheck,
-  Users,
-  Zap,
-  Vote,
-  Sparkles,
-  Search,
+  Building2, Wallet, AlertTriangle, Megaphone, Receipt, UserCheck, Users,
+  UsersRound, Bell, KeyRound, Copy, TrendingUp, Sparkles, ArrowUpRight,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 import { useSocietyId } from "@/hooks/useSocietyId";
 import { SocietyFinanceChart } from "@/components/shared/SocietyFinanceChart";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/_society/society/dashboard")({
   head: () => ({
@@ -39,29 +23,16 @@ export const Route = createFileRoute("/_society/society/dashboard")({
   component: SocietyDashboard,
 });
 
-interface DashboardStats {
-  totalFlats: number;
-  totalBlocks: number;
-  collectedThisMonth: number;
-  defaulters: number;
-}
+const INR = new Intl.NumberFormat("en-IN", {
+  style: "currency", currency: "INR", maximumFractionDigits: 0,
+});
 
-interface AnnouncementItem {
-  id: string;
-  excerpt: string;
-  created_at: string;
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
 }
-
-interface TxnItem {
-  id: string;
-  amount: number;
-  status: string;
-  paid_at: string | null;
-  flat_label: string;
-  resident_name: string | null;
-}
-
-const INR = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
 function StatusPill({ status }: { status: string }) {
   const s = status.toLowerCase();
@@ -72,292 +43,361 @@ function StatusPill({ status }: { status: string }) {
       ? "bg-destructive/10 text-destructive"
       : "bg-warning/10 text-warning";
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium capitalize ${cls}`}>
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${cls}`}>
       {status}
     </span>
   );
 }
 
 function SocietyDashboard() {
+  const { profile } = useAuth();
   const { societyId } = useSocietyId();
-  const [society, setSociety] = useState<{ name: string; invite_code: string | null } | null>(null);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalFlats: 0,
-    totalBlocks: 0,
-    collectedThisMonth: 0,
-    defaulters: 0,
-  });
-  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
-  const [txns, setTxns] = useState<TxnItem[]>([]);
 
-  useEffect(() => {
-    if (!societyId) return;
-    let cancelled = false;
+  const { data } = useQuery({
+    enabled: !!societyId,
+    queryKey: ["society-dashboard-v2", societyId],
+    queryFn: async () => {
+      const sid = societyId!;
+      const monthStart = new Date();
+      monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-    (async () => {
-      const [{ data: soc }, { data: inviteCode }, { count: flatCount }, { count: blockCount }, posts, payments] = await Promise.all([
-        supabase.from("societies").select("name").eq("id", societyId).maybeSingle(),
-        (supabase as any).rpc("get_society_invite_code", { _society_id: societyId }),
-        supabase.from("flats").select("id", { count: "exact", head: true }).eq("society_id", societyId),
-        supabase.from("blocks").select("id", { count: "exact", head: true }).eq("society_id", societyId),
-        supabase
-          .from("posts")
-          .select("id, body, created_at")
-          .eq("society_id", societyId)
-          .order("created_at", { ascending: false })
-          .limit(5),
-        supabase
-          .from("payments")
-          .select("id, amount, status, paid_at")
-          .eq("society_id", societyId)
-          .order("created_at", { ascending: false })
-          .limit(10),
+      const [
+        { data: soc },
+        inviteRes,
+        summaryRes,
+        { count: flatCount },
+        { count: pendingApprovals },
+        { count: visitorsToday },
+        { count: unpaidBills },
+        recentPayments,
+        recentPosts,
+        recentApprovals,
+      ] = await Promise.all([
+        supabase.from("societies").select("name").eq("id", sid).maybeSingle(),
+        (supabase as any).rpc("get_society_invite_code", { _society_id: sid }),
+        supabase.rpc("society_maintenance_summary", { _society_id: sid }),
+        supabase.from("flats").select("id", { count: "exact", head: true }).eq("society_id", sid),
+        supabase.from("join_requests").select("id", { count: "exact", head: true })
+          .eq("society_id", sid).eq("status", "pending"),
+        supabase.from("visitors").select("id", { count: "exact", head: true })
+          .eq("society_id", sid).gte("created_at", today.toISOString()),
+        supabase.from("bills").select("id", { count: "exact", head: true })
+          .eq("society_id", sid).in("status", ["unpaid", "overdue"]),
+        supabase.from("payments").select("id, amount, status, paid_at, created_at")
+          .eq("society_id", sid).order("created_at", { ascending: false }).limit(5),
+        supabase.from("posts").select("id, body, created_at")
+          .eq("society_id", sid).order("created_at", { ascending: false }).limit(3),
+        supabase.from("join_requests").select("id, full_name, created_at")
+          .eq("society_id", sid).eq("status", "approved")
+          .order("created_at", { ascending: false }).limit(3),
       ]);
 
-      if (cancelled) return;
+      const summary = Array.isArray(summaryRes.data) ? summaryRes.data[0] : null;
+      const collectedThisMonth = (recentPayments.data ?? [])
+        .filter((p: any) => p.status === "success" && p.paid_at && new Date(p.paid_at) >= monthStart)
+        .reduce((s: number, p: any) => s + Number(p.amount ?? 0), 0);
 
-      setSociety({ name: (soc as any)?.name ?? "", invite_code: (inviteCode as string) ?? null });
-
-      const monthStart = new Date();
-      monthStart.setDate(1);
-      monthStart.setHours(0, 0, 0, 0);
-      const paidThisMonth = (payments.data ?? []).filter(
-        (p: any) => p.status === "success" && p.paid_at && new Date(p.paid_at) >= monthStart,
-      );
-      const collected = paidThisMonth.reduce((s: number, p: any) => s + Number(p.amount ?? 0), 0);
-
-      const { count: overdueCount } = await supabase
-        .from("bills")
-        .select("id", { count: "exact", head: true })
-        .eq("society_id", societyId)
-        .in("status", ["overdue", "unpaid"]);
-
-      setStats({
+      return {
+        societyName: (soc as any)?.name ?? "",
+        inviteCode: (inviteRes.data as string) ?? null,
         totalFlats: flatCount ?? 0,
-        totalBlocks: blockCount ?? 0,
-        collectedThisMonth: collected,
-        defaulters: overdueCount ?? 0,
+        pendingApprovals: pendingApprovals ?? 0,
+        visitorsToday: visitorsToday ?? 0,
+        unpaidBills: unpaidBills ?? 0,
+        collectedThisMonth,
+        outstandingAmount: Number(summary?.outstanding_amount ?? 0),
+        collectionPercent: Number(summary?.collection_percent ?? 0),
+        paidHouses: Number(summary?.paid_periods ?? 0),
+        pendingHouses: Number(summary?.pending_periods ?? 0),
+        recentPayments: recentPayments.data ?? [],
+        recentPosts: recentPosts.data ?? [],
+        recentApprovals: recentApprovals.data ?? [],
+      };
+    },
+  });
+
+  const activity = useMemo(() => {
+    if (!data) return [];
+    const items: Array<{ id: string; icon: any; text: string; when: string }> = [];
+    for (const p of data.recentPayments.slice(0, 3)) {
+      const when = (p as any).paid_at ?? (p as any).created_at;
+      items.push({
+        id: `pay-${p.id}`,
+        icon: Wallet,
+        text: `Payment ${p.status} · ${INR.format(Number(p.amount ?? 0))}`,
+        when,
       });
+    }
+    for (const a of data.recentApprovals) {
+      items.push({
+        id: `apr-${a.id}`,
+        icon: UserCheck,
+        text: `Resident approved · ${a.full_name ?? "Unnamed"}`,
+        when: a.created_at,
+      });
+    }
+    for (const post of data.recentPosts) {
+      const body = String((post as any).body ?? "").replace(/\s+/g, " ").trim();
+      items.push({
+        id: `post-${post.id}`,
+        icon: Megaphone,
+        text: `Notice · ${body.slice(0, 60)}${body.length > 60 ? "…" : ""}`,
+        when: post.created_at,
+      });
+    }
+    return items
+      .filter((i) => !!i.when)
+      .sort((a, b) => new Date(b.when).getTime() - new Date(a.when).getTime())
+      .slice(0, 6);
+  }, [data]);
 
-      setAnnouncements(
-        (posts.data ?? []).map((p: any) => {
-          const s = String(p.body ?? "").replace(/\s+/g, " ").trim();
-          return {
-            id: p.id,
-            excerpt: s.length > 80 ? `${s.slice(0, 80)}…` : s || "Untitled",
-            created_at: p.created_at,
-          };
-        }),
-      );
-
-      setTxns(
-        (payments.data ?? []).slice(0, 6).map((p: any) => ({
-          id: p.id,
-          amount: Number(p.amount ?? 0),
-          status: p.status ?? "pending",
-          paid_at: p.paid_at,
-          flat_label: "—",
-          resident_name: null,
-        })),
-      );
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [societyId]);
-
-  function copyCode() {
-    if (!society?.invite_code) return;
-    navigator.clipboard.writeText(society.invite_code);
+  function copyInvite() {
+    if (!data?.inviteCode) return;
+    navigator.clipboard.writeText(data.inviteCode);
     toast.success("Invite code copied");
   }
 
+  const displayName = profile?.full_name?.split(" ")[0] ?? "there";
+
   return (
-    <div className="px-4 md:px-8 py-6 md:py-10 max-w-7xl mx-auto">
-      <header className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="mt-1 text-muted-foreground">A snapshot of your society today.</p>
+    <div className="px-4 md:px-8 py-5 md:py-8 max-w-7xl mx-auto">
+      {/* Top bar: greeting + notifications */}
+      <header className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground">{greeting()}, {displayName}</p>
+          <h1 className="truncate text-xl md:text-2xl font-semibold tracking-tight">
+            {data?.societyName || "Your society"}
+          </h1>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button asChild variant="ghost" size="icon" className="rounded-xl h-10 w-10">
+            <Link to="/app/notifications"><Bell className="h-5 w-5" /></Link>
+          </Button>
+          <Button asChild size="sm" className="rounded-xl h-10">
+            <Link to="/society/residents"><Users className="h-4 w-4 mr-1.5" /> Add resident</Link>
+          </Button>
+        </div>
       </header>
 
-      {society?.invite_code && (
-        <Card className="rounded-2xl mb-6 border-primary/20 bg-primary/5">
-          <CardContent className="p-5 flex flex-wrap items-center gap-4">
-            <div className="h-11 w-11 rounded-xl bg-primary/10 grid place-items-center">
-              <KeyRound className="h-5 w-5 text-primary" />
+      {/* Invite code (only if present) */}
+      {data?.inviteCode && (
+        <Card className="rounded-2xl mb-5 border-primary/20 bg-primary/5">
+          <CardContent className="p-4 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+            <div className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 grid place-items-center">
+              <KeyRound className="h-4 w-4 text-primary" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Invite code for residents</p>
-              <p className="text-2xl font-bold tracking-[0.3em] font-mono mt-0.5">{society.invite_code}</p>
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Invite code</p>
+              <p className="text-lg font-bold tracking-[0.25em] font-mono truncate">{data.inviteCode}</p>
             </div>
-            <Button onClick={copyCode} variant="outline" className="rounded-xl">
-              <Copy className="h-4 w-4 mr-2" /> Copy
+            <Button onClick={copyInvite} variant="outline" size="sm" className="rounded-xl shrink-0">
+              <Copy className="h-3.5 w-3.5 mr-1" /> Copy
             </Button>
           </CardContent>
         </Card>
       )}
 
-      {/* Quick actions — one-tap shortcuts to the most common admin tasks */}
-      <section className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Quick actions</h2>
-        </div>
-        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
-          {[
-            { to: "/society/billing" as const, label: "New bill", icon: Receipt },
-            { to: "/society/approvals" as const, label: "Approvals", icon: UserCheck },
-            { to: "/society/residents" as const, label: "Residents", icon: Users },
-            { to: "/society/visitors" as const, label: "Visitors", icon: UserCheck },
-            { to: "/society/announcements" as const, label: "Notice", icon: Megaphone },
-            { to: "/society/polls" as const, label: "Poll", icon: Vote },
-            { to: "/society/digest" as const, label: "AI Digest", icon: Sparkles },
-            { to: "/society/search" as const, label: "Search", icon: Search },
-          ].map((a) => (
-            <Link
-              key={a.to}
-              to={a.to}
-              className="group rounded-2xl border bg-card hover:bg-primary/5 hover:border-primary/40 transition p-3 flex flex-col items-center justify-center gap-1.5 text-center min-h-[76px]"
-            >
-              <a.icon className="h-5 w-5 text-primary shrink-0" />
-              <span className="text-[11px] sm:text-xs font-medium leading-tight">{a.label}</span>
-            </Link>
-          ))}
-        </div>
+      {/* Primary action tiles — highest urgency */}
+      <section className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
+        <PrimaryTile
+          to="/society/billing"
+          icon={AlertTriangle}
+          tone="warning"
+          label="Pending payments"
+          value={data ? String(data.unpaidBills) : "—"}
+        />
+        <PrimaryTile
+          to="/society/approvals"
+          icon={UserCheck}
+          tone="primary"
+          label="Approvals"
+          value={data ? String(data.pendingApprovals) : "—"}
+        />
+        <PrimaryTile
+          to="/society/visitors"
+          icon={UsersRound}
+          tone="info"
+          label="Visitors today"
+          value={data ? String(data.visitorsToday) : "—"}
+        />
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
-
-        <Card className="rounded-2xl">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total registered flats</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-primary/10 grid place-items-center">
-              <Building2 className="h-5 w-5 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl md:text-4xl font-semibold tabular-nums">{stats.totalFlats}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {stats.totalBlocks > 0 ? `Across ${stats.totalBlocks} block${stats.totalBlocks === 1 ? "" : "s"}` : "Add blocks to begin"}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Collected this month</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-success/10 grid place-items-center">
-              <Wallet className="h-5 w-5 text-success" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl md:text-4xl font-semibold tabular-nums">{INR.format(stats.collectedThisMonth)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">From successful payments</p>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Defaulters</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-destructive/10 grid place-items-center">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl md:text-4xl font-semibold tabular-nums">{stats.defaulters}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Unpaid or overdue bills</p>
-          </CardContent>
-        </Card>
+      {/* Overview cards — hide any without data */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        {data && data.totalFlats > 0 && (
+          <OverviewCard icon={Building2} label="Total houses" value={String(data.totalFlats)} />
+        )}
+        {data && data.collectedThisMonth > 0 && (
+          <OverviewCard
+            icon={Wallet}
+            tone="success"
+            label="Collected this month"
+            value={INR.format(data.collectedThisMonth)}
+          />
+        )}
+        {data && data.outstandingAmount > 0 && (
+          <OverviewCard
+            icon={TrendingUp}
+            tone="destructive"
+            label="Outstanding"
+            value={INR.format(data.outstandingAmount)}
+          />
+        )}
+        {data && data.collectionPercent > 0 && (
+          <OverviewCard
+            icon={Sparkles}
+            tone="primary"
+            label="Collection"
+            value={`${Math.round(data.collectionPercent)}%`}
+          />
+        )}
       </section>
 
-      {stats.totalBlocks === 0 && (
-        <Card className="rounded-2xl mb-6 border-dashed">
-          <CardContent className="p-6 text-center">
-            <Building2 className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-            <p className="font-medium">Your society is ready to be set up</p>
-            <p className="text-sm text-muted-foreground mt-1">Start by adding blocks, floors, and flats.</p>
-            <Button asChild className="mt-4 rounded-xl">
-              <Link to="/society/blocks">Add your first block</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
+      {/* Finance chart */}
       {societyId && (
         <section className="mb-6">
           <SocietyFinanceChart societyId={societyId} />
         </section>
       )}
 
-      <section className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      {/* Quick actions */}
+      <section className="mb-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+          Quick actions
+        </h2>
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+          {[
+            { to: "/society/billing" as const, label: "New bill", icon: Receipt },
+            { to: "/society/residents" as const, label: "Residents", icon: Users },
+            { to: "/society/approvals" as const, label: "Approvals", icon: UserCheck },
+            { to: "/society/visitors" as const, label: "Visitors", icon: UsersRound },
+            { to: "/society/announcements" as const, label: "Notice", icon: Megaphone },
+            { to: "/society/expenses" as const, label: "Expenses", icon: Wallet },
+          ].map((a) => (
+            <Link
+              key={a.to}
+              to={a.to}
+              className="rounded-2xl border bg-card hover:bg-primary/5 hover:border-primary/40 transition p-3 flex flex-col items-center gap-1.5 text-center min-h-[76px] justify-center"
+            >
+              <a.icon className="h-5 w-5 text-primary" />
+              <span className="text-[11px] font-medium leading-tight">{a.label}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
-        <Card className="rounded-2xl lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Megaphone className="h-4 w-4 text-primary" /> Recent announcements
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {announcements.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">
-                <Inbox className="h-6 w-6 mx-auto mb-2 opacity-60" />
-                No announcements yet
+      {/* Recent activity */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Recent activity
+          </h2>
+          <Link
+            to="/society/ledger"
+            className="inline-flex items-center gap-0.5 text-xs font-medium text-primary hover:underline"
+          >
+            View all <ArrowUpRight className="h-3 w-3" />
+          </Link>
+        </div>
+        <Card className="rounded-2xl">
+          <CardContent className="p-0">
+            {activity.length === 0 ? (
+              <div className="py-10 text-center text-sm text-muted-foreground">
+                No recent activity yet
               </div>
             ) : (
               <ul className="divide-y divide-border">
-                {announcements.map((a) => (
-                  <li key={a.id} className="py-4 first:pt-0 last:pb-0">
-                    <p className="font-medium line-clamp-2">{a.excerpt}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {new Date(a.created_at).toLocaleDateString()}
-                    </p>
+                {activity.map((it) => (
+                  <li key={it.id} className="p-4 flex items-start gap-3">
+                    <div className="h-9 w-9 shrink-0 rounded-xl bg-primary/10 grid place-items-center">
+                      <it.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm truncate">{it.text}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {new Date(it.when).toLocaleString()}
+                      </p>
+                    </div>
                   </li>
                 ))}
               </ul>
             )}
           </CardContent>
         </Card>
+      </section>
 
-        <Card className="rounded-2xl lg:col-span-3">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-base">Recent transactions</CardTitle>
-            <Link
-              to="/society/ledger"
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-            >
-              View all <ArrowUpRight className="h-3 w-3" />
-            </Link>
-          </CardHeader>
-          <CardContent>
-            {txns.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">
-                <Wallet className="h-6 w-6 mx-auto mb-2 opacity-60" />
-                No transactions yet
-              </div>
-            ) : (
-              <div className="overflow-x-auto -mx-2">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground">
-                      <th className="px-2 py-2 font-medium">Amount</th>
-                      <th className="px-2 py-2 font-medium">Status</th>
-                      <th className="px-2 py-2 font-medium">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {txns.map((t) => (
-                      <tr key={t.id}>
-                        <td className="px-2 py-3 tabular-nums">{INR.format(t.amount)}</td>
-                        <td className="px-2 py-3"><StatusPill status={t.status} /></td>
-                        <td className="px-2 py-3 text-muted-foreground">
-                          {t.paid_at ? new Date(t.paid_at).toLocaleDateString() : "—"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+      {/* Empty-state onboarding nudge only when society is truly empty */}
+      {data && data.totalFlats === 0 && (
+        <Card className="rounded-2xl mt-6 border-dashed">
+          <CardContent className="p-6 text-center">
+            <Building2 className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+            <p className="font-medium">Your society is ready to be set up</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Start by adding blocks, floors, and flats.
+            </p>
+            <Button asChild className="mt-4 rounded-xl">
+              <Link to="/society/blocks">Add your first block</Link>
+            </Button>
           </CardContent>
         </Card>
-      </section>
+      )}
     </div>
   );
 }
+
+function PrimaryTile({
+  to, icon: Icon, tone, label, value,
+}: {
+  to: string; icon: any; tone: "primary" | "warning" | "info"; label: string; value: string;
+}) {
+  const toneClass =
+    tone === "warning" ? "bg-warning/10 text-warning"
+    : tone === "info" ? "bg-info/10 text-info"
+    : "bg-primary/10 text-primary";
+  return (
+    <Link
+      to={to as any}
+      className="rounded-2xl border bg-card p-3 sm:p-4 flex flex-col gap-2 hover:border-primary/40 hover:shadow-sm transition"
+    >
+      <div className={`h-9 w-9 rounded-xl grid place-items-center ${toneClass}`}>
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[11px] text-muted-foreground leading-tight">{label}</p>
+        <p className="text-xl sm:text-2xl font-semibold tabular-nums truncate">{value}</p>
+      </div>
+    </Link>
+  );
+}
+
+function OverviewCard({
+  icon: Icon, tone = "muted", label, value,
+}: {
+  icon: any; tone?: "muted" | "success" | "primary" | "destructive"; label: string; value: string;
+}) {
+  const toneClass =
+    tone === "success" ? "bg-success/10 text-success"
+    : tone === "destructive" ? "bg-destructive/10 text-destructive"
+    : tone === "primary" ? "bg-primary/10 text-primary"
+    : "bg-muted text-muted-foreground";
+  return (
+    <Card className="rounded-2xl">
+      <CardContent className="p-3 sm:p-4 flex items-center gap-3">
+        <div className={`h-9 w-9 shrink-0 rounded-xl grid place-items-center ${toneClass}`}>
+          <Icon className="h-4 w-4" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
+            {label}
+          </p>
+          <p className="text-base sm:text-lg font-semibold tabular-nums truncate">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// StatusPill exported for reuse; keep to avoid unused-import warnings if referenced elsewhere.
+export { StatusPill };
