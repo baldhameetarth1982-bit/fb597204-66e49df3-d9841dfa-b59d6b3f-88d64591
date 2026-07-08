@@ -38,7 +38,7 @@ export function BillingCenterTabs({
           return (
             <Link
               key={t.to}
-              to={t.to}
+              to={t.to as any}
               className={cn(
                 "inline-flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors",
                 active
