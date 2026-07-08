@@ -180,3 +180,22 @@ Both are replaced by compatibility re-exports pointing to
 - Refactored: `src/routes/__root.tsx` `ShellSwitcher` — per-role shells + mobile bottom navs
 - Updated: `src/styles.css` tokens (teal primary + status container values sampled from reference PDF)
 - Unchanged: all business logic, RLS, migrations, payment adapters, feature-screen bodies
+
+---
+
+## Pass 2 (Stage 2A) — Society Admin core screens
+
+Redesigned:
+- `/society/dashboard` — action-first: greeting + society name, primary tiles (Pending Payments, Approvals, Visitors Today), overview cards (only when the metric has real data — Total Houses, Collected This Month, Outstanding, Collection %), finance chart, quick actions, recent activity. No fake stats.
+- `/society/residents` — added Total/Verified/Unverified/Vacant summary cards; existing mobile-card list preserved (already mobile-friendly, no desktop-table-on-mobile).
+- `/society/approvals` — kept existing approve/reject flow (uses `join_requests` + `respond_join_request` RPC). No fake KYC/documents chips.
+- `/society/billing` — swapped scattered `FinanceTabs` for unified `BillingCenterTabs` (Generate / History / Templates / Settings). Same swap applied to `/society/bill-studio` and `/society/billing-settings` so all four tabs feel like one Billing Center. `/society/accounts`, `/society/ledger`, `/society/expenses`, `/society/reports` still use the old `FinanceTabs` (they are the Accounts Center, handled in Stage 2B).
+- `/society/more` — NEW route. Grouped Management / Finance / Other tile directory. Society Admin bottom-nav "More" tab now points here (was `/society/business-profile`).
+
+Duplicate UI hidden (nothing deleted):
+- Society Admin bottom nav "More" tab no longer opens the raw Business Profile form; that page is one tile inside `/society/more`.
+- Billing pages no longer show the 7-item finance tab dump; only 4 billing tabs are shown.
+
+Backend touched: none. No schema changes, no RLS changes, no RPC changes. Real data comes from existing tables (`bills`, `payments`, `visitors`, `join_requests`, `posts`, `flats`) and existing RPCs (`society_maintenance_summary`, `get_society_invite_code`).
+
+Screens still to redesign (Stage 2B/2C): Maintenance, Matrix, Accounts Center, Communication Center, Resident Profile detail, House/Flat detail, Bill Studio deep rebuild, Bill History cards, Bill Detail timeline, Templates & Editor, Import wizard, AI Digest.
