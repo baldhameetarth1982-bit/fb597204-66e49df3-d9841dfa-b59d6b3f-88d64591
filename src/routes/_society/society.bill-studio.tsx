@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Sparkles, Play, Save, IndianRupee, CalendarClock } from "lucide-react";
 import { useSocietyId } from "@/hooks/useSocietyId";
 import { PageHeader, PageShell, EmptyState } from "@/components/shared/PageHeader";
-import { FinanceTabs } from "@/components/shared/FinanceTabs";
+import { BillingCenterTabs } from "@/components/nav/BillingCenterTabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -112,7 +112,7 @@ function BillStudio() {
     return (
       <PageShell>
         <PageHeader title="Bill Studio" description="Automated maintenance billing." />
-      <FinanceTabs />
+      <BillingCenterTabs />
         <EmptyState icon={Building2} title="No society linked" description="Set up your society first." />
       </PageShell>
     );

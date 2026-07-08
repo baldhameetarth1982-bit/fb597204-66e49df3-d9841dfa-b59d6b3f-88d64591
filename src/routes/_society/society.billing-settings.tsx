@@ -4,7 +4,7 @@ import { Loader2, Save, Settings2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSocietyId } from "@/hooks/useSocietyId";
 import { PageHeader, PageShell } from "@/components/shared/PageHeader";
-import { FinanceTabs } from "@/components/shared/FinanceTabs";
+import { BillingCenterTabs } from "@/components/nav/BillingCenterTabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,7 +85,7 @@ function BillingSettingsPage() {
 
   return (
     <PageShell>
-      <FinanceTabs />
+      <BillingCenterTabs />
       <PageHeader
         title="Billing Settings"
         description="Configure auto-billing schedule, grace period, late fees, and financial year."
