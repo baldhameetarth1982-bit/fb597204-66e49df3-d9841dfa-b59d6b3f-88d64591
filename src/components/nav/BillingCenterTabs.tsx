@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils";
  * Groups the 4 billing surfaces: Generate / History / Templates / Settings.
  * Preserves existing routes — nothing is deleted.
  */
-const TABS = [
+const TABS: Array<{ to: string; label: string; icon: any; exact?: boolean }> = [
   { to: "/society/billing", label: "History", icon: ListChecks, exact: true },
   { to: "/society/bill-studio", label: "Templates", icon: LayoutTemplate },
   { to: "/society/billing-settings", label: "Settings", icon: SlidersHorizontal },
-] as const;
+];
 
 export function BillingCenterTabs({
   onGenerate,
