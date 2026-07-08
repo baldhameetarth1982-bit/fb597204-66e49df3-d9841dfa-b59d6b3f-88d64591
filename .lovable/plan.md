@@ -1,212 +1,156 @@
-# Pass 1 — Global SocioHub UI System & Role-Based Shell
+# Pass 2 — Society Admin Screens (staged execution)
 
-Scope is **strictly** the global shell, navigation, and design tokens. No feature screens are rebuilt in this pass. No DB, RLS, auth, payment, billing, maintenance, or accounts logic is changed.
+Full spec covers ~26 sections across 20+ screens. Executing all of it in a single response would produce shallow, error-prone results across the whole surface. Instead I'll ship Pass 2 in **three tight stages**, each independently verifiable, each preserving Pass 1's shell, tokens, nav, auth, RLS, payments, subscriptions, and business logic.
 
----
+## Stage 2A — Core daily-use screens (this turn)
 
-## 1. Route & role audit (deliverable: audit doc, no code)
+Highest-frequency Society Admin surfaces, rebuilt to the reference direction. Real data only; missing metrics hidden (no fake numbers).
 
-I'll produce `.lovable/ui-audit.md` mapping every route under `src/routes/` to:
+1. **Dashboard** (`society.dashboard.tsx`) — action-first: primary tiles (Pending Payments, Pending Approvals, Visitors Today), overview cards (Flats, Collected, Pending Dues, Occupancy), quick actions, recent activity. Hide any card lacking a backend metric.
+2. **Residents** (`society.residents.tsx`) — mobile cards (photo/initials, name, flat, owner/tenant chip, mobile, verification chip), search + filter, tabs (All/Owners/Tenants/Family), summary cards. Kill the desktop-table-on-mobile.
+3. **Approvals** (`society.approvals.tsx`) — filter chips, request cards with Approve/Reject/View. KYC chips only if `join_requests` actually has that status.
+4. **Billing Center** (`society.billing.tsx`) — unified with 4 tabs (Generate / History / Templates / Settings). Existing routes (bill-studio, billing-settings) redirected via link into tabs; not deleted.
+5. **More / Operations** (`society.business-profile.tsx` → repurposed as `/society/more` landing, plus operations grouping) — grouped tiles (Management / Finance / Other). Only tiles whose routes exist.
 
-- Owner role — Resident / Society Admin / Guard / Super Admin / Public / Onboarding
-- Current shell (from `__root.tsx` `ShellSwitcher`)
-- Duplicate/dead status (e.g. two `ResidentBottomNav` components exist today: `src/components/resident/ResidentBottomNav.tsx` and `src/components/shared/ResidentBottomNav.tsx`)
-- Target nav slot per your spec
+## Stage 2B — Operations & Accounts (follow-up turn)
 
-Known collisions I already see and will flag:
+6. Maintenance dashboard + Matrix polish
+7. Accounts Center tabs (Dashboard / Transactions / Reports / Settings)
+8. Communication Center (Society Admin variant)
+9. Resident Profile detail card layout
+10. House/Flat detail
 
-- Two Resident bottom navs coexist (shared/ vs resident/). The `_resident` layout renders one; the shared one is currently unused but exists — will be removed from the codebase after confirming no imports.
-- Society shell uses `SocietyDrawer` + `SocietyFab` + desktop `AppSidebar`. On mobile it has no bottom nav — spec wants: Dashboard, Billing, Residents, Operations, More.
-- No Guard shell exists; guard routes (`app.guard.tsx`) currently ride the Resident shell. Needs its own shell + 3-tab bottom nav.
-- No Super Admin bottom nav on mobile; `_admin` uses `AdminSidebar` only. Needs mobile bottom nav: Overview, Societies, Users, Reports, More.
+## Stage 2C — Editors & polish (follow-up turn)
 
-## 2. Design tokens extracted from the reference PDF
+11. Generate Bill wizard, Bill History cards, Bill Detail timeline, Templates & Editor
+12. Import wizard polish
+13. AI Digest redesign
 
-I'll parse `user-uploads://sociohub_App_Ui.pdf` (pdfplumber + image sampling of the hero/primary CTAs, chips, backgrounds) and rewrite the token block in `src/styles.css` under `@theme inline` + `:root` so tokens flow through shadcn. Existing token names are preserved; only values change.
+## Non-negotiables (all stages)
 
-Expected extraction targets (values TBD from PDF sampling — will be reported back before finalization):
+- Design tokens only (no hex/`text-white`/`bg-black`).
+- No destructive migrations; no DB schema change unless a screen truly needs one (this pass expects none).
+- Auth / RLS / payment gateway abstraction / subscription flow untouched.
+- No resident cash-payment bypass introduced.
+- No fake stats, fake buttons, or placeholder production screens.
+- Feature-flag or hide any spec item without backing data/RPC.
+- Verify TS + build at end of each stage.
 
-- `--primary` (SocioHub teal-green)
-- `--primary-foreground`
-- `--background` (soft app background)
-- `--card` / `--card-foreground`
-- `--foreground` (navy)
-- `--muted` / `--muted-foreground`
-- `--border` / `--input`
-- `--ring`
-- Status chips: `--success`, `--warning`, `--destructive`, `--info` + their `-foreground` and soft/tinted variants used by chips
-- `--radius` (rounded card scale)
-- `--shadow-card` (soft elevation)
+## Deliverables at end of Stage 2A
 
-A short **Token Report** is delivered at end of pass listing before/after hex for each token above. If the theme-neon opt-in class exists in `ThemeApplier`, it is left untouched.
+- Files changed list
+- Screens redesigned
+- Duplicates hidden (not deleted)
+- Features hidden pending backend
+- Build/type check result
+- Confirmation nothing destructive touched
 
-Fonts: only add a `<link>` in `__root.tsx` head if the reference clearly uses a specific family; otherwise keep the current stack (no speculative font swap in this pass).
+**Approve Stage 2A to proceed, or tell me to reshuffle scope.**
 
-## 3. Role-based shells (replace `ShellSwitcher` branches)
+Approved. Proceed with Stage 2A.
 
-`src/routes/__root.tsx` — `ProtectedShell` is refactored so each role gets a dedicated shell component, all mobile-first, all wrapped in a 480px-max mobile frame on small screens and a proper responsive layout at md+:
+But follow these corrections strictly:
 
-```text
-/app/*         → ResidentShell     (bottom nav: Home, Bills, Visitors, Society, Profile)
-/society/*     → SocietyAdminShell (bottom nav on mobile: Dashboard, Billing, Residents, Operations, More
-                                    sidebar preserved on md+)
-/app/guard/*   → GuardShell        (bottom nav: Dashboard, History, Settings)   [see routing note below]
-/admin/*       → SuperAdminShell   (bottom nav on mobile: Overview, Societies, Users, Reports, More
-                                    sidebar preserved on md+)
-/onboarding/*  → OnboardingShell   (no bottom nav; back button top bar)
-```
+1. Do not create shallow UI.
 
-Guard routing note: today `app.guard.tsx` lives under `_resident`. I will NOT move the route file in this pass (would risk breaking guard access). Instead the shell switcher will branch on `pathname.startsWith("/app/guard")` (and any known guard subpaths) and render `GuardShell` instead of the resident shell. A follow-up pass can migrate to a proper `_guard` layout.
+   I want fewer screens completed properly, not many screens half-broken.
 
-## 4. Unified top bar
+2. Stage 2A must fully finish:
 
-Single `AppTopBar` component with slots:
+   - Society Admin Dashboard
 
-- Leading: back button (auto-shown on detail routes: pattern `pathname.split("/").length > 3` or explicit prop)
-- Logo (home routes only) OR page title
-- Trailing: search icon → `/app/search` etc. per role, notifications bell w/ unread badge, avatar
-- Sticky, `bg-background/95 backdrop-blur`, safe-area top padding
+   - Residents screen
 
-`AppHeader` is refactored to delegate to `AppTopBar`; per-role wrappers pass the correct trailing actions. `SocietyDrawer` mobile trigger is removed once the Society bottom nav lands (drawer contents move to the "More" tab).
+   - Approvals screen
 
-## 5. Bottom nav components
+   - Billing Center shell with 4 tabs
 
-Four dedicated components under `src/components/nav/`:
+   - Society Admin More / Operations screen
 
-- `ResidentBottomNav.tsx` — replaces both existing copies; icons per spec, unread badge on "Society" (notices) hook stays via `useUnreadNotifications`.
-- `SocietyAdminBottomNav.tsx` — new.
-- `GuardBottomNav.tsx` — new.
-- `SuperAdminBottomNav.tsx` — new.
+3. Use real existing data only.
 
-Each: `fixed bottom-0`, safe-area padding, 5-column grid (3 for guard), min 56px touch target, active state uses `text-primary` + soft tinted pill, both text + color for chips throughout.
+   If a metric is not available, hide that card.
 
-Main content padding-bottom becomes `calc(72px + env(safe-area-inset-bottom))` in every shell that renders a bottom nav so no content is hidden behind it.
+   Do not show fake numbers.
 
-## 6. Duplicate / dead cleanup (UI-only)
+4. Do not modify:
 
-- Delete `src/components/shared/ResidentBottomNav.tsx` after confirming zero imports.
-- Delete `src/components/resident/ResidentBottomNav.tsx` after the new `nav/ResidentBottomNav.tsx` is wired.
-- Remove `SocietyDrawer` mobile trigger from `AppHeader` (component file kept for now — desktop still may use it; will be re-evaluated in society pass).
-- Redirect known duplicate routes to unified centers only if the target already exists. Concretely I will NOT add redirects blindly — instead the audit doc lists proposed redirects; nothing is redirected in this pass unless it's a strict duplicate with zero unique content (e.g. `/app/notices` → `/app/comm` if `comm` already covers notices; will verify per-file before touching).
-- No route files deleted in this pass. Dead-looking routes are listed in the audit for a later pass.
+   - Auth
 
-## 7. Nothing to add in this pass (explicit non-goals)
+   - RLS
 
-- No new feature screens.
-- No placeholder routes created — if a bottom-nav tab points at a missing route, the audit doc flags it and the tab links to the closest existing route; a real screen is built in the follow-up role pass.
-- No changes to `src/integrations/supabase/*`, RLS, migrations, payment adapters, billing, maintenance, accounts, or resident onboarding logic.
-- No dark-mode overhaul beyond token value updates.
-- No copy changes.
+   - Payment gateway abstraction
 
-## 8. Verification checklist (run before closing pass)
+   - Razorpay/PayU/Cashfree adapters
 
-- `tsgo` clean; `bun run build` clean; no new console errors on `/`, `/login`, `/app/dashboard`, `/society/dashboard`, `/admin/dashboard`, `/app/guard`.
-- Playwright at 360 / 390 / 414 / 768 / 1024 for one representative route per role: no horizontal overflow, bottom nav visible, top bar sticky, safe-area respected.
-- `ProtectedRoute` still gates each shell; resident URL → no admin nav, admin URL → no resident nav, guard → 3-tab only.
-- Token Report attached to the reply.
+   - Subscription logic
 
----
+   - Maintenance business logic
 
-## Deliverables at end of pass
+   - Billing calculation logic
 
-1. `.lovable/ui-audit.md` — full route × role × shell × duplicate matrix
-2. Updated `src/styles.css` tokens (values from PDF sampling)
-3. New `src/components/nav/{Resident,SocietyAdmin,Guard,SuperAdmin}BottomNav.tsx`
-4. Refactored `src/routes/__root.tsx` `ShellSwitcher` + per-role shell components
-5. New `AppTopBar` + refactored `AppHeader`
-6. Two deleted duplicate `ResidentBottomNav` files
-7. **Token Report** in the closing message (before/after hex for each token listed in §2)
+   - Accounts logic
 
-Follow-up passes (not in this plan): Society Admin screens → Resident screens → Guard screens → Super Admin screens → remaining/optional.                                                                                                                                                                                                                                              Approved — execute Pass 1: Global SocioHub UI System & Role-Based Shell.
+   - Database schema unless absolutely necessary
 
-But apply these corrections before starting:
+5. Do not create duplicate routes or duplicate modules.
 
-1. Use the attached SocioHub reference images/PDF as the exact visual source of truth.
+6. Do not delete existing routes.
 
-   Do not approximate the theme. Extract exact teal/green/navy/status colors from the references and update tokens accordingly.
+   Hide old duplicate navigation items only.
 
-2. Do not physically delete duplicate navigation files unless:
+7. Billing Center in this stage should create the correct unified tab structure:
 
-   - imports are confirmed to be zero, OR
+   - Generate
 
-   - the old file is replaced with a compatibility re-export to the new component.
+   - History
 
-   I do not want broken imports caused by deleting components too early.
+   - Templates
 
-3. No destructive changes.
+   - Settings
 
-   Do not delete routes, database tables, columns, records, migrations, RLS policies, payment logic, billing logic, maintenance logic, or auth logic.
+   But do not deeply rebuild bill generation yet if it belongs to Stage 2C.
 
-4. For duplicate/dead routes:
+8. Society Admin More / Operations must group features clearly:
 
-   - Do not delete them in this pass.
+   Management
 
-   - Do not blindly redirect them.
+   Finance
 
-   - Document them in `.lovable/ui-audit.md`.
+   Other
 
-   - Only redirect a route if it is confirmed to be a strict duplicate and the target route already exists and works.
+   Only show tiles for routes that actually exist.
 
-5. For the 480px mobile shell:
+9. Resident screen must be mobile-card based.
 
-   - On real mobile widths, the app should use the full viewport naturally.
+   No desktop table layout on mobile.
 
-   - Do not make it look like a phone mockup inside the phone.
+10. Approvals screen must use existing join_requests logic.
 
-   - Use max-width only for large desktop preview containers where appropriate.
+    Do not invent fake KYC if backend does not support it.
 
-6. Guard routes:
+11. After Stage 2A, run:
 
-   Keep the current route location for now.
+    - TypeScript check
 
-   Shell switching based on `/app/guard` is acceptable for this pass.
+    - Build check
 
-   Do not migrate guard routes yet.
+    - Mobile overflow check at 360/390/414
 
-7. Role-based navigation must be strict:
+    - Role navigation check
 
-   - Resident must not see admin nav.
+12. At the end, give me:
 
-   - Society Admin must not see resident nav.
+    - files changed
 
-   - Guard must only see guard nav.
+    - screens completed
 
-   - Super Admin must only see super admin nav.
+    - screens not touched
 
-8. Do not create placeholder feature screens.
+    - hidden duplicate UI items
 
-   If a nav item route does not exist, link it to the closest existing working route and document the missing final screen in the audit.
+    - backend untouched confirmation
 
-9. Keep this pass limited to:
+    - build/typecheck result
 
-   - tokens
-
-   - global shell
-
-   - top bar
-
-   - role-based bottom nav
-
-   - safe-area spacing
-
-   - route audit
-
-   - duplicate nav cleanup
-
-   - mobile responsiveness
-
-10. Do not start rebuilding Society Admin, Resident, Guard, or Super Admin feature screens in this pass.
-
-11. Final deliverables must include:
-
-   - `.lovable/ui-audit.md`
-
-   - token report with before/after hex values
-
-   - list of files changed
-
-   - confirmation that build/typecheck pass
-
-   - confirmation that no auth/RLS/payment/billing/maintenance/accounting logic was touched
-
-Proceed with Pass 1.
+Do not start Stage 2B in the same code pass unless Stage 2A is fully clean and verified.
